@@ -163,15 +163,15 @@ const Div = ({ mt=0, mb=0 }) => (
   <div style={{ height:1, background:C.divider, marginTop:mt, marginBottom:mb }} />
 );
 
-// Primary button — white fill
+// Primary button — off-white fill
 const BtnPrimary = ({ children, onClick, style={} }) => (
   <button className="tap" onClick={onClick} style={{
     width:"100%",
     padding:"18px 20px",
-    background:C.white,
+    background:"#d4d4d4",
     border:"none",
     borderRadius:2,
-    color:"#000",
+    color:"#0b0b0c",
     fontFamily:BB,
     fontSize:20,
     letterSpacing:5,
@@ -201,17 +201,18 @@ const Seg = ({ label, opts, val, onChange }) => (
     <div style={{ display:"flex", gap:8 }}>
       {opts.map(o => {
         const sel = val === o.key;
+        const selColor = o.color || "#c8c8c8";
         return (
           <button key={o.key} className="tap" onClick={()=>onChange(o.key)} style={{
             flex:1, padding: o.sub ? "11px 6px" : "15px 6px",
-            background: sel ? (o.color || C.white) : "transparent",
-            border:`1px solid ${sel ? (o.color || C.white) : C.border}`,
-            color: sel ? C.bg : C.sub,
+            background: sel ? (o.color ? o.color+"22" : "#ffffff0f") : "transparent",
+            border:`1px solid ${sel ? selColor : C.border}`,
+            color: sel ? (o.color || "#c8c8c8") : C.muted,
             fontFamily:BB, fontSize:14, letterSpacing:3,
             cursor:"pointer", borderRadius:R, transition:"all 0.12s",
           }}>
             <div>{o.label}</div>
-            {o.sub && <div style={{ fontSize:9, letterSpacing:2, opacity:sel?0.55:0.4, marginTop:3 }}>{o.sub}</div>}
+            {o.sub && <div style={{ fontSize:9, letterSpacing:2, opacity:sel?0.6:0.4, marginTop:3 }}>{o.sub}</div>}
           </button>
         );
       })}
@@ -500,7 +501,7 @@ export default function App() {
         )}
 
         <Seg label="Game Mode" val={mode} onChange={setMode} opts={[
-          {key:"cpu", label:"VS CPU"},
+          {key:"cpu", label:"CPU"},
           {key:"2p",  label:"2 PLAYER"},
         ]}/>
 
