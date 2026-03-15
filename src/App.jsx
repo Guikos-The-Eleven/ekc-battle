@@ -422,14 +422,15 @@ export default function App() {
 
   const root = {
     fontFamily:BC, background:C.bg, color:C.text,
-    minHeight:"100dvh", maxWidth:440, margin:"0 auto",
+    height:"100dvh", maxWidth:440, margin:"0 auto",
     display:"flex", flexDirection:"column", position:"relative",
-    overscrollBehavior:"none",
+    overscrollBehavior:"none", overflow:"hidden",
   };
 
   const page = {
     position:"relative", zIndex:1, flex:1,
     display:"flex", flexDirection:"column", padding:"28px 22px",
+    overflowY:"auto", WebkitOverflowScrolling:"touch",
   };
 
   // ── PICK ─────────────────────────────────────────────────────────────────────
