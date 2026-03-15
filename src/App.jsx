@@ -436,7 +436,7 @@ export default function App() {
 
         {/* Logo centred in all remaining space */}
         <div className="rise" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",width:"100%"}}>
-          <img src={LOGO} alt="EKC" style={{width:190,height:190,objectFit:"contain",mixBlendMode:"screen"}}/>
+          <img src={LOGO} alt="EKC" style={{width:300,height:300,objectFit:"contain",mixBlendMode:"screen"}}/>
         </div>
 
         {/* Tagline */}
