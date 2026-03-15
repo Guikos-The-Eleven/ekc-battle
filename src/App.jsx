@@ -44,6 +44,8 @@ if (typeof document !== "undefined") {
       .glow { animation: glow  1.1s ease-in-out infinite }
       .tap:active { transform:scale(0.96); opacity:0.82; }
       * { -webkit-tap-highlight-color:transparent; box-sizing:border-box; margin:0; padding:0; }
+      html, body { height:100%; overflow:hidden; overscroll-behavior:none; }
+      #root { height:100%; }
     `;
     document.head.appendChild(s);
   }
@@ -420,8 +422,9 @@ export default function App() {
 
   const root = {
     fontFamily:BC, background:C.bg, color:C.text,
-    minHeight:"100vh", maxWidth:440, margin:"0 auto",
+    minHeight:"100dvh", maxWidth:440, margin:"0 auto",
     display:"flex", flexDirection:"column", position:"relative",
+    overscrollBehavior:"none",
   };
 
   const page = {
