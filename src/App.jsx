@@ -11,7 +11,7 @@ const SB = createClient(
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
 const C = {
   bg:"#0b0b0c", surface:"#121214", border:"#1f1f23", divider:"#19191c",
-  white:"#fafafa", text:"#f3f3f3", sub:"#a0a0a8", muted:"#72727c",
+  white:"#fafafa", text:"#f3f3f3", sub:"#b8b8c0", muted:"#888894",
   green:"#3ddc84", red:"#ff4d4f", yellow:"#f4c430", orange:"#ff7a18", blue:"#4da3ff",
 };
 const BB = "'Bebas Neue', sans-serif";
@@ -244,8 +244,14 @@ function AuthScreen({ onAuth }) {
     } else {
       const { data, error } = await SB.auth.signInWithPassword({ email, password:pw });
       if (error) { setErr(error.message); setLoading(false); return; }
-      const { data:prof } = await SB.from("profiles").select("username").eq("id",data.user.id).single();
-      onAuth(data.user, prof?.username || data.user.email?.split("@")[0] || "player");
+      // Fetch profile — if missing (failed signup), create it now
+      let { data:prof } = await SB.from("profiles").select("username").eq("id",data.user.id).single();
+      if (!prof) {
+        const fallbackName = email.split("@")[0];
+        await SB.from("profiles").insert({ id:data.user.id, username:fallbackName });
+        prof = { username:fallbackName };
+      }
+      onAuth(data.user, prof.username);
     }
     setLoading(false);
   }
@@ -433,9 +439,14 @@ export default function App() {
   useEffect(()=>{
     SB.auth.getSession().then(async ({ data:{ session } })=>{
       if (session?.user) {
-        const { data:prof } = await SB.from("profiles").select("username").eq("id",session.user.id).single();
+        let { data:prof } = await SB.from("profiles").select("username").eq("id",session.user.id).single();
+        if (!prof) {
+          const fallbackName = session.user.email.split("@")[0];
+          await SB.from("profiles").insert({ id:session.user.id, username:fallbackName });
+          prof = { username:fallbackName };
+        }
         setUser(session.user);
-        setUsername(prof?.username || session.user.email?.split("@")[0] || "player");
+        setUsername(prof.username);
       }
       setAuthLoading(false);
     });
