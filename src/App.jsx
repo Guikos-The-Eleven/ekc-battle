@@ -11,7 +11,7 @@ const SB = createClient(
 // ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
 const C = {
   bg:"#0b0b0c", surface:"#121214", border:"#1f1f23", divider:"#19191c",
-  white:"#fafafa", text:"#f3f3f3", sub:"#8a8a90", muted:"#4a4a50",
+  white:"#fafafa", text:"#f3f3f3", sub:"#a0a0a8", muted:"#72727c",
   green:"#3ddc84", red:"#ff4d4f", yellow:"#f4c430", orange:"#ff7a18", blue:"#4da3ff",
 };
 const BB = "'Bebas Neue', sans-serif";
@@ -245,7 +245,7 @@ function AuthScreen({ onAuth }) {
       const { data, error } = await SB.auth.signInWithPassword({ email, password:pw });
       if (error) { setErr(error.message); setLoading(false); return; }
       const { data:prof } = await SB.from("profiles").select("username").eq("id",data.user.id).single();
-      onAuth(data.user, prof?.username||email);
+      onAuth(data.user, prof?.username || data.user.email?.split("@")[0] || "player");
     }
     setLoading(false);
   }
@@ -435,7 +435,7 @@ export default function App() {
       if (session?.user) {
         const { data:prof } = await SB.from("profiles").select("username").eq("id",session.user.id).single();
         setUser(session.user);
-        setUsername(prof?.username||session.user.email);
+        setUsername(prof?.username || session.user.email?.split("@")[0] || "player");
       }
       setAuthLoading(false);
     });
@@ -450,20 +450,22 @@ export default function App() {
   async function saveTrickAttempt(trick, landed) {
     const u = userRef.current;
     if (!u) return;
-    await SB.from("trick_attempts").insert({
+    const { error } = await SB.from("trick_attempts").insert({
       user_id:u.id, trick, landed, competition:compRef.current||"am_open",
     });
+    if (error) console.error("trick_attempts insert:", error.message);
   }
 
   // Save match result to DB
   async function saveMatchResult(scores, won) {
     const u = userRef.current;
     if (!u) return;
-    await SB.from("match_results").insert({
+    const { error } = await SB.from("match_results").insert({
       user_id:u.id, competition:compRef.current||"am_open",
       difficulty:diffRef.current, race_to:raceRef.current,
       won, your_score:scores.you, cpu_score:scores.cpu,
     });
+    if (error) console.error("match_results insert:", error.message);
   }
 
   const allTricks = () => {
