@@ -408,7 +408,7 @@ function StatsScreen({ user, username, onBack }) {
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
 
         {/* ── Header ── */}
-        <div style={{padding:"28px 24px 0"}}>
+        <div style={{padding:"calc(28px + env(safe-area-inset-top, 0px)) 24px 0"}}>
           <BackBtn onClick={onBack}/>
           <div style={{marginBottom:20}}>
             <div style={{fontFamily:BB,fontSize:34,letterSpacing:4,lineHeight:1,color:C.white}}>{username}</div>
@@ -763,7 +763,7 @@ export default function App() {
   };
   const page = {
     position:"relative",zIndex:1,flex:1,
-    display:"flex",flexDirection:"column",padding:"28px 24px",
+    display:"flex",flexDirection:"column",padding:"calc(28px + env(safe-area-inset-top, 0px)) 24px 28px 24px",
     overflowY:"auto",WebkitOverflowScrolling:"touch",
   };
 
@@ -931,7 +931,7 @@ export default function App() {
     const youMatchPoint = !is2p && scores.you === race - 1;
     const cpuMatchPoint = !is2p && scores.cpu === race - 1;
     return (
-    <div style={{padding:"20px 24px 0"}}>
+    <div style={{padding:"calc(20px + env(safe-area-inset-top, 0px)) 24px 0"}}>
       <div style={{display:"flex",alignItems:"flex-start",justifyContent:"center",gap:16}}>
         {is2p
           ? [["P1",scores.p1],["P2",scores.p2]].map(([l,v])=>(
