@@ -50,6 +50,11 @@ if (typeof document !== "undefined") {
       input:focus { border-color:#3a3a42 !important; outline:none; }
       * { -webkit-tap-highlight-color:transparent; box-sizing:border-box; margin:0; padding:0; }
       html, body { height:100%; overflow:hidden; overscroll-behavior:none; background:#0b0b0c; }
+      body::after {
+        content:''; position:fixed; inset:-50px; pointer-events:none; z-index:9999; opacity:0.07;
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+        background-repeat:repeat;
+      }
       #root { height:100%; }
     `;
     document.head.appendChild(s);
@@ -311,7 +316,7 @@ function AuthScreen({ onAuth }) {
 
   return (
     <div style={{fontFamily:BC,background:C.bg,color:C.white,height:"100dvh",maxWidth:440,margin:"0 auto",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 28px",position:"relative"}}>
-      <div style={NOISE}/>
+      
       <div style={{position:"relative",zIndex:1,width:"100%"}}>
         <div style={{textAlign:"center",marginBottom:36}}>
           <img src={LOGO} alt="EKC" style={{width:120,height:120,objectFit:"contain",mixBlendMode:"screen",marginBottom:12,display:"block",margin:"0 auto 12px"}}/>
@@ -404,7 +409,7 @@ function StatsScreen({ user, username, onBack }) {
 
   return (
     <div style={root}>
-      <div style={NOISE}/>
+      
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
 
         {/* ── Header ── */}
@@ -763,14 +768,14 @@ export default function App() {
   };
   const page = {
     position:"relative",zIndex:1,flex:1,
-    display:"flex",flexDirection:"column",padding:"calc(28px + env(safe-area-inset-top, 0px)) 24px 28px 24px",
+    display:"flex",flexDirection:"column",padding:"calc(28px + env(safe-area-inset-top, 0px)) 24px calc(28px + env(safe-area-inset-bottom, 0px)) 24px",
     overflowY:"auto",WebkitOverflowScrolling:"touch",
   };
 
   // Loading
   if (authLoading) return (
     <div style={{...root,alignItems:"center",justifyContent:"center"}}>
-      <div style={NOISE}/>
+      
       <img src={LOGO} alt="EKC" className="glow" style={{width:100,height:100,objectFit:"contain",mixBlendMode:"screen"}}/>
       <div className="fadeUp" style={{fontFamily:BB,fontSize:10,letterSpacing:6,color:C.muted,marginTop:16,animationDelay:"0.3s",animationFillMode:"both"}}>LOADING</div>
     </div>
@@ -785,7 +790,7 @@ export default function App() {
   // ── PICK ─────────────────────────────────────────────────────────────────────
   if (screen==="pick") return (
     <div style={root}>
-      <div style={NOISE}/>
+      
       <div style={{...page,alignItems:"center"}}>
 
         {/* User bar */}
@@ -832,7 +837,7 @@ export default function App() {
   // ── SETTINGS ─────────────────────────────────────────────────────────────────
   if (screen==="settings") return (
     <div style={root}>
-      <div style={NOISE}/>
+      
       <div style={page}>
         <BackBtn onClick={()=>setScreen("pick")}/>
         <div className="rise" style={{marginBottom:28}}>
@@ -884,7 +889,7 @@ export default function App() {
     const resultColor = won?C.green:C.red;
     return (
       <div style={{...root,justifyContent:"center"}}>
-        <div style={NOISE}/>
+        
         {/* Flash overlay on result */}
         <div style={{position:"fixed",inset:0,background:resultColor,opacity:0,animation:"flash 0.8s ease-out",zIndex:2,pointerEvents:"none"}}/>
         <div style={{position:"relative",zIndex:1,textAlign:"center",padding:"0 24px"}}>
@@ -979,7 +984,7 @@ export default function App() {
   };
 
   const MenuBack = () => (
-    <div style={{padding:"12px 24px 22px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+    <div style={{padding:"12px 24px calc(22px + env(safe-area-inset-bottom, 0px))",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
       <button onClick={()=>setScreen("settings")} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:11,letterSpacing:5,cursor:"pointer",padding:0}}>← MENU</button>
       <div style={{fontFamily:BB,fontSize:9,letterSpacing:4,color:C.muted}}>
         EKC '26 · {comp==="am_open"?"AM OPEN":"PRO OPEN"} · UTRECHT
@@ -988,7 +993,7 @@ export default function App() {
   );
 
   if (phase==="reveal"||phase==="2p_reveal") return (
-    <div style={root}><div style={NOISE}/>
+    <div style={root}>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar/>
         <div key={pk} style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 28px",gap:22}}>
@@ -1009,7 +1014,7 @@ export default function App() {
   );
 
   if (is2p&&phase==="2p_score") return (
-    <div style={root}><div style={NOISE}/>
+    <div style={root}>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar/>
         <div style={{flex:1,display:"flex",flexDirection:"column",padding:"20px 24px 0"}}>
@@ -1035,7 +1040,7 @@ export default function App() {
   );
 
   if (is2p&&phase==="2p_point") return (
-    <div style={root}><div style={NOISE}/>
+    <div style={root}>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar/>
         <div key={pk} className="pop" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center"}}>
@@ -1047,7 +1052,7 @@ export default function App() {
 
   const attemptPhases=["p_first","cpu_first","p_second","cpu_resp"];
   if (attemptPhases.includes(phase)) return (
-    <div style={root}><div style={NOISE}/>
+    <div style={root}>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar/>
         <div style={{borderLeft:`3px solid ${phase==="p_first"?C.white:C.muted}`,paddingLeft:16,margin:"14px 24px 0",transition:"border-color 0.3s"}}>
@@ -1102,7 +1107,7 @@ export default function App() {
   );
 
   if (phase==="tie") return (
-    <div style={root}><div style={NOISE}/>
+    <div style={root}>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar/>
         <div key={pk} className="pop" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8}}>
@@ -1116,7 +1121,7 @@ export default function App() {
   if (phase==="point") {
     const pointColor = winner==="you"?C.green:C.red;
     return (
-    <div style={root}><div style={NOISE}/>
+    <div style={root}>
       <div style={{position:"fixed",inset:0,background:pointColor,opacity:0,animation:"flash 0.6s ease-out",zIndex:3,pointerEvents:"none"}}/>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar/>
@@ -1131,7 +1136,7 @@ export default function App() {
   }
 
   if (phase==="null") return (
-    <div style={root}><div style={NOISE}/>
+    <div style={root}>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar/>
         <div key={pk} className="rise" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10}}>
