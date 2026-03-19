@@ -38,6 +38,9 @@ if (typeof document !== "undefined") {
       .pls  { animation: pulse 1.4s ease-in-out infinite }
       .glow { animation: glow  1.1s ease-in-out infinite }
       .tap:active { transform:scale(0.96); opacity:0.82; }
+      button:disabled { opacity:0.4; cursor:not-allowed; }
+      input::placeholder { color:#52525a; }
+      input:focus { border-color:#3a3a42 !important; outline:none; }
       * { -webkit-tap-highlight-color:transparent; box-sizing:border-box; margin:0; padding:0; }
       html, body { height:100%; overflow:hidden; overscroll-behavior:none; }
       #root { height:100%; }
@@ -142,31 +145,31 @@ const BtnPrimary = ({ children, onClick, style={} }) => (
 
 const BtnGhost = ({ children, onClick, color=C.muted, style={} }) => (
   <button className="tap" onClick={onClick} style={{
-    width:"100%",padding:"14px 24px",background:"transparent",
+    width:"100%",padding:"16px 24px",background:"transparent",
     border:`1px solid ${color}`,borderRadius:R,color,
     fontFamily:BB,fontSize:16,letterSpacing:5,cursor:"pointer",
-    transition:"transform 0.08s, opacity 0.08s",...style,
+    transition:"opacity 0.12s",...style,
   }}>{children}</button>
 );
 
 const Seg = ({ label, opts, val, onChange }) => (
   <div style={{marginBottom:22}}>
-    {label && <Label style={{textAlign:"center",marginBottom:10}}>{label}</Label>}
+    {label && <Label style={{textAlign:"center",marginBottom:12}}>{label}</Label>}
     <div style={{display:"flex",gap:8}}>
       {opts.map(o=>{
         const sel = val===o.key;
         const selColor = o.color||"#c8c8c8";
         return (
           <button key={String(o.key)} className="tap" onClick={()=>onChange(o.key)} style={{
-            flex:1, padding:o.sub?"11px 6px":"15px 6px",
+            flex:1, padding:o.sub?"12px 6px":"16px 6px",
             background:sel?(o.color?o.color+"22":"#ffffff0f"):"transparent",
             border:`1px solid ${sel?selColor:C.border}`,
-            color:sel?(o.color||"#c8c8c8"):C.muted,
+            color:sel?(o.color||"#c8c8c8"):C.sub,
             fontFamily:BB,fontSize:14,letterSpacing:3,
             cursor:"pointer",borderRadius:R,transition:"all 0.12s",
           }}>
             <div>{o.label}</div>
-            {o.sub && <div style={{fontSize:9,letterSpacing:2,opacity:sel?0.6:0.4,marginTop:3}}>{o.sub}</div>}
+            {o.sub && <div style={{fontSize:9,letterSpacing:2,opacity:sel?0.7:0.5,marginTop:4}}>{o.sub}</div>}
           </button>
         );
       })}
@@ -204,9 +207,9 @@ const ResultRow = ({ landed }) => (
 );
 
 const TryDots = ({ current }) => (
-  <div style={{display:"flex",gap:6,justifyContent:"center",marginBottom:16}}>
+  <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:18}}>
     {[1,2,3].map(t=>(
-      <div key={t} style={{width:28,height:3,background:t<current?C.white:t===current?C.sub:C.border,transition:"background 0.2s"}}/>
+      <div key={t} style={{width:32,height:3,background:t<current?C.white:t===current?C.sub:C.border,transition:"background 0.2s"}}/>
     ))}
   </div>
 );
@@ -225,10 +228,10 @@ function AuthScreen({ onAuth }) {
   const [loading,setLoading]= useState(false);
 
   const inputStyle = {
-    width:"100%", padding:"14px 16px", background:C.surface,
+    width:"100%", padding:"15px 16px", background:C.surface,
     border:`1px solid ${C.border}`, borderRadius:2, color:C.white,
-    fontFamily:BC, fontSize:15, letterSpacing:1, marginBottom:10,
-    outline:"none",
+    fontFamily:BC, fontSize:15, letterSpacing:0.5, marginBottom:12,
+    outline:"none", transition:"border-color 0.15s",
   };
 
   async function handleSubmit() {
@@ -286,10 +289,10 @@ function AuthScreen({ onAuth }) {
         <input placeholder="Password" type="password" value={pw} onChange={e=>setPw(e.target.value)}
           style={inputStyle} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
 
-        {err && <div style={{fontFamily:BC,fontSize:12,color:C.red,marginBottom:10,letterSpacing:1}}>{err}</div>}
+        {err && <div style={{fontFamily:BC,fontSize:13,color:C.red,marginBottom:14,letterSpacing:0.5,lineHeight:1.4}}>{err}</div>}
 
-        <BtnPrimary onClick={handleSubmit} style={{marginTop:8}}>
-          {loading ? "..." : tab==="login"?"LOG IN":"CREATE ACCOUNT"}
+        <BtnPrimary onClick={handleSubmit} style={{marginTop:4}}>
+          {loading ? "···" : tab==="login"?"LOG IN":"CREATE ACCOUNT"}
         </BtnPrimary>
       </div>
     </div>
@@ -631,7 +634,7 @@ export default function App() {
   };
   const page = {
     position:"relative",zIndex:1,flex:1,
-    display:"flex",flexDirection:"column",padding:"28px 22px",
+    display:"flex",flexDirection:"column",padding:"28px 24px",
     overflowY:"auto",WebkitOverflowScrolling:"touch",
   };
 
@@ -657,7 +660,7 @@ export default function App() {
 
         {/* User bar */}
         <div style={{width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-          <button onClick={()=>setScreen("stats")} style={{background:"transparent",border:"none",color:C.muted,fontFamily:BB,fontSize:11,letterSpacing:4,cursor:"pointer",padding:0}}>
+          <button onClick={()=>setScreen("stats")} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:11,letterSpacing:4,cursor:"pointer",padding:0}}>
             {username} · STATS →
           </button>
           <button onClick={handleSignOut} style={{background:"transparent",border:"none",color:C.muted,fontFamily:BB,fontSize:10,letterSpacing:4,cursor:"pointer",padding:0}}>
@@ -669,7 +672,7 @@ export default function App() {
           <img src={LOGO} alt="EKC" style={{width:300,height:300,objectFit:"contain",mixBlendMode:"screen"}}/>
         </div>
 
-        <div style={{fontFamily:BB,fontSize:9,letterSpacing:5,color:C.muted,marginBottom:20,textAlign:"center"}}>
+        <div style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.sub,marginBottom:20,textAlign:"center"}}>
           EUROPEAN KENDAMA CHAMPIONSHIP · MAY 22–23 · UTRECHT, NL
         </div>
 
@@ -687,7 +690,7 @@ export default function App() {
                 transition:"opacity 0.1s",width:"100%",
               }}>
                 <span style={{fontFamily:BB,fontSize:32,letterSpacing:4,color:C.white}}>{o.label}</span>
-                <span style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.muted}}>{o.badge} →</span>
+                <span style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.sub}}>{o.badge} →</span>
               </button>
             ))}
           </div>
@@ -753,22 +756,22 @@ export default function App() {
         <div style={NOISE}/>
         <div className="pop" style={{position:"relative",zIndex:1,textAlign:"center",padding:"0 24px"}}>
           <img src={LOGO} alt="EKC" style={{width:64,height:64,objectFit:"contain",margin:"0 auto 20px",display:"block",mixBlendMode:"screen",opacity:0.5}}/>
-          <Label style={{marginBottom:12,letterSpacing:6}}>{is2p?"Match Over":(won?"Well Done":"Keep Training")}</Label>
+          <Label style={{marginBottom:12,letterSpacing:5}}>{is2p?"Match Over":(won?"Well Done":"Keep Training")}</Label>
           <div style={{fontFamily:BB,fontSize:62,letterSpacing:2,lineHeight:0.88,color:won?C.white:C.red}}>{winLabel}</div>
-          <Div mt={24} mb={24}/>
+          <Div mt={28} mb={28}/>
           <Label style={{marginBottom:16,letterSpacing:5}}>Final Score</Label>
           <div style={{display:"flex",justifyContent:"center",gap:32}}>
             {(is2p?[["P1",scores.p1],["P2",scores.p2]]:[["YOU",scores.you],["CPU",scores.cpu]]).map(([l,v])=>(
               <div key={l} style={{textAlign:"center"}}>
-                <Label style={{marginBottom:6}}>{l}</Label>
+                <Label style={{marginBottom:8}}>{l}</Label>
                 <div style={{fontFamily:BB,fontSize:76,lineHeight:0.9,color:C.white}}>{v}</div>
               </div>
             ))}
           </div>
-          <div style={{marginTop:32,display:"flex",flexDirection:"column",gap:10}}>
+          <div style={{marginTop:36,display:"flex",flexDirection:"column",gap:12}}>
             <BtnPrimary onClick={()=>{setScreen("settings");setGs(null);}}>PLAY AGAIN</BtnPrimary>
             {!is2p && (
-              <BtnGhost color={C.muted} onClick={()=>{setScreen("stats");setGs(null);}}>VIEW STATS →</BtnGhost>
+              <BtnGhost color={C.sub} onClick={()=>{setScreen("stats");setGs(null);}}>VIEW STATS →</BtnGhost>
             )}
             <BtnGhost onClick={()=>{setScreen("pick");setGs(null);setComp(null);}}>← MAIN MENU</BtnGhost>
           </div>
@@ -784,14 +787,14 @@ export default function App() {
   const pk   = `${phase}-${trick}-${tryNum||0}`;
 
   const ScoreBar = () => (
-    <div style={{padding:"18px 24px 0"}}>
+    <div style={{padding:"20px 24px 0"}}>
       <div style={{display:"flex",alignItems:"flex-start",justifyContent:"center",gap:16}}>
         {is2p
           ? [["P1",scores.p1],["P2",scores.p2]].map(([l,v])=>(
               <div key={l} style={{flex:1,textAlign:"center"}}>
-                <Label style={{marginBottom:4}}>{l}</Label>
-                <div style={{fontFamily:BB,fontSize:52,lineHeight:0.9}}>{v}</div>
-                <div style={{display:"flex",gap:3,justifyContent:"center",marginTop:8}}>
+                <Label style={{marginBottom:6,letterSpacing:4}}>{l}</Label>
+                <div style={{fontFamily:BB,fontSize:52,lineHeight:1}}>{v}</div>
+                <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:10}}>
                   {Array.from({length:race}).map((_,i)=>(
                     <div key={i} style={{width:16,height:2,background:i<v?C.white:C.border,transition:"background 0.25s"}}/>
                   ))}
@@ -800,19 +803,19 @@ export default function App() {
             ))
           : <>
               <div style={{flex:1,textAlign:"center"}}>
-                <Label style={{marginBottom:4}}>You</Label>
-                <div style={{fontFamily:BB,fontSize:52,lineHeight:0.9}}>{scores.you}</div>
-                <div style={{display:"flex",gap:3,justifyContent:"center",marginTop:8}}>
+                <Label style={{marginBottom:6,letterSpacing:4}}>You</Label>
+                <div style={{fontFamily:BB,fontSize:52,lineHeight:1}}>{scores.you}</div>
+                <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:10}}>
                   {Array.from({length:race}).map((_,i)=>(
                     <div key={i} style={{width:16,height:2,background:i<scores.you?C.green:C.border,transition:"background 0.25s"}}/>
                   ))}
                 </div>
               </div>
-              <div style={{fontFamily:BB,fontSize:20,color:C.border,paddingTop:22}}>:</div>
+              <div style={{fontFamily:BB,fontSize:20,color:C.border,paddingTop:24}}>:</div>
               <div style={{flex:1,textAlign:"center"}}>
-                <Label style={{marginBottom:4}}>CPU</Label>
-                <div style={{fontFamily:BB,fontSize:52,lineHeight:0.9}}>{scores.cpu}</div>
-                <div style={{display:"flex",gap:3,justifyContent:"center",marginTop:8}}>
+                <Label style={{marginBottom:6,letterSpacing:4}}>CPU</Label>
+                <div style={{fontFamily:BB,fontSize:52,lineHeight:1}}>{scores.cpu}</div>
+                <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:10}}>
                   {Array.from({length:race}).map((_,i)=>(
                     <div key={i} style={{width:16,height:2,background:i<scores.cpu?C.red:C.border,transition:"background 0.25s"}}/>
                   ))}
@@ -822,14 +825,14 @@ export default function App() {
             </>
         }
       </div>
-      <Div mt={16}/>
+      <Div mt={18}/>
     </div>
   );
 
   const MenuBack = () => (
-    <div style={{padding:"10px 24px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-      <button onClick={()=>setScreen("settings")} style={{background:"transparent",border:"none",color:C.muted,fontFamily:BB,fontSize:10,letterSpacing:5,cursor:"pointer",padding:0}}>← MENU</button>
-      <div style={{fontFamily:BB,fontSize:9,letterSpacing:4,color:C.border}}>
+    <div style={{padding:"12px 24px 22px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+      <button onClick={()=>setScreen("settings")} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:11,letterSpacing:5,cursor:"pointer",padding:0}}>← MENU</button>
+      <div style={{fontFamily:BB,fontSize:9,letterSpacing:4,color:C.muted}}>
         EKC '26 · {comp==="am_open"?"AM OPEN":"PRO OPEN"} · UTRECHT
       </div>
     </div>
@@ -908,7 +911,7 @@ export default function App() {
             <div style={{flex:1}}/>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
               <button className="tap" onClick={()=>onAttempt(true)} style={{padding:"0",height:120,background:C.green,border:"none",borderRadius:2,color:C.bg,fontFamily:BB,fontSize:32,letterSpacing:4,cursor:"pointer",transition:"opacity 0.1s"}}>LAND</button>
-              <button className="tap" onClick={()=>onAttempt(false)} style={{padding:"0",height:120,background:"transparent",border:`1px solid ${C.border}`,borderRadius:2,color:C.muted,fontFamily:BB,fontSize:32,letterSpacing:4,cursor:"pointer",transition:"opacity 0.1s"}}>MISS</button>
+              <button className="tap" onClick={()=>onAttempt(false)} style={{padding:"0",height:120,background:"transparent",border:`1px solid ${C.divider}`,borderRadius:2,color:C.sub,fontFamily:BB,fontSize:32,letterSpacing:4,cursor:"pointer",transition:"opacity 0.1s"}}>MISS</button>
             </div>
           </div>
         )}
@@ -930,7 +933,7 @@ export default function App() {
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
               <button className="tap" onClick={()=>onAttempt(true)} style={{padding:"0",height:100,background:C.green,border:"none",borderRadius:2,color:C.bg,fontFamily:BB,fontSize:28,letterSpacing:4,cursor:"pointer",transition:"opacity 0.1s"}}>LAND</button>
-              <button className="tap" onClick={()=>onAttempt(false)} style={{padding:"0",height:100,background:"transparent",border:`1px solid ${C.border}`,borderRadius:2,color:C.muted,fontFamily:BB,fontSize:28,letterSpacing:4,cursor:"pointer",transition:"opacity 0.1s"}}>MISS</button>
+              <button className="tap" onClick={()=>onAttempt(false)} style={{padding:"0",height:100,background:"transparent",border:`1px solid ${C.divider}`,borderRadius:2,color:C.sub,fontFamily:BB,fontSize:28,letterSpacing:4,cursor:"pointer",transition:"opacity 0.1s"}}>MISS</button>
             </div>
           </div>
         )}
