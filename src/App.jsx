@@ -49,7 +49,7 @@ if (typeof document !== "undefined") {
       input::placeholder { color:#52525a; }
       input:focus { border-color:#3a3a42 !important; outline:none; }
       * { -webkit-tap-highlight-color:transparent; box-sizing:border-box; margin:0; padding:0; }
-      html, body { height:100%; overflow:hidden; overscroll-behavior:none; }
+      html, body { height:100%; overflow:hidden; overscroll-behavior:none; background:#0b0b0c; }
       #root { height:100%; }
     `;
     document.head.appendChild(s);
