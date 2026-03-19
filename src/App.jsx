@@ -281,6 +281,7 @@ function AuthScreen({ onAuth }) {
   const [name,   setName]   = useState("");
   const [err,    setErr]    = useState("");
   const [loading,setLoading]= useState(false);
+  const [confirmed,setConfirmed] = useState(false);
 
   const inputStyle = {
     width:"100%", padding:"15px 16px", background:C.surface,
@@ -292,22 +293,24 @@ function AuthScreen({ onAuth }) {
   async function handleSubmit() {
     setErr(""); setLoading(true);
     if (tab==="signup") {
-      const { data, error } = await SB.auth.signUp({ email, password:pw });
+      const { data, error } = await SB.auth.signUp({
+        email, password:pw,
+        options: { data: { username: name } },
+      });
       if (error) { setErr(error.message); setLoading(false); return; }
-      if (data.user) {
-        const { error:pe } = await SB.from("profiles").insert({ id:data.user.id, username:name });
-        if (pe) { setErr(pe.message); setLoading(false); return; }
-        onAuth(data.user, name);
-      }
+      // Don't insert profile yet — user needs to confirm email first
+      setConfirmed(true);
+      setLoading(false);
+      return;
     } else {
       const { data, error } = await SB.auth.signInWithPassword({ email, password:pw });
       if (error) { setErr(error.message); setLoading(false); return; }
-      // Fetch profile — if missing (failed signup), create it now
+      // Fetch profile — if missing (first login after confirmation), create it now
       let { data:prof } = await SB.from("profiles").select("username").eq("id",data.user.id).single();
       if (!prof) {
-        const fallbackName = email.split("@")[0];
-        await SB.from("profiles").insert({ id:data.user.id, username:fallbackName });
-        prof = { username:fallbackName };
+        const uname = data.user.user_metadata?.username || email.split("@")[0];
+        await SB.from("profiles").insert({ id:data.user.id, username:uname });
+        prof = { username:uname };
       }
       onAuth(data.user, prof.username);
     }
@@ -323,32 +326,52 @@ function AuthScreen({ onAuth }) {
           <div style={{fontFamily:BB,fontSize:9,letterSpacing:5,color:C.muted}}>EKC BATTLE · UTRECHT '26</div>
         </div>
 
-        {/* Tab switcher */}
-        <div style={{display:"flex",gap:0,marginBottom:24,borderBottom:`1px solid ${C.border}`}}>
-          {["login","signup"].map(t=>(
-            <button key={t} onClick={()=>{setTab(t);setErr("");}} style={{
-              flex:1,padding:"12px 0",background:"transparent",border:"none",
-              borderBottom:`2px solid ${tab===t?C.white:"transparent"}`,
-              color:tab===t?C.white:C.muted,fontFamily:BB,fontSize:16,letterSpacing:4,
-              cursor:"pointer",transition:"all 0.15s",marginBottom:-1,
-            }}>{t==="login"?"LOG IN":"SIGN UP"}</button>
-          ))}
-        </div>
+        {confirmed ? (
+          <div className="fadeUp" style={{textAlign:"center"}}>
+            <div style={{fontFamily:BB,fontSize:28,letterSpacing:3,color:C.green,marginBottom:16}}>CHECK YOUR EMAIL</div>
+            <div style={{fontFamily:BC,fontSize:14,color:C.sub,lineHeight:1.6,letterSpacing:1,marginBottom:8}}>
+              We sent a confirmation link to
+            </div>
+            <div style={{fontFamily:BC,fontSize:15,color:C.white,fontWeight:600,letterSpacing:2,marginBottom:24}}>
+              {email}
+            </div>
+            <div style={{fontFamily:BC,fontSize:13,color:C.muted,lineHeight:1.6,letterSpacing:1,marginBottom:32}}>
+              Click the link in the email, then come back here and log in.
+            </div>
+            <BtnPrimary onClick={()=>{setConfirmed(false);setTab("login");setErr("");}}>
+              GO TO LOG IN
+            </BtnPrimary>
+          </div>
+        ) : (
+          <>
+            {/* Tab switcher */}
+            <div style={{display:"flex",gap:0,marginBottom:24,borderBottom:`1px solid ${C.border}`}}>
+              {["login","signup"].map(t=>(
+                <button key={t} onClick={()=>{setTab(t);setErr("");}} style={{
+                  flex:1,padding:"12px 0",background:"transparent",border:"none",
+                  borderBottom:`2px solid ${tab===t?C.white:"transparent"}`,
+                  color:tab===t?C.white:C.muted,fontFamily:BB,fontSize:16,letterSpacing:4,
+                  cursor:"pointer",transition:"all 0.15s",marginBottom:-1,
+                }}>{t==="login"?"LOG IN":"SIGN UP"}</button>
+              ))}
+            </div>
 
-        {tab==="signup" && (
-          <input placeholder="Username" value={name} onChange={e=>setName(e.target.value)}
-            style={inputStyle}/>
+            {tab==="signup" && (
+              <input placeholder="Username" value={name} onChange={e=>setName(e.target.value)}
+                style={inputStyle}/>
+            )}
+            <input placeholder="Email" type="email" value={email} onChange={e=>setEmail(e.target.value)}
+              style={inputStyle}/>
+            <input placeholder="Password" type="password" value={pw} onChange={e=>setPw(e.target.value)}
+              style={inputStyle} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
+
+            {err && <div style={{fontFamily:BC,fontSize:13,color:C.red,marginBottom:14,letterSpacing:3,lineHeight:1.4}}>{err}</div>}
+
+            <BtnPrimary onClick={handleSubmit} style={{marginTop:4}}>
+              {loading ? "···" : tab==="login"?"LOG IN":"CREATE ACCOUNT"}
+            </BtnPrimary>
+          </>
         )}
-        <input placeholder="Email" type="email" value={email} onChange={e=>setEmail(e.target.value)}
-          style={inputStyle}/>
-        <input placeholder="Password" type="password" value={pw} onChange={e=>setPw(e.target.value)}
-          style={inputStyle} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
-
-        {err && <div style={{fontFamily:BC,fontSize:13,color:C.red,marginBottom:14,letterSpacing:3,lineHeight:1.4}}>{err}</div>}
-
-        <BtnPrimary onClick={handleSubmit} style={{marginTop:4}}>
-          {loading ? "···" : tab==="login"?"LOG IN":"CREATE ACCOUNT"}
-        </BtnPrimary>
       </div>
     </div>
   );
