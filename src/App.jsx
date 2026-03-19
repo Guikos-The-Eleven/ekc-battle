@@ -33,10 +33,17 @@ if (typeof document !== "undefined") {
       @keyframes pop   { from{opacity:0;transform:scale(0.84)} 55%{transform:scale(1.06)} to{opacity:1;transform:scale(1)} }
       @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
       @keyframes glow  { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.72;transform:scale(1.015)} }
+      @keyframes scorePulse { 0%{transform:scale(1)} 30%{transform:scale(1.18)} 100%{transform:scale(1)} }
+      @keyframes flash { 0%{opacity:0.15} 100%{opacity:0} }
+      @keyframes slideIn { from{opacity:0;transform:translateX(-12px)} to{opacity:1;transform:translateX(0)} }
+      @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
       .rise { animation: rise 0.3s ease both }
       .pop  { animation: pop  0.38s cubic-bezier(0.34,1.56,0.64,1) both }
       .pls  { animation: pulse 1.4s ease-in-out infinite }
       .glow { animation: glow  1.1s ease-in-out infinite }
+      .scorePulse { animation: scorePulse 0.4s cubic-bezier(0.34,1.56,0.64,1) }
+      .slideIn { animation: slideIn 0.35s ease both }
+      .fadeUp { animation: fadeUp 0.4s ease both }
       .tap:active { transform:scale(0.96); opacity:0.82; }
       button:disabled { opacity:0.4; cursor:not-allowed; }
       input::placeholder { color:#52525a; }
@@ -88,15 +95,58 @@ const OPEN_TOP16 = [
 
 // ─── CPU CONFIG ──────────────────────────────────────────────────────────────
 const CPU_CFG = {
-  easy:   { base:0.48, label:"ROOKIE",  color:C.green  },
-  medium: { base:0.68, label:"AMATEUR", color:C.yellow },
-  hard:   { base:0.87, label:"PRO",     color:C.red    },
+  easy:   { base:0.48, label:"ROOKIE",  color:C.green,  thinkMs:[1400,2200] },
+  medium: { base:0.68, label:"AMATEUR", color:C.yellow, thinkMs:[1200,1800] },
+  hard:   { base:0.87, label:"PRO",     color:C.red,    thinkMs:[900,1500]  },
 };
 
-const roll = (diff, streak, streaksOn) => {
+// Haptic feedback helper (mobile vibration)
+const haptic = (ms=12) => { try { navigator?.vibrate?.(ms); } catch {} };
+
+// Momentum: recent results nudge CPU rate (last 4 outcomes tracked)
+const applyMomentum = (rate, momentum=[]) => {
+  if (momentum.length < 2) return rate;
+  const recent = momentum.slice(-4);
+  const landRate = recent.filter(Boolean).length / recent.length;
+  // If CPU has been landing a lot, slight regression; if missing, slight boost
+  const nudge = (landRate - 0.5) * -0.06; // ±3% max
+  return Math.max(0.10, Math.min(0.92, rate + nudge));
+};
+
+// Comeback: score differential adjusts rate
+const applyComeback = (rate, cpuScore, playerScore, raceTo) => {
+  const diff = playerScore - cpuScore;
+  if (diff >= 2) return Math.min(0.90, rate + 0.05);  // CPU behind by 2+: small boost
+  if (diff <= -2) return Math.max(0.15, rate - 0.04); // CPU ahead by 2+: slight nerf
+  return rate;
+};
+
+// Clutch: at match point, tension heightens
+const applyClutch = (rate, cpuScore, playerScore, raceTo) => {
+  const cpuMatchPoint = cpuScore === raceTo - 1;
+  const playerMatchPoint = playerScore === raceTo - 1;
+  if (cpuMatchPoint && playerMatchPoint) return rate + 0.03; // Double match point: CPU focuses
+  if (playerMatchPoint) return rate + 0.04;                  // Player match point: CPU desperate
+  if (cpuMatchPoint) return rate - 0.02;                     // CPU match point: slight overconfidence
+  return rate;
+};
+
+const cpuThinkTime = (diff) => {
+  const [min, max] = CPU_CFG[diff].thinkMs;
+  return min + Math.random() * (max - min);
+};
+
+const roll = (diff, streak, streaksOn, gameState={}) => {
   let r = CPU_CFG[diff].base;
+  // Apply streak modifier
   if (streaksOn && streak.active)
     r = streak.dir==="hot" ? Math.min(0.88,r+0.12) : Math.max(0.12,r-0.18);
+  // Apply momentum
+  if (gameState.cpuMomentum) r = applyMomentum(r, gameState.cpuMomentum);
+  // Apply comeback
+  if (gameState.scores) r = applyComeback(r, gameState.scores.cpu, gameState.scores.you, gameState.raceTo || 3);
+  // Apply clutch
+  if (gameState.scores) r = applyClutch(r, gameState.scores.cpu, gameState.scores.you, gameState.raceTo || 3);
   return Math.random() < r;
 };
 
@@ -188,9 +238,9 @@ function StreakDot({ streak }) {
   const hot = streak.dir==="hot";
   const col = hot?C.orange:C.blue;
   return (
-    <div className="pls" style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:4}}>
-      <div style={{width:5,height:5,borderRadius:"50%",background:col}}/>
-      <span style={{fontFamily:BC,fontSize:10,letterSpacing:3,color:col,fontWeight:600,opacity:0.85}}>
+    <div className="pls" style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:6}}>
+      <div style={{width:6,height:6,borderRadius:"50%",background:col,boxShadow:`0 0 8px ${col}80`}}/>
+      <span style={{fontFamily:BC,fontSize:10,letterSpacing:3,color:col,fontWeight:600,opacity:0.9,textShadow:`0 0 12px ${col}40`}}>
         {hot?"HOT":"COLD"}
       </span>
     </div>
@@ -198,9 +248,9 @@ function StreakDot({ streak }) {
 }
 
 const ResultRow = ({ landed }) => (
-  <div style={{borderLeft:`3px solid ${landed?C.green:C.red}`,paddingLeft:14,paddingTop:6,paddingBottom:6,marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+  <div style={{borderLeft:`3px solid ${landed?C.green:C.red}`,paddingLeft:14,paddingTop:8,paddingBottom:8,marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",background:landed?`${C.green}06`:`${C.red}06`}}>
     <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:3,fontWeight:600}}>CPU</div>
-    <div style={{fontFamily:BB,fontSize:20,letterSpacing:4,color:landed?C.green:C.red}}>
+    <div style={{fontFamily:BB,fontSize:20,letterSpacing:4,color:landed?C.green:C.red,textShadow:`0 0 20px ${landed?C.green:C.red}20`}}>
       {landed?"LANDED ✓":"MISSED ✗"}
     </div>
   </div>
@@ -612,13 +662,15 @@ export default function App() {
       }
       const winner = pLanded?"you":"cpu";
       const ns = applyStreak(p.cpuStreak,winner,streaksRef.current);
-      return {...p,cpuStreak:ns,scores:{...p.scores,[winner]:p.scores[winner]+1},winner,phase:"point"};
+      haptic(winner==="you"?20:8);
+      return {...p,cpuStreak:ns,scores:{...p.scores,[winner]:p.scores[winner]+1},winner,phase:"point",lastScoreKey:(p.lastScoreKey||0)+1};
     });
   }
 
   function onAttempt(landed) {
     const s = gsRef.current;
     if (!s) return;
+    haptic(landed?15:8);
     saveTrickAttempt(s.trick, landed);
     if (s.phase==="p_first")  setGs(p=>({...p,pResult:landed,phase:"cpu_resp"}));
     if (s.phase==="p_second") resolveCpu(landed,s.cpuFirst);
@@ -637,9 +689,9 @@ export default function App() {
     if (gs.phase==="reveal")
       t=setTimeout(()=>setGs(p=>({...p,phase:p.playerFirst?"p_first":"cpu_first"})),2000);
     else if (gs.phase==="cpu_first")
-      t=setTimeout(()=>{const s=gsRef.current;setGs(p=>({...p,cpuFirst:roll(diffRef.current,s.cpuStreak,streaksRef.current),phase:"p_second"}));},1600);
+      t=setTimeout(()=>{const s=gsRef.current;const landed=roll(diffRef.current,s.cpuStreak,streaksRef.current,{cpuMomentum:s.cpuMomentum,scores:s.scores,raceTo:raceRef.current});setGs(p=>({...p,cpuFirst:landed,cpuMomentum:[...p.cpuMomentum,landed].slice(-6),phase:"p_second"}));},cpuThinkTime(diffRef.current));
     else if (gs.phase==="cpu_resp")
-      t=setTimeout(()=>{const s=gsRef.current;resolveCpu(s.pResult,roll(diffRef.current,s.cpuStreak,streaksRef.current));},1600);
+      t=setTimeout(()=>{const s=gsRef.current;const landed=roll(diffRef.current,s.cpuStreak,streaksRef.current,{cpuMomentum:s.cpuMomentum,scores:s.scores,raceTo:raceRef.current});setGs(p=>({...p,cpuMomentum:[...p.cpuMomentum,landed].slice(-6)}));resolveCpu(s.pResult,landed);},cpuThinkTime(diffRef.current));
     else if (gs.phase==="tie")
       t=setTimeout(()=>setGs(p=>({...p,tryNum:p.tryNum+1,pResult:null,cpuFirst:null,msg:"",phase:p.playerFirst?"p_first":"cpu_first"})),1800);
     else if (gs.phase==="null")
@@ -693,7 +745,7 @@ export default function App() {
     if (mode==="cpu") {
       const init={scores:{you:0,cpu:0},pool:r.pool,trick:r.trick,tryNum:1,
         playerFirst:true,phase:"reveal",cpuStreak:{active:false,dir:"hot",left:0},
-        cpuFirst:null,pResult:null,msg:"",winner:null};
+        cpuFirst:null,pResult:null,msg:"",winner:null,cpuMomentum:[],lastScoreKey:0};
       gsRef.current=init; setGs(init);
     } else {
       const init={scores:{p1:0,p2:0},pool:r.pool,trick:r.trick,
@@ -719,7 +771,8 @@ export default function App() {
   if (authLoading) return (
     <div style={{...root,alignItems:"center",justifyContent:"center"}}>
       <div style={NOISE}/>
-      <img src={LOGO} alt="EKC" style={{width:100,height:100,objectFit:"contain",mixBlendMode:"screen"}}/>
+      <img src={LOGO} alt="EKC" className="glow" style={{width:100,height:100,objectFit:"contain",mixBlendMode:"screen"}}/>
+      <div className="fadeUp" style={{fontFamily:BB,fontSize:10,letterSpacing:6,color:C.muted,marginTop:16,animationDelay:"0.3s",animationFillMode:"both"}}>LOADING</div>
     </div>
   );
 
@@ -828,25 +881,36 @@ export default function App() {
     const { scores, won, mode:rm } = result;
     const is2p = rm==="2p";
     const winLabel = is2p?(scores.p1>=race?"P1 WINS":"P2 WINS"):(won?"YOU WIN":"CPU WINS");
+    const resultColor = won?C.green:C.red;
     return (
       <div style={{...root,justifyContent:"center"}}>
         <div style={NOISE}/>
-        <div className="pop" style={{position:"relative",zIndex:1,textAlign:"center",padding:"0 24px"}}>
-          <img src={LOGO} alt="EKC" style={{width:64,height:64,objectFit:"contain",margin:"0 auto 20px",display:"block",mixBlendMode:"screen",opacity:0.5}}/>
-          <Label style={{marginBottom:12,letterSpacing:5}}>{is2p?"Match Over":(won?"Well Done":"Keep Training")}</Label>
-          <div style={{fontFamily:BB,fontSize:62,letterSpacing:2,lineHeight:0.88,color:won?C.white:C.red}}>{winLabel}</div>
-          <Div mt={28} mb={28}/>
-          <Label style={{marginBottom:16,letterSpacing:5}}>Final Score</Label>
-          <div style={{display:"flex",justifyContent:"center",gap:32}}>
-            {(is2p?[["P1",scores.p1],["P2",scores.p2]]:[["YOU",scores.you],["CPU",scores.cpu]]).map(([l,v])=>(
-              <div key={l} style={{textAlign:"center"}}>
-                <Label style={{marginBottom:8}}>{l}</Label>
-                <div style={{fontFamily:BB,fontSize:76,lineHeight:0.9,color:C.white}}>{v}</div>
-              </div>
-            ))}
+        {/* Flash overlay on result */}
+        <div style={{position:"fixed",inset:0,background:resultColor,opacity:0,animation:"flash 0.8s ease-out",zIndex:2,pointerEvents:"none"}}/>
+        <div style={{position:"relative",zIndex:1,textAlign:"center",padding:"0 24px"}}>
+          <div className="fadeUp" style={{animationDelay:"0s"}}>
+            <img src={LOGO} alt="EKC" style={{width:64,height:64,objectFit:"contain",margin:"0 auto 20px",display:"block",mixBlendMode:"screen",opacity:0.4}}/>
           </div>
-          <div style={{marginTop:36,display:"flex",flexDirection:"column",gap:12}}>
-            <BtnPrimary onClick={()=>{setScreen("settings");setGs(null);}}>PLAY AGAIN</BtnPrimary>
+          <div className="fadeUp" style={{animationDelay:"0.1s",animationFillMode:"both"}}>
+            <Label style={{marginBottom:12,letterSpacing:5}}>{is2p?"Match Over":(won?"Well Done":"Keep Training")}</Label>
+          </div>
+          <div className="pop" style={{animationDelay:"0.15s",animationFillMode:"both"}}>
+            <div style={{fontFamily:BB,fontSize:62,letterSpacing:2,lineHeight:0.88,color:won?C.white:C.red,textShadow:`0 0 40px ${resultColor}30`}}>{winLabel}</div>
+          </div>
+          <div className="fadeUp" style={{animationDelay:"0.35s",animationFillMode:"both"}}>
+            <Div mt={28} mb={28}/>
+            <Label style={{marginBottom:16,letterSpacing:5}}>Final Score</Label>
+            <div style={{display:"flex",justifyContent:"center",gap:32}}>
+              {(is2p?[["P1",scores.p1],["P2",scores.p2]]:[["YOU",scores.you],["CPU",scores.cpu]]).map(([l,v],i)=>(
+                <div key={l} className="fadeUp" style={{textAlign:"center",animationDelay:`${0.45+i*0.1}s`,animationFillMode:"both"}}>
+                  <Label style={{marginBottom:8}}>{l}</Label>
+                  <div style={{fontFamily:BB,fontSize:76,lineHeight:0.9,color:C.white}}>{v}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="fadeUp" style={{marginTop:36,display:"flex",flexDirection:"column",gap:12,animationDelay:"0.65s",animationFillMode:"both"}}>
+            <BtnPrimary onClick={()=>{haptic(12);setScreen("settings");setGs(null);}}>PLAY AGAIN</BtnPrimary>
             {!is2p && (
               <BtnGhost color={C.sub} onClick={()=>{setScreen("stats");setGs(null);}}>VIEW STATS →</BtnGhost>
             )}
@@ -859,18 +923,21 @@ export default function App() {
 
   // ── BATTLE ───────────────────────────────────────────────────────────────────
   if (!gs) return null;
-  const {scores,trick,tryNum,playerFirst,phase,msg,cpuFirst,pResult,winner,cpuStreak}=gs;
+  const {scores,trick,tryNum,playerFirst,phase,msg,cpuFirst,pResult,winner,cpuStreak,lastScoreKey}=gs;
   const is2p = mode==="2p";
   const pk   = `${phase}-${trick}-${tryNum||0}`;
 
-  const ScoreBar = () => (
+  const ScoreBar = () => {
+    const youMatchPoint = !is2p && scores.you === race - 1;
+    const cpuMatchPoint = !is2p && scores.cpu === race - 1;
+    return (
     <div style={{padding:"20px 24px 0"}}>
       <div style={{display:"flex",alignItems:"flex-start",justifyContent:"center",gap:16}}>
         {is2p
           ? [["P1",scores.p1],["P2",scores.p2]].map(([l,v])=>(
               <div key={l} style={{flex:1,textAlign:"center"}}>
                 <Label style={{marginBottom:6,letterSpacing:4}}>{l}</Label>
-                <div style={{fontFamily:BB,fontSize:52,lineHeight:1}}>{v}</div>
+                <div key={`${l}-${v}`} className="scorePulse" style={{fontFamily:BB,fontSize:52,lineHeight:1}}>{v}</div>
                 <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:10}}>
                   {Array.from({length:race}).map((_,i)=>(
                     <div key={i} style={{width:16,height:2,background:i<v?C.white:C.border,transition:"background 0.25s"}}/>
@@ -880,21 +947,25 @@ export default function App() {
             ))
           : <>
               <div style={{flex:1,textAlign:"center"}}>
-                <Label style={{marginBottom:6,letterSpacing:4}}>You</Label>
-                <div style={{fontFamily:BB,fontSize:52,lineHeight:1}}>{scores.you}</div>
+                <Label style={{marginBottom:6,letterSpacing:4,color:youMatchPoint?C.green:C.sub}}>
+                  {youMatchPoint?"MATCH PT":"You"}
+                </Label>
+                <div key={`you-${scores.you}-${lastScoreKey}`} className={phase==="point"&&winner==="you"?"scorePulse":""} style={{fontFamily:BB,fontSize:52,lineHeight:1,textShadow:youMatchPoint?`0 0 20px ${C.green}30`:undefined}}>{scores.you}</div>
                 <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:10}}>
                   {Array.from({length:race}).map((_,i)=>(
-                    <div key={i} style={{width:16,height:2,background:i<scores.you?C.green:C.border,transition:"background 0.25s"}}/>
+                    <div key={i} style={{width:16,height:2,background:i<scores.you?C.green:C.border,transition:"background 0.25s",boxShadow:i<scores.you?`0 0 4px ${C.green}40`:undefined}}/>
                   ))}
                 </div>
               </div>
               <div style={{fontFamily:BB,fontSize:20,color:C.border,paddingTop:24}}>:</div>
               <div style={{flex:1,textAlign:"center"}}>
-                <Label style={{marginBottom:6,letterSpacing:4}}>CPU</Label>
-                <div style={{fontFamily:BB,fontSize:52,lineHeight:1}}>{scores.cpu}</div>
+                <Label style={{marginBottom:6,letterSpacing:4,color:cpuMatchPoint?C.red:C.sub}}>
+                  {cpuMatchPoint?"MATCH PT":"CPU"}
+                </Label>
+                <div key={`cpu-${scores.cpu}-${lastScoreKey}`} className={phase==="point"&&winner==="cpu"?"scorePulse":""} style={{fontFamily:BB,fontSize:52,lineHeight:1,textShadow:cpuMatchPoint?`0 0 20px ${C.red}30`:undefined}}>{scores.cpu}</div>
                 <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:10}}>
                   {Array.from({length:race}).map((_,i)=>(
-                    <div key={i} style={{width:16,height:2,background:i<scores.cpu?C.red:C.border,transition:"background 0.25s"}}/>
+                    <div key={i} style={{width:16,height:2,background:i<scores.cpu?C.red:C.border,transition:"background 0.25s",boxShadow:i<scores.cpu?`0 0 4px ${C.red}40`:undefined}}/>
                   ))}
                 </div>
                 {!is2p && <StreakDot streak={cpuStreak}/>}
@@ -905,6 +976,7 @@ export default function App() {
       <Div mt={18}/>
     </div>
   );
+  };
 
   const MenuBack = () => (
     <div style={{padding:"12px 24px 22px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -919,14 +991,14 @@ export default function App() {
     <div style={root}><div style={NOISE}/>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar/>
-        <div key={pk} className="rise" style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 28px",gap:22}}>
-          <div style={{fontFamily:BB,fontSize:10,letterSpacing:8,color:C.muted}}>NEXT TRICK</div>
-          <div style={{borderLeft:`3px solid ${C.white}`,paddingLeft:20}}>
-            <div style={{fontFamily:BB,fontSize:40,letterSpacing:2,lineHeight:1.1,color:C.white}}>{trick}</div>
+        <div key={pk} style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 28px",gap:22}}>
+          <div className="slideIn" style={{fontFamily:BB,fontSize:10,letterSpacing:8,color:C.muted,animationDelay:"0s"}}>NEXT TRICK</div>
+          <div className="slideIn" style={{borderLeft:`3px solid ${C.white}`,paddingLeft:20,animationDelay:"0.08s",animationFillMode:"both"}}>
+            <div style={{fontFamily:BB,fontSize:trick.length>40?32:40,letterSpacing:2,lineHeight:1.1,color:C.white}}>{trick}</div>
           </div>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div className="fadeUp" style={{display:"flex",alignItems:"center",gap:10,animationDelay:"0.2s",animationFillMode:"both"}}>
             <div style={{width:20,height:1,background:C.border}}/>
-            <div style={{fontFamily:BB,fontSize:10,letterSpacing:6,color:C.muted}}>
+            <div style={{fontFamily:BB,fontSize:10,letterSpacing:6,color:playerFirst?C.green:C.red}}>
               {is2p?(playerFirst?"P1 FIRST":"P2 FIRST"):(playerFirst?"YOU FIRST":"CPU FIRST")}
             </div>
           </div>
@@ -986,9 +1058,9 @@ export default function App() {
         {phase==="p_first" && (
           <div key={pk} className="rise" style={{flex:1,display:"flex",flexDirection:"column",padding:"0 24px 28px"}}>
             <div style={{flex:1}}/>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-              <button className="tap" onClick={()=>onAttempt(true)} style={{padding:"0",height:120,background:C.green,border:"none",borderRadius:2,color:C.bg,fontFamily:BB,fontSize:32,letterSpacing:4,cursor:"pointer",transition:"opacity 0.1s"}}>LAND</button>
-              <button className="tap" onClick={()=>onAttempt(false)} style={{padding:"0",height:120,background:"transparent",border:`1px solid ${C.divider}`,borderRadius:2,color:C.sub,fontFamily:BB,fontSize:32,letterSpacing:4,cursor:"pointer",transition:"opacity 0.1s"}}>MISS</button>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+              <button className="tap" onClick={()=>onAttempt(true)} style={{padding:"0",height:120,background:C.green,border:"none",borderRadius:2,color:C.bg,fontFamily:BB,fontSize:32,letterSpacing:4,cursor:"pointer",transition:"all 0.1s",boxShadow:`0 0 24px ${C.green}25`}}>LAND</button>
+              <button className="tap" onClick={()=>onAttempt(false)} style={{padding:"0",height:120,background:`${C.red}08`,border:`1px solid ${C.red}30`,borderRadius:2,color:`${C.red}cc`,fontFamily:BB,fontSize:32,letterSpacing:4,cursor:"pointer",transition:"all 0.1s"}}>MISS</button>
             </div>
           </div>
         )}
@@ -1004,13 +1076,13 @@ export default function App() {
           <div key={pk} className="rise" style={{flex:1,display:"flex",flexDirection:"column",padding:"0 24px 28px"}}>
             <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4}}>
               <div style={{fontFamily:BB,fontSize:11,letterSpacing:8,color:C.muted}}>CPU</div>
-              <div style={{fontFamily:BB,fontSize:64,letterSpacing:3,lineHeight:0.9,color:cpuFirst?C.green:C.red}}>
+              <div style={{fontFamily:BB,fontSize:64,letterSpacing:3,lineHeight:0.9,color:cpuFirst?C.green:C.red,textShadow:`0 0 30px ${cpuFirst?C.green:C.red}25`}}>
                 {cpuFirst?"LANDED":"MISSED"}
               </div>
             </div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-              <button className="tap" onClick={()=>onAttempt(true)} style={{padding:"0",height:100,background:C.green,border:"none",borderRadius:2,color:C.bg,fontFamily:BB,fontSize:28,letterSpacing:4,cursor:"pointer",transition:"opacity 0.1s"}}>LAND</button>
-              <button className="tap" onClick={()=>onAttempt(false)} style={{padding:"0",height:100,background:"transparent",border:`1px solid ${C.divider}`,borderRadius:2,color:C.sub,fontFamily:BB,fontSize:28,letterSpacing:4,cursor:"pointer",transition:"opacity 0.1s"}}>MISS</button>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+              <button className="tap" onClick={()=>onAttempt(true)} style={{padding:"0",height:100,background:C.green,border:"none",borderRadius:2,color:C.bg,fontFamily:BB,fontSize:28,letterSpacing:4,cursor:"pointer",transition:"all 0.1s",boxShadow:`0 0 20px ${C.green}20`}}>LAND</button>
+              <button className="tap" onClick={()=>onAttempt(false)} style={{padding:"0",height:100,background:`${C.red}08`,border:`1px solid ${C.red}30`,borderRadius:2,color:`${C.red}cc`,fontFamily:BB,fontSize:28,letterSpacing:4,cursor:"pointer",transition:"all 0.1s"}}>MISS</button>
             </div>
           </div>
         )}
@@ -1018,7 +1090,7 @@ export default function App() {
         {phase==="cpu_resp" && (
           <div key={pk} className="rise" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6}}>
             <div style={{fontFamily:BB,fontSize:11,letterSpacing:8,color:C.muted}}>YOU</div>
-            <div style={{fontFamily:BB,fontSize:64,letterSpacing:3,lineHeight:0.9,color:pResult?C.green:C.red,marginBottom:24}}>{pResult?"LANDED":"MISSED"}</div>
+            <div style={{fontFamily:BB,fontSize:64,letterSpacing:3,lineHeight:0.9,color:pResult?C.green:C.red,marginBottom:24,textShadow:`0 0 30px ${pResult?C.green:C.red}25`}}>{pResult?"LANDED":"MISSED"}</div>
             <div style={{fontFamily:BB,fontSize:11,letterSpacing:8,color:C.muted}}>CPU</div>
             <div className="pls" style={{fontFamily:BB,fontSize:52,letterSpacing:6,color:C.white}}><Dots/></div>
           </div>
@@ -1034,33 +1106,37 @@ export default function App() {
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar/>
         <div key={pk} className="pop" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8}}>
-          <div style={{fontFamily:BB,fontSize:56,letterSpacing:2,lineHeight:0.9,color:C.white}}>{msg}</div>
-          <div style={{fontFamily:BB,fontSize:11,letterSpacing:8,color:C.muted,marginTop:8}}>TRY {Math.min(tryNum+1,3)} OF 3</div>
+          <div style={{fontFamily:BB,fontSize:56,letterSpacing:2,lineHeight:0.9,color:C.white,textShadow:`0 0 30px ${C.white}10`}}>{msg}</div>
+          <div style={{fontFamily:BB,fontSize:11,letterSpacing:8,color:C.yellow,marginTop:8}}>TRY {Math.min(tryNum+1,3)} OF 3</div>
         </div>
       </div>
     </div>
   );
 
-  if (phase==="point") return (
+  if (phase==="point") {
+    const pointColor = winner==="you"?C.green:C.red;
+    return (
     <div style={root}><div style={NOISE}/>
+      <div style={{position:"fixed",inset:0,background:pointColor,opacity:0,animation:"flash 0.6s ease-out",zIndex:3,pointerEvents:"none"}}/>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar/>
         <div key={pk} className="pop" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center"}}>
-          <div style={{fontFamily:BB,fontSize:52,letterSpacing:2,color:winner==="you"?C.green:C.red}}>
+          <div style={{fontFamily:BB,fontSize:52,letterSpacing:2,color:pointColor,textShadow:`0 0 40px ${pointColor}30`}}>
             {winner==="you"?"YOU SCORED":"CPU SCORED"}
           </div>
         </div>
       </div>
     </div>
-  );
+    );
+  }
 
   if (phase==="null") return (
     <div style={root}><div style={NOISE}/>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar/>
         <div key={pk} className="rise" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10}}>
-          <div style={{fontFamily:BB,fontSize:42,letterSpacing:2,color:C.sub}}>TRICK NULLED</div>
-          <div style={{fontFamily:BC,fontSize:13,color:C.muted,letterSpacing:3}}>Moving on...</div>
+          <div style={{fontFamily:BB,fontSize:42,letterSpacing:2,color:C.sub,textShadow:`0 0 20px ${C.sub}10`}}>TRICK NULLED</div>
+          <div style={{fontFamily:BC,fontSize:13,color:C.muted,letterSpacing:3,fontWeight:600}}>Next trick loading...</div>
         </div>
       </div>
     </div>
