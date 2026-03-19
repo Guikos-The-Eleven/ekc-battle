@@ -304,25 +304,65 @@ function StatsScreen({ user, username, onBack }) {
   useEffect(()=>{
     SB.from("match_results").select("*").eq("user_id",user.id).order("created_at",{ascending:false})
       .then(({data})=>setMatches(data||[]));
-    SB.from("trick_attempts").select("trick,landed").eq("user_id",user.id)
+    SB.from("trick_attempts").select("trick,landed,competition").eq("user_id",user.id)
       .then(({data})=>setAttempts(data||[]));
   },[]);
 
-  const wins  = matches?.filter(m=>m.won).length||0;
-  const total = matches?.length||0;
+  const DIVISIONS = [
+    { key:"am_open", label:"AM OPEN" },
+    { key:"open",    label:"PRO OPEN" },
+  ];
+  const DIFFICULTIES = ["easy","medium","hard"];
+  const DIFF_LABELS  = { easy:"ROOKIE", medium:"AMATEUR", hard:"PRO" };
 
-  // Aggregate landing rate per trick
+  // Build per-division match stats
+  const matchStats = DIVISIONS.map(div=>{
+    const divMatches = (matches||[]).filter(m=>m.competition===div.key);
+    const byDiff = DIFFICULTIES.map(d=>{
+      const sub = divMatches.filter(m=>m.difficulty===d);
+      const w = sub.filter(m=>m.won).length;
+      return { diff:d, wins:w, losses:sub.length-w, total:sub.length };
+    }).filter(d=>d.total>0);
+    return { ...div, total:divMatches.length, byDiff };
+  }).filter(d=>d.total>0);
+
+  // Build per-division trick stats
   const trickStats = {};
   (attempts||[]).forEach(a=>{
-    if (!trickStats[a.trick]) trickStats[a.trick]={land:0,miss:0};
-    if (a.landed) trickStats[a.trick].land++;
-    else trickStats[a.trick].miss++;
+    const div = a.competition||"am_open";
+    if (!trickStats[div]) trickStats[div]={};
+    if (!trickStats[div][a.trick]) trickStats[div][a.trick]={land:0,miss:0};
+    if (a.landed) trickStats[div][a.trick].land++;
+    else trickStats[div][a.trick].miss++;
   });
-  const trickList = Object.entries(trickStats)
-    .map(([t,s])=>({ trick:t, rate:Math.round(s.land/(s.land+s.miss)*100), attempts:s.land+s.miss }))
-    .sort((a,b)=>b.attempts-a.attempts);
+
+  const trickDivisions = DIVISIONS.map(div=>{
+    const stats = trickStats[div.key]||{};
+    const list = Object.entries(stats)
+      .map(([t,s])=>({ trick:t, rate:Math.round(s.land/(s.land+s.miss)*100), att:s.land+s.miss }))
+      .sort((a,b)=>b.att-a.att);
+    return { ...div, list };
+  }).filter(d=>d.list.length>0);
 
   const root = {fontFamily:BC,background:C.bg,color:C.white,height:"100dvh",maxWidth:440,margin:"0 auto",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"};
+
+  const TrickRow = ({trick,rate,att}) => {
+    const col = rate>=70?C.green:rate>=40?C.yellow:C.red;
+    return (
+      <div style={{marginBottom:14}}>
+        <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+          <div style={{fontFamily:BC,fontSize:13,color:C.sub,fontWeight:600,flex:1,paddingRight:12,lineHeight:1.3}}>{trick}</div>
+          <div style={{fontFamily:BB,fontSize:16,letterSpacing:2,color:col,whiteSpace:"nowrap"}}>{rate}%</div>
+        </div>
+        <div style={{display:"flex",gap:4,alignItems:"center"}}>
+          <div style={{flex:1,height:2,background:C.border}}>
+            <div style={{height:2,background:col,width:`${rate}%`,transition:"width 0.4s ease"}}/>
+          </div>
+          <div style={{fontFamily:BC,fontSize:10,color:C.muted,letterSpacing:1,marginLeft:6}}>{att} tries</div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div style={root}>
@@ -337,64 +377,60 @@ function StatsScreen({ user, username, onBack }) {
 
         <Div mb={24}/>
 
-        {/* Win/loss */}
-        <Label style={{marginBottom:12,letterSpacing:5}}>Record vs CPU</Label>
+        {/* ── RECORD VS CPU ── */}
+        <Label style={{marginBottom:20,letterSpacing:5}}>Record vs CPU</Label>
         {matches===null ? (
-          <div style={{fontFamily:BC,fontSize:14,color:C.muted}}>Loading...</div>
-        ) : total===0 ? (
-          <div style={{fontFamily:BC,fontSize:14,color:C.muted}}>No matches yet. Play vs CPU to see your stats.</div>
+          <div style={{fontFamily:BC,fontSize:14,color:C.muted,marginBottom:28}}>Loading...</div>
+        ) : matchStats.length===0 ? (
+          <div style={{fontFamily:BC,fontSize:14,color:C.muted,marginBottom:28}}>No matches yet. Play vs CPU to see your stats.</div>
         ) : (
-          <div style={{display:"flex",gap:12,marginBottom:28}}>
-            {[["WINS",wins,C.green],["LOSSES",total-wins,C.red],["MATCHES",total,C.sub]].map(([l,v,col])=>(
-              <div key={l} style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:2,padding:"14px 12px",textAlign:"center"}}>
-                <div style={{fontFamily:BB,fontSize:32,lineHeight:0.9,color:col}}>{v}</div>
-                <div style={{fontFamily:BB,fontSize:9,letterSpacing:4,color:C.muted,marginTop:6}}>{l}</div>
+          matchStats.map(div=>(
+            <div key={div.key} style={{marginBottom:28}}>
+              {/* Division header */}
+              <div style={{fontFamily:BB,fontSize:14,letterSpacing:5,color:C.white,marginBottom:14,borderLeft:`3px solid ${C.white}`,paddingLeft:12}}>
+                {div.label}
               </div>
-            ))}
-          </div>
-        )}
-
-        {/* Win rate bar */}
-        {total>0 && (
-          <div style={{marginBottom:28}}>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-              <Label>Win Rate</Label>
-              <Label style={{color:C.white}}>{Math.round(wins/total*100)}%</Label>
+              {/* Per-difficulty rows */}
+              {div.byDiff.map(d=>{
+                const rate = Math.round(d.wins/d.total*100);
+                const col  = rate>=60?C.green:rate>=40?C.yellow:C.red;
+                return (
+                  <div key={d.diff} style={{marginBottom:14}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:5}}>
+                      <div style={{fontFamily:BB,fontSize:12,letterSpacing:5,color:C.muted}}>{DIFF_LABELS[d.diff]}</div>
+                      <div style={{display:"flex",gap:16,alignItems:"baseline"}}>
+                        <span style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:C.green}}>{d.wins}W</span>
+                        <span style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:C.red}}>{d.losses}L</span>
+                        <span style={{fontFamily:BB,fontSize:14,letterSpacing:2,color:col}}>{rate}%</span>
+                      </div>
+                    </div>
+                    <div style={{height:2,background:C.border}}>
+                      <div style={{height:2,background:col,width:`${rate}%`,transition:"width 0.5s ease"}}/>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <div style={{height:3,background:C.border,borderRadius:0}}>
-              <div style={{height:3,background:C.green,width:`${wins/total*100}%`,transition:"width 0.5s ease"}}/>
-            </div>
-          </div>
+          ))
         )}
 
         <Div mb={24}/>
 
-        {/* Trick landing rates */}
-        <Label style={{marginBottom:16,letterSpacing:5}}>Landing Rate per Trick</Label>
+        {/* ── LANDING RATE PER TRICK ── */}
+        <Label style={{marginBottom:20,letterSpacing:5}}>Landing Rate per Trick</Label>
         {attempts===null ? (
           <div style={{fontFamily:BC,fontSize:14,color:C.muted}}>Loading...</div>
-        ) : trickList.length===0 ? (
+        ) : trickDivisions.length===0 ? (
           <div style={{fontFamily:BC,fontSize:14,color:C.muted}}>No trick data yet.</div>
         ) : (
-          <div style={{display:"flex",flexDirection:"column",gap:12}}>
-            {trickList.map(({trick,rate,attempts:att})=>{
-              const col = rate>=70?C.green:rate>=40?C.yellow:C.red;
-              return (
-                <div key={trick}>
-                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                    <div style={{fontFamily:BC,fontSize:13,color:C.sub,fontWeight:600,flex:1,paddingRight:12,lineHeight:1.3}}>{trick}</div>
-                    <div style={{fontFamily:BB,fontSize:16,letterSpacing:2,color:col,whiteSpace:"nowrap"}}>{rate}%</div>
-                  </div>
-                  <div style={{display:"flex",gap:4,alignItems:"center"}}>
-                    <div style={{flex:1,height:2,background:C.border}}>
-                      <div style={{height:2,background:col,width:`${rate}%`,transition:"width 0.4s ease"}}/>
-                    </div>
-                    <div style={{fontFamily:BC,fontSize:10,color:C.muted,letterSpacing:1,marginLeft:6}}>{att} tries</div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          trickDivisions.map(div=>(
+            <div key={div.key} style={{marginBottom:32}}>
+              <div style={{fontFamily:BB,fontSize:14,letterSpacing:5,color:C.white,marginBottom:16,borderLeft:`3px solid ${C.white}`,paddingLeft:12}}>
+                {div.label}
+              </div>
+              {div.list.map(t=><TrickRow key={t.trick} {...t}/>)}
+            </div>
+          ))
         )}
       </div>
     </div>
