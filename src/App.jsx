@@ -407,7 +407,8 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
   const [attempts, setAttempts] = useState(null);
   const [history,  setHistory]  = useState(null);
   const [tab,      setTab]      = useState("record");
-  const [expandedMatch, setExpandedMatch] = useState(null);   // "record" | "tricks" | "history"
+  const [expandedMatch, setExpandedMatch] = useState(null);
+  const [confirmReset, setConfirmReset] = useState(false);   // "record" | "tricks" | "history"
 
   // Build available divisions from all comps
   const allDivisions = COMPS.flatMap(c => c.divisions.map(d => ({
@@ -748,6 +749,40 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
               </>
             );
           })()}
+
+          {/* Reset stats */}
+          {!loading && (
+            <div style={{marginTop:40,paddingTop:24,borderTop:`1px solid ${C.divider}`}}>
+              {!confirmReset ? (
+                <button className="tap" onClick={()=>setConfirmReset(true)} style={{
+                  width:"100%",padding:"14px 0",background:"transparent",border:"none",
+                  fontFamily:BB,fontSize:11,letterSpacing:5,color:C.muted,cursor:"pointer",
+                  opacity:0.5,transition:"opacity 0.15s",
+                }}>RESET ALL STATS</button>
+              ) : (
+                <div className="fadeUp" style={{textAlign:"center"}}>
+                  <div style={{fontFamily:BC,fontSize:13,color:C.red,letterSpacing:2,fontWeight:600,marginBottom:14,lineHeight:1.5}}>
+                    This will permanently delete all your match history and trick data. Are you sure?
+                  </div>
+                  <div style={{display:"flex",gap:10}}>
+                    <button className="tap" onClick={()=>setConfirmReset(false)} style={{
+                      flex:1,padding:"14px 0",background:"transparent",border:`1px solid ${C.border}`,
+                      borderRadius:R,fontFamily:BB,fontSize:13,letterSpacing:4,color:C.sub,cursor:"pointer",
+                    }}>CANCEL</button>
+                    <button className="tap" onClick={async()=>{
+                      await SB.from("match_results").delete().eq("user_id",user.id);
+                      await SB.from("trick_attempts").delete().eq("user_id",user.id);
+                      setMatches([]); setAttempts([]); setHistory([]);
+                      setConfirmReset(false);
+                    }} style={{
+                      flex:1,padding:"14px 0",background:`${C.red}15`,border:`1px solid ${C.red}40`,
+                      borderRadius:R,fontFamily:BB,fontSize:13,letterSpacing:4,color:C.red,cursor:"pointer",
+                    }}>DELETE ALL</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
