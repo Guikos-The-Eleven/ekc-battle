@@ -103,6 +103,7 @@ const COMPS = [
   {
     key:"ekc_2026", name:"EKC 2026", full:"European Kendama Championship",
     location:"Utrecht, NL · May 22–23",
+    ig:{ href:"https://instagram.com/eukendamachamp", label:"eukendamachamp" },
     divisions:[
       { key:"am_open", name:"AM OPEN", badge:"20 TRICKS", tricks:AM_TRICKS },
       { key:"open", name:"PRO OPEN", badge:"15+ TRICKS", trickSets:[
@@ -277,14 +278,14 @@ const IgIcon = ({ size=14, color=C.muted }) => (
   </svg>
 );
 
-const IgLink = ({ size=14, fontSize=12, style={} }) => (
-  <a href="https://instagram.com/kendamanxs" target="_blank" rel="noopener noreferrer" style={{
+const IgLink = ({ size=14, fontSize=12, href="https://instagram.com/kendamanxs", label="kendamanxs", style={} }) => (
+  <a href={href} target="_blank" rel="noopener noreferrer" style={{
     fontFamily:BC,fontSize,letterSpacing:3,color:C.muted,fontWeight:600,
     textDecoration:"none",display:"inline-flex",alignItems:"center",gap:6,
     transition:"opacity 0.15s",...style,
   }}>
     <IgIcon size={size} color={C.muted}/>
-    @kendamanxs
+    {label}
   </a>
 );
 
@@ -335,8 +336,8 @@ function AuthScreen({ onAuth, onGuest }) {
       <div style={{position:"relative",zIndex:1,width:"100%"}}>
         <div style={{textAlign:"center",marginBottom:36}}>
           <img src={LOGO} alt="NXS" style={{width:120,height:120,objectFit:"contain",marginBottom:12,display:"block",margin:"0 auto 12px"}}/>
-          <div style={{fontFamily:BB,fontSize:9,letterSpacing:5,color:C.muted}}>NXS BATTLE · KENDAMA TRAINER</div>
-          <div style={{marginTop:8,textAlign:"center",display:"flex",justifyContent:"center"}}>
+          <div style={{fontFamily:BB,fontSize:11,letterSpacing:6,color:C.muted}}>COMP GRIND</div>
+          <div style={{marginTop:8,display:"flex",justifyContent:"center"}}>
             <IgLink size={13} fontSize={11}/>
           </div>
         </div>
@@ -941,8 +942,8 @@ export default function App() {
           <img src={LOGO} alt="NXS" style={{width:250,height:250,objectFit:"contain"}}/>
         </div>
 
-        <div style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.sub,marginBottom:6,textAlign:"center"}}>
-          KENDAMA NXS · BATTLE TRAINER
+        <div style={{fontFamily:BB,fontSize:12,letterSpacing:6,color:C.sub,marginBottom:6,textAlign:"center"}}>
+          COMP GRIND
         </div>
         <div style={{marginBottom:24,display:"flex",justifyContent:"center"}}>
           <IgLink size={14} fontSize={12}/>
@@ -1008,7 +1009,8 @@ export default function App() {
           ))}
         </div>
         <div style={{flex:1}}/>
-        <div style={{display:"flex",justifyContent:"center",opacity:0.6}}>
+        <div style={{display:"flex",justifyContent:"center",gap:20,opacity:0.6}}>
+          {selectedComp.ig && <IgLink size={13} fontSize={11} href={selectedComp.ig.href} label={selectedComp.ig.label}/>}
           <IgLink size={13} fontSize={11}/>
         </div>
       </div>
@@ -1166,7 +1168,7 @@ export default function App() {
     <div style={{padding:"12px 24px calc(22px + env(safe-area-inset-bottom, 0px))",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
       <button onClick={()=>setScreen("settings")} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:11,letterSpacing:5,cursor:"pointer",padding:0}}>← MENU</button>
       <div style={{fontFamily:BB,fontSize:9,letterSpacing:4,color:C.muted}}>
-        NXS BATTLE
+        COMP GRIND
       </div>
     </div>
   );
