@@ -406,7 +406,8 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
   const [matches,  setMatches]  = useState(null);
   const [attempts, setAttempts] = useState(null);
   const [history,  setHistory]  = useState(null);
-  const [tab,      setTab]      = useState("record");   // "record" | "tricks" | "history"
+  const [tab,      setTab]      = useState("record");
+  const [expandedMatch, setExpandedMatch] = useState(null);   // "record" | "tricks" | "history"
 
   // Build available divisions from all comps
   const allDivisions = COMPS.flatMap(c => c.divisions.map(d => ({
@@ -499,7 +500,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
           {/* Division switcher */}
           <div style={{display:"flex",gap:0,marginBottom:0}}>
             {allDivisions.map(d=>(
-              <button key={d.dbKey} onClick={()=>setDivKey(d.dbKey)} style={{
+              <button key={d.dbKey} onClick={()=>{setDivKey(d.dbKey);setExpandedMatch(null);}} style={{
                 flex:1,padding:"10px 0",background:"transparent",border:"none",
                 borderBottom:`2px solid ${divKey===d.dbKey?C.white:"transparent"}`,
                 color:divKey===d.dbKey?C.white:C.muted,
@@ -513,7 +514,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
           {/* Tab switcher: RECORD | TRICKS | HISTORY */}
           <div style={{display:"flex",gap:0,marginTop:0}}>
             {[["record","RECORD"],["tricks","TRICKS"],["history","HISTORY"]].map(([k,l])=>(
-              <button key={k} onClick={()=>setTab(k)} style={{
+              <button key={k} onClick={()=>{setTab(k);setExpandedMatch(null);}} style={{
                 flex:1,padding:"12px 0",background:"transparent",border:"none",
                 borderBottom:`2px solid ${tab===k?C.white:"transparent"}`,
                 color:tab===k?C.white:C.muted,
@@ -638,6 +639,13 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                 No match history yet for {currentDivLabel}.<br/>Play vs CPU to start tracking.
               </div>
             );
+
+            const parseLog = (m) => {
+              if (!m.game_log) return null;
+              try { return typeof m.game_log==="string" ? JSON.parse(m.game_log) : m.game_log; }
+              catch { return null; }
+            };
+
             return (
               <>
                 <Label style={{marginBottom:16,letterSpacing:4}}>Last {rows.length} Matches</Label>
@@ -646,25 +654,94 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                   const diffCol = DIFF_COLORS[m.difficulty]||C.sub;
                   const date = new Date(m.created_at);
                   const dateStr = `${date.getDate()}/${date.getMonth()+1}`;
+                  const isOpen = expandedMatch===(m.id||i);
+                  const log = parseLog(m);
+                  const canExpand = !!log;
+
                   return (
                     <div key={m.id||i} className="fadeUp" style={{
-                      borderLeft:`3px solid ${col}`,paddingLeft:14,paddingTop:12,paddingBottom:12,
-                      marginBottom:8,display:"flex",alignItems:"center",justifyContent:"space-between",
-                      background:`${col}06`,animationDelay:`${i*0.04}s`,animationFillMode:"both",
-                    }}>
-                      <div style={{display:"flex",alignItems:"center",gap:12}}>
-                        <div style={{fontFamily:BB,fontSize:20,letterSpacing:2,color:col,width:24}}>{m.won?"W":"L"}</div>
-                        <div style={{fontFamily:BB,fontSize:22,letterSpacing:1,color:C.white}}>
-                          {m.your_score}–{m.cpu_score}
+                      borderLeft:`3px solid ${col}`,paddingLeft:14,
+                      marginBottom:8,background:`${col}06`,
+                      animationDelay:`${i*0.04}s`,animationFillMode:"both",
+                      cursor:canExpand?"pointer":"default",
+                    }} onClick={()=>canExpand && setExpandedMatch(isOpen?null:(m.id||i))}>
+
+                      {/* Summary row */}
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
+                        paddingTop:12,paddingBottom:isOpen&&log?6:12}}>
+                        <div style={{display:"flex",alignItems:"center",gap:12}}>
+                          <div style={{fontFamily:BB,fontSize:20,letterSpacing:2,color:col,width:24}}>{m.won?"W":"L"}</div>
+                          <div style={{fontFamily:BB,fontSize:22,letterSpacing:1,color:C.white}}>
+                            {m.your_score}–{m.cpu_score}
+                          </div>
+                        </div>
+                        <div style={{display:"flex",alignItems:"center",gap:12}}>
+                          <div style={{
+                            fontFamily:BB,fontSize:10,letterSpacing:3,color:diffCol,
+                            border:`1px solid ${diffCol}30`,padding:"4px 8px",borderRadius:R,
+                          }}>{DIFF_LABELS[m.difficulty]||m.difficulty}</div>
+                          <div style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,minWidth:36,textAlign:"right"}}>{dateStr}</div>
+                          {canExpand && (
+                            <div style={{fontFamily:BB,fontSize:10,color:C.muted,transition:"transform 0.2s",
+                              transform:isOpen?"rotate(180deg)":"rotate(0deg)"}}>▾</div>
+                          )}
                         </div>
                       </div>
-                      <div style={{display:"flex",alignItems:"center",gap:12}}>
-                        <div style={{
-                          fontFamily:BB,fontSize:10,letterSpacing:3,color:diffCol,
-                          border:`1px solid ${diffCol}30`,padding:"4px 8px",borderRadius:R,
-                        }}>{DIFF_LABELS[m.difficulty]||m.difficulty}</div>
-                        <div style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,minWidth:36,textAlign:"right"}}>{dateStr}</div>
-                      </div>
+
+                      {/* Expanded trick detail */}
+                      {isOpen && log && (
+                        <div style={{paddingBottom:14,paddingTop:4,borderTop:`1px solid ${C.divider}`}} onClick={e=>e.stopPropagation()}>
+                          {/* Legend */}
+                          <div style={{display:"flex",gap:16,marginBottom:10,marginTop:6}}>
+                            <div style={{display:"flex",alignItems:"center",gap:4}}>
+                              <div style={{width:6,height:6,borderRadius:"50%",background:C.sub,opacity:0.85}}/>
+                              <span style={{fontFamily:BC,fontSize:9,color:C.muted,letterSpacing:1,fontWeight:600}}>YOU</span>
+                            </div>
+                            <div style={{display:"flex",alignItems:"center",gap:4}}>
+                              <div style={{width:6,height:6,borderRadius:"50%",background:C.sub,opacity:0.4}}/>
+                              <span style={{fontFamily:BC,fontSize:9,color:C.muted,letterSpacing:1,fontWeight:600}}>CPU</span>
+                            </div>
+                            <span style={{color:C.border}}>·</span>
+                            <div style={{display:"flex",alignItems:"center",gap:4}}>
+                              <div style={{width:6,height:6,borderRadius:"50%",background:C.green}}/>
+                              <span style={{fontFamily:BC,fontSize:9,color:C.muted,letterSpacing:1,fontWeight:600}}>LAND</span>
+                            </div>
+                            <div style={{display:"flex",alignItems:"center",gap:4}}>
+                              <div style={{width:6,height:6,borderRadius:"50%",background:C.red}}/>
+                              <span style={{fontFamily:BC,fontSize:9,color:C.muted,letterSpacing:1,fontWeight:600}}>MISS</span>
+                            </div>
+                          </div>
+
+                          {log.map((t,ti)=>{
+                            const rc = t.result==="you"?C.green:t.result==="cpu"?C.red:C.muted;
+                            const rl = t.result==="you"?"YOU":t.result==="cpu"?"CPU":"NULL";
+                            return (
+                              <div key={ti} style={{borderLeft:`2px solid ${rc}`,paddingLeft:10,marginBottom:ti<log.length-1?10:0,paddingTop:2,paddingBottom:2}}>
+                                <div style={{fontFamily:BC,fontSize:11,color:C.sub,fontWeight:600,lineHeight:1.3,marginBottom:4}}>
+                                  {t.trick}
+                                </div>
+                                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                                  <span style={{fontFamily:BB,fontSize:9,letterSpacing:2,color:C.muted}}>
+                                    {t.playerFirst?"YOU 1ST":"CPU 1ST"}
+                                  </span>
+                                  <span style={{color:C.border}}>·</span>
+                                  {/* Try indicators */}
+                                  {t.tries.map((tr,j)=>(
+                                    <div key={j} style={{display:"inline-flex",alignItems:"center",gap:3}}>
+                                      <div title="You" style={{width:6,height:6,borderRadius:"50%",background:tr.you?C.green:C.red,opacity:0.85}}/>
+                                      <div title="CPU" style={{width:6,height:6,borderRadius:"50%",background:tr.cpu?C.green:C.red,opacity:0.45}}/>
+                                      {j<t.tries.length-1 && <span style={{color:C.border,fontSize:8,margin:"0 1px"}}>·</span>}
+                                    </div>
+                                  ))}
+                                  <span style={{fontFamily:BB,fontSize:9,letterSpacing:2,color:rc,marginLeft:"auto"}}>
+                                    {rl}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -761,12 +838,19 @@ export default function App() {
   async function saveMatchResult(scores, won) {
     const u = userRef.current;
     if (!u) return;
-    const { error } = await SB.from("match_results").insert({
+    const s = gsRef.current;
+    const base = {
       user_id:u.id, competition:compDbKeyRef.current||"unknown",
       difficulty:diffRef.current, race_to:raceRef.current,
       won, your_score:scores.you, cpu_score:scores.cpu,
-    });
-    if (error) console.error("match_results insert:", error.message);
+    };
+    const payload = s?.gameLog?.length ? {...base, game_log:JSON.stringify(s.gameLog)} : base;
+    const { error } = await SB.from("match_results").insert(payload);
+    if (error) {
+      // Retry without game_log in case column doesn't exist yet
+      const { error:e2 } = await SB.from("match_results").insert(base);
+      if (e2) console.error("match_results insert:", e2.message);
+    }
   }
 
   // ── FIXED: allTricks now uses selectedDiv ──
@@ -783,15 +867,21 @@ export default function App() {
   // ── CPU logic ────────────────────────────────────────────────────────────────
   function resolveCpu(pLanded, cLanded) {
     setGs(p=>{
+      const newTries = [...(p.currentTries||[]), {you:pLanded, cpu:cLanded}];
       if (pLanded===cLanded) {
         const ns = applyStreak(p.cpuStreak,"null",streaksRef.current);
-        if (p.tryNum>=3) return {...p,cpuStreak:ns,phase:"null"};
-        return {...p,cpuStreak:ns,phase:"tie",msg:pLanded?"BOTH LANDED":"BOTH MISSED"};
+        if (p.tryNum>=3) {
+          const entry = {trick:p.trick, playerFirst:p.playerFirst, tries:newTries, result:"null"};
+          return {...p,cpuStreak:ns,phase:"null",gameLog:[...(p.gameLog||[]),entry],currentTries:[]};
+        }
+        return {...p,cpuStreak:ns,phase:"tie",msg:pLanded?"BOTH LANDED":"BOTH MISSED",currentTries:newTries};
       }
       const winner = pLanded?"you":"cpu";
       const ns = applyStreak(p.cpuStreak,winner,streaksRef.current);
       haptic(winner==="you"?20:8);
-      return {...p,cpuStreak:ns,scores:{...p.scores,[winner]:p.scores[winner]+1},winner,phase:"point",lastScoreKey:(p.lastScoreKey||0)+1};
+      const entry = {trick:p.trick, playerFirst:p.playerFirst, tries:newTries, result:winner};
+      return {...p,cpuStreak:ns,scores:{...p.scores,[winner]:p.scores[winner]+1},winner,phase:"point",
+        lastScoreKey:(p.lastScoreKey||0)+1,gameLog:[...(p.gameLog||[]),entry],currentTries:[]};
     });
   }
 
@@ -873,7 +963,8 @@ export default function App() {
     if (mode==="cpu") {
       const init={scores:{you:0,cpu:0},pool:r.pool,trick:r.trick,tryNum:1,
         playerFirst:true,phase:"reveal",cpuStreak:{active:false,dir:"hot",left:0},
-        cpuFirst:null,pResult:null,msg:"",winner:null,cpuMomentum:[],lastScoreKey:0};
+        cpuFirst:null,pResult:null,msg:"",winner:null,cpuMomentum:[],lastScoreKey:0,
+        gameLog:[],currentTries:[]};
       gsRef.current=init; setGs(init);
     } else {
       const init={scores:{p1:0,p2:0},pool:r.pool,trick:r.trick,
