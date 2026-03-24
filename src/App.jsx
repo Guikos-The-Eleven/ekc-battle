@@ -777,6 +777,7 @@ export default function App() {
   const [drillTarget, setDrillTarget] = useState(3);             // streak target for consistency
   const [drillSource, setDrillSource] = useState("weakest");     // "weakest" | "full" | "pick"
   const [drill,       setDrill]       = useState(null);          // active drill state
+  const [pickedTricks, setPickedTricks] = useState([]);          // multi-select for pick mode
 
   // Derived: competition key for DB
   const compDbKey = selectedComp && selectedDiv ? `${selectedComp.key}:${selectedDiv.key}` : null;
@@ -1010,7 +1011,7 @@ export default function App() {
 
   async function startDrill() {
     if (drillSource==="pick") {
-      // Go to trick picker screen
+      setPickedTricks([]);
       setScreen("drill_pick");
       return;
     }
@@ -1026,13 +1027,14 @@ export default function App() {
     setScreen("drill");
   }
 
-  function startDrillPick(trick) {
+  function startDrillPick(tricks) {
+    const shuffled = [...tricks].sort(()=>Math.random()-0.5);
     if (drillType==="consistency") {
-      setDrill({type:"consistency",target:drillTarget,trick,streak:0,attempts:0,
-        cleared:[],queue:[],totalAttempts:0,totalLands:0,bestStreak:0,pickMode:true});
+      setDrill({type:"consistency",target:drillTarget,trick:shuffled[0],streak:0,attempts:0,
+        cleared:[],queue:shuffled.slice(1),totalAttempts:0,totalLands:0,bestStreak:0,pickMode:true});
     } else {
-      setDrill({type:"firsttry",trick,queue:[],
-        results:[],index:0,total:1,phase:"active",pickMode:true});
+      setDrill({type:"firsttry",trick:shuffled[0],queue:shuffled.slice(1),
+        results:[],index:0,total:shuffled.length,phase:"active",pickMode:true});
     }
     setScreen("drill");
   }
@@ -1118,39 +1120,80 @@ export default function App() {
   if (screen==="drill_pick") {
     const tricks = allTricks();
     const clearedTricks = drill?.cleared?.map(c=>c.trick) || [];
+    const available = tricks.filter(t=>!clearedTricks.includes(t));
+    const allSelected = pickedTricks.length===available.length && available.length>0;
+
+    const toggleTrick = (t) => {
+      setPickedTricks(prev=>prev.includes(t)?prev.filter(x=>x!==t):[...prev,t]);
+    };
+    const toggleAll = () => {
+      setPickedTricks(allSelected?[]:available);
+    };
+
     return (
       <div style={root}>
-        <div style={page}>
+        <div style={{...page,paddingBottom:0}}>
           <BackBtn onClick={()=>setScreen("settings")}/>
-          <div className="rise" style={{marginBottom:20}}>
+          <div className="rise" style={{marginBottom:16}}>
             <div style={{fontFamily:BB,fontSize:28,letterSpacing:4,lineHeight:1,color:C.white}}>
-              {drillType==="consistency"?"PICK A TRICK":"FIRST TRY"}
+              {drillType==="consistency"?"PICK TRICKS":"FIRST TRY"}
             </div>
             <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:3,marginTop:6,fontWeight:600}}>
-              {drillType==="consistency"?`Land ${drillTarget}× in a row to clear`:"Tap to start"}
+              {drillType==="consistency"
+                ?`Select tricks · land ${drillTarget}× in a row each`
+                :"Select tricks · one attempt each"}
             </div>
           </div>
-          <Div mb={16}/>
+
+          {/* Select all / count */}
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+            <button className="tap" onClick={toggleAll} style={{
+              background:"transparent",border:"none",fontFamily:BB,fontSize:10,letterSpacing:4,
+              color:allSelected?C.white:C.muted,cursor:"pointer",padding:0,
+            }}>{allSelected?"DESELECT ALL":"SELECT ALL"}</button>
+            <div style={{fontFamily:BB,fontSize:12,letterSpacing:2,color:pickedTricks.length>0?C.white:C.muted}}>
+              {pickedTricks.length} selected
+            </div>
+          </div>
+          <Div mb={8}/>
+
+          {/* Trick list */}
           <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",margin:"0 -24px",padding:"0 24px"}}>
             {tricks.map((t,i)=>{
               const done = clearedTricks.includes(t);
+              const selected = pickedTricks.includes(t);
               return (
-                <button key={i} className="tap" onClick={()=>!done&&startDrillPick(t)} disabled={done} style={{
-                  width:"100%",padding:"14px 0",background:"transparent",border:"none",
+                <button key={i} className="tap" onClick={()=>!done&&toggleTrick(t)} disabled={done} style={{
+                  width:"100%",padding:"13px 0",background:selected?`${C.white}06`:"transparent",border:"none",
                   borderTop:i===0?`1px solid ${C.border}`:"none",
                   borderBottom:`1px solid ${C.border}`,
                   cursor:done?"default":"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
-                  opacity:done?0.35:1,transition:"opacity 0.1s",
+                  opacity:done?0.3:1,transition:"all 0.1s",
                 }}>
-                  <span style={{fontFamily:BC,fontSize:13,color:done?C.muted:C.sub,fontWeight:600,
-                    textAlign:"left",lineHeight:1.3,flex:1,paddingRight:12}}>{t}</span>
-                  {done
-                    ? <span style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:C.green}}>CLEARED</span>
-                    : <span style={{fontFamily:BB,fontSize:12,letterSpacing:3,color:C.muted}}>→</span>
-                  }
+                  {/* Checkbox */}
+                  <div style={{width:18,height:18,borderRadius:2,marginRight:12,flexShrink:0,
+                    border:`1.5px solid ${done?C.border:selected?C.green:C.muted}`,
+                    background:selected?C.green:"transparent",
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                    transition:"all 0.15s",
+                  }}>
+                    {selected && <span style={{color:C.bg,fontSize:11,fontWeight:700,lineHeight:1}}>✓</span>}
+                  </div>
+                  <span style={{fontFamily:BC,fontSize:13,color:done?C.muted:selected?C.white:C.sub,fontWeight:600,
+                    textAlign:"left",lineHeight:1.3,flex:1,paddingRight:12,transition:"color 0.1s"}}>{t}</span>
+                  {done && <span style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:C.green}}>CLEARED</span>}
                 </button>
               );
             })}
+          </div>
+
+          {/* START button — fixed at bottom */}
+          <div style={{padding:"16px 0 calc(16px + env(safe-area-inset-bottom, 0px))",
+            borderTop:`1px solid ${C.divider}`,marginTop:8}}>
+            <BtnPrimary onClick={()=>startDrillPick(pickedTricks)}
+              style={{opacity:pickedTricks.length===0?0.3:1,pointerEvents:pickedTricks.length===0?"none":"auto"}}>
+              START DRILL · {pickedTricks.length} TRICK{pickedTricks.length!==1?"S":""}
+            </BtnPrimary>
           </div>
         </div>
       </div>
@@ -1243,9 +1286,10 @@ export default function App() {
             <div className="fadeUp" style={{marginTop:28,display:"flex",flexDirection:"column",gap:12,animationDelay:"0.45s",animationFillMode:"both"}}>
               {drill.pickMode ? (
                 <BtnPrimary onClick={()=>{
+                  setPickedTricks([]);
                   setDrill(p=>({...p,phase:undefined,trick:null,streak:0,attempts:0}));
                   setScreen("drill_pick");
-                }}>PICK ANOTHER</BtnPrimary>
+                }}>PICK MORE TRICKS</BtnPrimary>
               ) : (
                 <BtnPrimary onClick={()=>{setDrill(null);setScreen("settings");}}>DRILL AGAIN</BtnPrimary>
               )}
@@ -1364,7 +1408,7 @@ export default function App() {
           {/* Footer */}
           <div style={{padding:"0 24px calc(16px + env(safe-area-inset-bottom, 0px))",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <button onClick={()=>{
-              if (drill.pickMode) { setDrill(null);setScreen("drill_pick"); }
+              if (drill.pickMode) { setPickedTricks([]);setDrill(null);setScreen("drill_pick"); }
               else { setDrill(null);setScreen("settings"); }
             }} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:11,letterSpacing:5,cursor:"pointer",padding:0}}>
               ← {drill.pickMode?"TRICKS":"MENU"}
