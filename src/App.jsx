@@ -1557,11 +1557,18 @@ export default function App() {
   );
 
   // ── SETTINGS ─────────────────────────────────────────────────────────────────
-  if (screen==="settings" && selectedDiv) return (
+  if (screen==="settings" && selectedDiv) {
+    const modes = [
+      {key:"cpu",   label:"CPU",      desc:"Battle a CPU opponent"},
+      {key:"2p",    label:"2 PLAYER", desc:"Head to head, locally"},
+      {key:"drill", label:"DRILL",    desc:"Train your tricklist"},
+    ];
+
+    return (
     <div style={root}>
       <div style={page}>
         <BackBtn onClick={()=>setScreen("division")}/>
-        <div className="rise" style={{marginBottom:28}}>
+        <div className="rise" style={{marginBottom:24}}>
           <div style={{fontFamily:BB,fontSize:38,letterSpacing:5,lineHeight:1,color:C.white}}>
             {selectedDiv.name}
           </div>
@@ -1569,59 +1576,91 @@ export default function App() {
             {selectedComp?.name} · {selectedComp?.full}
           </div>
         </div>
-        <Div mb={24}/>
+
+        {/* Trick list selector (PRO OPEN) */}
         {selectedDiv.trickSets && (
-          <Seg label="Trick List" val={openList} onChange={setOpenList} opts={
-            selectedDiv.trickSets.map(s=>({key:s.key,label:s.label,sub:s.sub}))
-          }/>
+          <div style={{marginBottom:20}}>
+            <Seg label="Trick List" val={openList} onChange={setOpenList} opts={
+              selectedDiv.trickSets.map(s=>({key:s.key,label:s.label,sub:s.sub}))
+            }/>
+          </div>
         )}
-        <Seg label="Game Mode" val={mode} onChange={setMode} opts={[
-          {key:"cpu",label:"CPU"},
-          {key:"2p", label:"2 PLAYER"},
-          {key:"drill",label:"DRILL"},
-        ]}/>
-        {mode==="cpu" && (<>
-          <Seg label="CPU Difficulty" val={diff} onChange={setDiff} opts={[
-            {key:"easy",  label:"ROOKIE",  color:C.green, sub:"~48%"},
-            {key:"medium",label:"AMATEUR", color:C.yellow,sub:"~68%"},
-            {key:"hard",  label:"PRO",     color:C.red,   sub:"~87%"},
-          ]}/>
-          <Seg label="CPU Streaks" val={streaks} onChange={setStreaks} opts={[
-            {key:true, label:"ON", sub:"hot · cold"},
-            {key:false,label:"OFF",sub:"steady rate"},
-          ]}/>
-        </>)}
-        {mode==="drill" && (<>
-          <Seg label="Drill Type" val={drillType} onChange={setDrillType} opts={[
-            {key:"consistency",label:"CONSISTENCY",sub:`land ${drillTarget}× in a row`},
-            {key:"firsttry",   label:"FIRST TRY",  sub:"one shot per trick"},
-          ]}/>
-          {drillType==="consistency" && (
-            <Seg label="Streak Target" val={drillTarget} onChange={setDrillTarget} opts={[
-              {key:3, label:"3×"},
-              {key:5, label:"5×"},
-              {key:10,label:"10×"},
+
+        <Div mb={20}/>
+
+        {/* Mode cards */}
+        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:20}}>
+          {modes.map(m=>{
+            const sel = mode===m.key;
+            return (
+              <button key={m.key} className="tap" onClick={()=>setMode(m.key)} style={{
+                width:"100%",padding:"16px 18px",background:sel?`${C.white}08`:"transparent",
+                border:`1px solid ${sel?C.white+"30":C.border}`,borderRadius:R,
+                cursor:"pointer",textAlign:"left",transition:"all 0.15s",
+                borderLeft:sel?`3px solid ${C.white}`:`3px solid transparent`,
+              }}>
+                <div style={{fontFamily:BB,fontSize:18,letterSpacing:4,color:sel?C.white:C.sub,
+                  transition:"color 0.15s"}}>{m.label}</div>
+                <div style={{fontFamily:BC,fontSize:11,letterSpacing:2,color:sel?C.sub:C.muted,
+                  marginTop:2,fontWeight:600,transition:"color 0.15s"}}>{m.desc}</div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Mode-specific options */}
+        <div className="rise" key={mode}>
+          {mode==="cpu" && (<>
+            <Seg label="CPU Difficulty" val={diff} onChange={setDiff} opts={[
+              {key:"easy",  label:"ROOKIE",  color:C.green, sub:"~48%"},
+              {key:"medium",label:"AMATEUR", color:C.yellow,sub:"~68%"},
+              {key:"hard",  label:"PRO",     color:C.red,   sub:"~87%"},
+            ]}/>
+            <Seg label="CPU Streaks" val={streaks} onChange={setStreaks} opts={[
+              {key:true, label:"ON", sub:"hot · cold"},
+              {key:false,label:"OFF",sub:"steady rate"},
+            ]}/>
+            <Seg label="Race To" val={race} onChange={setRace} opts={[
+              {key:3,label:"3"},
+              {key:5,label:"5"},
+            ]}/>
+          </>)}
+
+          {mode==="2p" && (
+            <Seg label="Race To" val={race} onChange={setRace} opts={[
+              {key:3,label:"3"},
+              {key:5,label:"5"},
             ]}/>
           )}
-          <Seg label="Trick Source" val={drillSource} onChange={setDrillSource} opts={[
-            {key:"weakest",label:"WEAKEST",sub:"from stats"},
-            {key:"full",   label:"FULL LIST",sub:"shuffled"},
-            {key:"pick",   label:"PICK",sub:"choose trick"},
-          ]}/>
-        </>)}
-        {mode!=="drill" && (
-          <Seg label="Race To" val={race} onChange={setRace} opts={[
-            {key:3,label:"3"},
-            {key:5,label:"5"},
-          ]}/>
-        )}
+
+          {mode==="drill" && (<>
+            <Seg label="Drill Type" val={drillType} onChange={setDrillType} opts={[
+              {key:"consistency",label:"CONSISTENCY",sub:`land ${drillTarget}× in a row`},
+              {key:"firsttry",   label:"FIRST TRY",  sub:"one shot per trick"},
+            ]}/>
+            {drillType==="consistency" && (
+              <Seg label="Streak Target" val={drillTarget} onChange={setDrillTarget} opts={[
+                {key:3, label:"3×"},
+                {key:5, label:"5×"},
+                {key:10,label:"10×"},
+              ]}/>
+            )}
+            <Seg label="Trick Source" val={drillSource} onChange={setDrillSource} opts={[
+              {key:"weakest",label:"WEAKEST",sub:"from stats"},
+              {key:"full",   label:"FULL LIST",sub:"shuffled"},
+              {key:"pick",   label:"PICK",sub:"choose tricks"},
+            ]}/>
+          </>)}
+        </div>
+
         <div style={{flex:1}}/>
         <BtnPrimary onClick={mode==="drill"?startDrill:startGame}>
           {mode==="drill"?"START DRILL":"START BATTLE"}
         </BtnPrimary>
       </div>
     </div>
-  );
+    );
+  }
 
   // ── RESULT ───────────────────────────────────────────────────────────────────
   if (screen==="result" && result) {
