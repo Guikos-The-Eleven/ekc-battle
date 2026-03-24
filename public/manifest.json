@@ -1,6 +1,6 @@
 {
-  "name": "KXS Battle Simulator",
-  "short_name": "KXS Battle",
+  "name": "KOMP",
+  "short_name": "KOMP",
   "description": "Battle simulator for the European Kendama Championship 2026",
   "start_url": "/",
   "display": "standalone",

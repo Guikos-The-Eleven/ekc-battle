@@ -346,10 +346,11 @@ function AuthScreen({ onAuth, onGuest }) {
     <div style={{fontFamily:BC,background:C.bg,color:C.white,height:"100dvh",maxWidth:440,margin:"0 auto",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 28px",position:"relative"}}>
       <div style={{position:"relative",zIndex:1,width:"100%"}}>
         <div style={{textAlign:"center",marginBottom:36}}>
-          <img src={LOGO} alt="NXS" style={{width:120,height:120,objectFit:"contain",marginBottom:12,display:"block",margin:"0 auto 12px"}}/>
-          <div style={{fontFamily:BB,fontSize:11,letterSpacing:6,color:C.muted}}>COMP GRIND</div>
-          <div style={{marginTop:8,display:"flex",justifyContent:"center"}}>
-            <IgLink size={13} fontSize={11}/>
+          <img src={LOGO} alt="NXS" style={{width:100,height:100,objectFit:"contain",display:"block",margin:"0 auto 8px"}}/>
+          <div style={{fontFamily:BB,fontSize:36,letterSpacing:8,color:C.white}}>KOMP</div>
+          <div style={{fontFamily:BC,fontSize:10,letterSpacing:3,color:C.muted,fontWeight:600,marginTop:4}}>KENDAMA COMPETITION TRAINER</div>
+          <div style={{marginTop:10,display:"flex",justifyContent:"center"}}>
+            <IgLink size={12} fontSize={10}/>
           </div>
         </div>
 
@@ -1494,7 +1495,7 @@ export default function App() {
             }} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:11,letterSpacing:5,cursor:"pointer",padding:0}}>
               ← QUIT
             </button>
-            <div style={{fontFamily:BB,fontSize:9,letterSpacing:4,color:C.muted}}>COMP GRIND</div>
+            <div style={{fontFamily:BB,fontSize:9,letterSpacing:4,color:C.muted}}>KOMP</div>
           </div>
         </div>
       </div>
@@ -1525,7 +1526,7 @@ export default function App() {
             <div className="fadeUp" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",gap:16}}>
               <div style={{fontFamily:BB,fontSize:42,letterSpacing:3,color:C.green}}>THANKS</div>
               <div style={{fontFamily:BC,fontSize:14,color:C.sub,lineHeight:1.6,letterSpacing:1,maxWidth:300}}>
-                Your feedback helps us make Comp Grind better for everyone.
+                Your feedback helps us make KOMP better for everyone.
               </div>
               <BtnGhost color={C.sub} onClick={()=>{setScreen("home");setFeedbackText("");setFeedbackSent(false);}} style={{marginTop:16,maxWidth:280}}>← BACK</BtnGhost>
             </div>
@@ -1595,17 +1596,19 @@ export default function App() {
           )}
         </div>
 
-        {/* Logo */}
-        <div className="rise" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",width:"100%"}}>
-          <img src={LOGO} alt="NXS" style={{width:250,height:250,objectFit:"contain"}}/>
-        </div>
-
-        <div style={{fontFamily:BB,fontSize:12,letterSpacing:6,color:C.sub,marginBottom:24,textAlign:"center"}}>
-          COMP GRIND
+        {/* Logo + Name */}
+        <div className="rise" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:"100%"}}>
+          <img src={LOGO} alt="NXS" style={{width:220,height:220,objectFit:"contain"}}/>
+          <div style={{fontFamily:BB,fontSize:64,letterSpacing:12,color:C.white,marginTop:-8,textAlign:"center"}}>
+            KOMP
+          </div>
+          <div style={{fontFamily:BC,fontSize:11,letterSpacing:4,color:C.muted,fontWeight:600,marginTop:4}}>
+            KENDAMA COMPETITION TRAINER
+          </div>
         </div>
 
         {/* Competition list */}
-        <div className="rise" style={{width:"100%",animationDelay:"0.08s"}}>
+        <div className="rise" style={{width:"100%",animationDelay:"0.08s",marginTop:24}}>
           <div style={{display:"flex",flexDirection:"column"}}>
             {COMPS.map((comp,i)=>(
               <button key={comp.key} className="tap" onClick={()=>{setSelectedComp(comp);setScreen("division");}} style={{
@@ -1898,7 +1901,7 @@ export default function App() {
     <div style={{padding:"12px 24px calc(22px + env(safe-area-inset-bottom, 0px))",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
       <button onClick={()=>setScreen("settings")} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:11,letterSpacing:5,cursor:"pointer",padding:0}}>← QUIT</button>
       <div style={{fontFamily:BB,fontSize:9,letterSpacing:4,color:C.muted}}>
-        COMP GRIND
+        KOMP
       </div>
     </div>
   );
