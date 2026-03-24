@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-const LOGO = "data:image/png;base64,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";
+const LOGO = "data:image/png;base64,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";
 
 const SB = createClient(
   "https://oqirbcoylhmzigyfsxmt.supabase.co",
@@ -129,15 +129,16 @@ const applyMomentum = (rate, momentum=[]) => {
   if (momentum.length < 2) return rate;
   const recent = momentum.slice(-4);
   const landRate = recent.filter(Boolean).length / recent.length;
-  const nudge = (landRate - 0.5) * -0.06;
+  // If CPU has been landing a lot, slight regression; if missing, slight boost
+  const nudge = (landRate - 0.5) * -0.06; // ±3% max
   return Math.max(0.10, Math.min(0.92, rate + nudge));
 };
 
 // Comeback: score differential adjusts rate
 const applyComeback = (rate, cpuScore, playerScore, raceTo) => {
   const diff = playerScore - cpuScore;
-  if (diff >= 2) return Math.min(0.90, rate + 0.05);
-  if (diff <= -2) return Math.max(0.15, rate - 0.04);
+  if (diff >= 2) return Math.min(0.90, rate + 0.05);  // CPU behind by 2+: small boost
+  if (diff <= -2) return Math.max(0.15, rate - 0.04); // CPU ahead by 2+: slight nerf
   return rate;
 };
 
@@ -145,9 +146,9 @@ const applyComeback = (rate, cpuScore, playerScore, raceTo) => {
 const applyClutch = (rate, cpuScore, playerScore, raceTo) => {
   const cpuMatchPoint = cpuScore === raceTo - 1;
   const playerMatchPoint = playerScore === raceTo - 1;
-  if (cpuMatchPoint && playerMatchPoint) return rate + 0.03;
-  if (playerMatchPoint) return rate + 0.04;
-  if (cpuMatchPoint) return rate - 0.02;
+  if (cpuMatchPoint && playerMatchPoint) return rate + 0.03; // Double match point: CPU focuses
+  if (playerMatchPoint) return rate + 0.04;                  // Player match point: CPU desperate
+  if (cpuMatchPoint) return rate - 0.02;                     // CPU match point: slight overconfidence
   return rate;
 };
 
@@ -158,10 +159,14 @@ const cpuThinkTime = (diff) => {
 
 const roll = (diff, streak, streaksOn, gameState={}) => {
   let r = CPU_CFG[diff].base;
+  // Apply streak modifier
   if (streaksOn && streak.active)
     r = streak.dir==="hot" ? Math.min(0.88,r+0.12) : Math.max(0.12,r-0.18);
+  // Apply momentum
   if (gameState.cpuMomentum) r = applyMomentum(r, gameState.cpuMomentum);
+  // Apply comeback
   if (gameState.scores) r = applyComeback(r, gameState.scores.cpu, gameState.scores.you, gameState.raceTo || 3);
+  // Apply clutch
   if (gameState.scores) r = applyClutch(r, gameState.scores.cpu, gameState.scores.you, gameState.raceTo || 3);
   return Math.random() < r;
 };
@@ -190,6 +195,12 @@ const drawTrick = (pool, all) => {
 };
 
 // ─── UI ATOMS ────────────────────────────────────────────────────────────────
+const NOISE = {
+  position:"fixed", inset:0, pointerEvents:"none", zIndex:0, opacity:0.07,
+  backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E")`,
+  backgroundRepeat:"repeat",
+};
+
 const Label = ({ children, style={} }) => (
   <div style={{fontFamily:BC,fontSize:11,letterSpacing:1.5,color:C.sub,fontWeight:600,...style}}>{children}</div>
 );
@@ -257,6 +268,15 @@ function StreakDot({ streak }) {
   );
 }
 
+const ResultRow = ({ landed }) => (
+  <div style={{borderLeft:`3px solid ${landed?C.green:C.red}`,paddingLeft:14,paddingTop:8,paddingBottom:8,marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",background:landed?`${C.green}06`:`${C.red}06`}}>
+    <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:3,fontWeight:600}}>CPU</div>
+    <div style={{fontFamily:BB,fontSize:20,letterSpacing:4,color:landed?C.green:C.red,textShadow:`0 0 20px ${landed?C.green:C.red}20`}}>
+      {landed?"LANDED ✓":"MISSED ✗"}
+    </div>
+  </div>
+);
+
 const TryDots = ({ current }) => (
   <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:18}}>
     {[1,2,3].map(t=>(
@@ -270,8 +290,8 @@ const BackBtn = ({ onClick, label="← BACK" }) => (
 );
 
 // ─── AUTH SCREEN ─────────────────────────────────────────────────────────────
-function AuthScreen({ onAuth, onGuest }) {
-  const [tab,    setTab]    = useState("login");
+function AuthScreen({ onAuth }) {
+  const [tab,    setTab]    = useState("login"); // "login" | "signup"
   const [email,  setEmail]  = useState("");
   const [pw,     setPw]     = useState("");
   const [name,   setName]   = useState("");
@@ -294,12 +314,14 @@ function AuthScreen({ onAuth, onGuest }) {
         options: { data: { username: name } },
       });
       if (error) { setErr(error.message); setLoading(false); return; }
+      // Don't insert profile yet — user needs to confirm email first
       setConfirmed(true);
       setLoading(false);
       return;
     } else {
       const { data, error } = await SB.auth.signInWithPassword({ email, password:pw });
       if (error) { setErr(error.message); setLoading(false); return; }
+      // Fetch profile — if missing (first login after confirmation), create it now
       let { data:prof } = await SB.from("profiles").select("username").eq("id",data.user.id).single();
       if (!prof) {
         const uname = data.user.user_metadata?.username || email.split("@")[0];
@@ -313,6 +335,7 @@ function AuthScreen({ onAuth, onGuest }) {
 
   return (
     <div style={{fontFamily:BC,background:C.bg,color:C.white,height:"100dvh",maxWidth:440,margin:"0 auto",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 28px",position:"relative"}}>
+      
       <div style={{position:"relative",zIndex:1,width:"100%"}}>
         <div style={{textAlign:"center",marginBottom:36}}>
           <img src={LOGO} alt="NXS" style={{width:120,height:120,objectFit:"contain",mixBlendMode:"screen",marginBottom:12,display:"block",margin:"0 auto 12px"}}/>
@@ -337,6 +360,7 @@ function AuthScreen({ onAuth, onGuest }) {
           </div>
         ) : (
           <>
+            {/* Tab switcher */}
             <div style={{display:"flex",gap:0,marginBottom:24,borderBottom:`1px solid ${C.border}`}}>
               {["login","signup"].map(t=>(
                 <button key={t} onClick={()=>{setTab(t);setErr("");}} style={{
@@ -362,15 +386,6 @@ function AuthScreen({ onAuth, onGuest }) {
             <BtnPrimary onClick={handleSubmit} style={{marginTop:4}}>
               {loading ? "···" : tab==="login"?"LOG IN":"CREATE ACCOUNT"}
             </BtnPrimary>
-
-            {/* Guest mode */}
-            <button className="tap" onClick={onGuest} style={{
-              width:"100%",padding:"16px 0",marginTop:16,background:"transparent",border:"none",
-              color:C.muted,fontFamily:BB,fontSize:13,letterSpacing:5,cursor:"pointer",
-              transition:"opacity 0.12s",
-            }}>
-              CONTINUE AS GUEST
-            </button>
           </>
         )}
       </div>
@@ -379,36 +394,25 @@ function AuthScreen({ onAuth, onGuest }) {
 }
 
 // ─── STATS SCREEN ────────────────────────────────────────────────────────────
-function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selectedComp, selectedDiv }) {
+function StatsScreen({ user, username, onBack }) {
   const [matches,  setMatches]  = useState(null);
   const [attempts, setAttempts] = useState(null);
-  const [history,  setHistory]  = useState(null);
-  const [tab,      setTab]      = useState("record");   // "record" | "tricks" | "history"
+  const [tab,      setTab]      = useState("record");   // "record" | "tricks"
+  const [divKey,   setDivKey]   = useState("am_open");  // active division
 
-  // Build available divisions from all comps
-  const allDivisions = COMPS.flatMap(c => c.divisions.map(d => ({
-    compKey: c.key, divKey: d.key, label: `${d.name}`, compName: c.name,
-    dbKey: `${c.key}:${d.key}`,
-  })));
-
-  const [divKey, setDivKey] = useState(compDbKey || allDivisions[0]?.dbKey || "ekc_2026:am_open");
-
-  useEffect(() => {
-    if (!user) return;
+  useEffect(()=>{
     SB.from("match_results").select("*").eq("user_id",user.id)
       .then(({data})=>setMatches(data||[]));
     SB.from("trick_attempts").select("trick,landed,competition").eq("user_id",user.id)
       .then(({data})=>setAttempts(data||[]));
-    // History: last 10 CPU matches for current division
-    SB.from("match_results").select("*").eq("user_id",user.id)
-      .order("created_at",{ascending:false}).limit(50)
-      .then(({data})=>setHistory(data||[]));
-  },[user]);
+  },[]);
 
+  const DIVISIONS   = [{key:"am_open",label:"AM OPEN"},{key:"open",label:"PRO OPEN"}];
   const DIFFICULTIES= ["easy","medium","hard"];
   const DIFF_LABELS = {easy:"ROOKIE",medium:"AMATEUR",hard:"PRO"};
   const DIFF_COLORS = {easy:C.green,medium:C.yellow,hard:C.red};
 
+  // ── Record data ──────────────────────────────────────────────────────────────
   const recordForDiv = (key) => {
     const dm = (matches||[]).filter(m=>m.competition===key);
     return DIFFICULTIES.map(d=>{
@@ -425,47 +429,29 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
     return {wins, losses:tot-wins, total:tot};
   };
 
+  // ── Trick data ───────────────────────────────────────────────────────────────
   const tricksForDiv = (key) => {
     const stats = {};
-    (attempts||[]).filter(a=>(a.competition||"ekc_2026:am_open")===key).forEach(a=>{
+    (attempts||[]).filter(a=>(a.competition||"am_open")===key).forEach(a=>{
       if (!stats[a.trick]) stats[a.trick]={land:0,miss:0};
       if (a.landed) stats[a.trick].land++;
       else stats[a.trick].miss++;
     });
     return Object.entries(stats)
       .map(([t,s])=>({trick:t, rate:Math.round(s.land/(s.land+s.miss)*100), att:s.land+s.miss}))
-      .sort((a,b)=>a.rate-b.rate);
+      .sort((a,b)=>a.rate-b.rate);  // worst first — most actionable
   };
 
-  const historyForDiv = (key) => {
-    return (history||[]).filter(h=>h.competition===key).slice(0,10);
-  };
+  const loading = matches===null || attempts===null;
 
-  const loading = !isGuest && (matches===null || attempts===null);
   const root = {fontFamily:BC,background:C.bg,color:C.white,height:"100dvh",maxWidth:440,margin:"0 auto",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"};
-
-  // Guest prompt
-  if (isGuest) return (
-    <div style={root}>
-      <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",padding:"calc(28px + env(safe-area-inset-top, 0px)) 24px calc(28px + env(safe-area-inset-bottom, 0px))"}}>
-        <BackBtn onClick={onBack}/>
-        <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,textAlign:"center"}}>
-          <img src={LOGO} alt="NXS" style={{width:64,height:64,objectFit:"contain",mixBlendMode:"screen",opacity:0.3}}/>
-          <div style={{fontFamily:BB,fontSize:28,letterSpacing:3,color:C.white}}>TRACK YOUR PROGRESS</div>
-          <div style={{fontFamily:BC,fontSize:14,color:C.sub,lineHeight:1.6,letterSpacing:1,maxWidth:280}}>
-            Create an account to save your match history, trick stats, and win rates.
-          </div>
-          <BtnPrimary onClick={onAuth} style={{marginTop:16,maxWidth:280}}>SIGN UP</BtnPrimary>
-        </div>
-      </div>
-    </div>
-  );
-
-  const currentDivLabel = allDivisions.find(d=>d.dbKey===divKey)?.label || "AM OPEN";
 
   return (
     <div style={root}>
+      
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+
+        {/* ── Header ── */}
         <div style={{padding:"calc(28px + env(safe-area-inset-top, 0px)) 24px 0"}}>
           <BackBtn onClick={onBack}/>
           <div style={{marginBottom:20}}>
@@ -475,11 +461,11 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
 
           {/* Division switcher */}
           <div style={{display:"flex",gap:0,marginBottom:0}}>
-            {allDivisions.map(d=>(
-              <button key={d.dbKey} onClick={()=>setDivKey(d.dbKey)} style={{
+            {DIVISIONS.map(d=>(
+              <button key={d.key} onClick={()=>setDivKey(d.key)} style={{
                 flex:1,padding:"10px 0",background:"transparent",border:"none",
-                borderBottom:`2px solid ${divKey===d.dbKey?C.white:"transparent"}`,
-                color:divKey===d.dbKey?C.white:C.muted,
+                borderBottom:`2px solid ${divKey===d.key?C.white:"transparent"}`,
+                color:divKey===d.key?C.white:C.muted,
                 fontFamily:BB,fontSize:14,letterSpacing:3,
                 cursor:"pointer",transition:"all 0.15s",
               }}>{d.label}</button>
@@ -487,9 +473,9 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
           </div>
           <Div/>
 
-          {/* Tab switcher: RECORD | TRICKS | HISTORY */}
+          {/* Tab switcher */}
           <div style={{display:"flex",gap:0,marginTop:0}}>
-            {[["record","RECORD"],["tricks","TRICKS"],["history","HISTORY"]].map(([k,l])=>(
+            {[["record","RECORD"],["tricks","TRICKS"]].map(([k,l])=>(
               <button key={k} onClick={()=>setTab(k)} style={{
                 flex:1,padding:"12px 0",background:"transparent",border:"none",
                 borderBottom:`2px solid ${tab===k?C.white:"transparent"}`,
@@ -502,7 +488,9 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
           <Div/>
         </div>
 
+        {/* ── Scrollable content ── */}
         <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"24px 24px 32px"}}>
+
           {loading && <div style={{fontFamily:BC,fontSize:14,color:C.muted}}>Loading...</div>}
 
           {/* ── RECORD TAB ── */}
@@ -511,11 +499,12 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
             const tot  = totalRecord(divKey);
             if (rows.length===0) return (
               <div style={{fontFamily:BC,fontSize:14,color:C.muted,lineHeight:1.6}}>
-                No matches yet for {currentDivLabel}.<br/>Play vs CPU to track your record.
+                No matches yet for {DIVISIONS.find(d=>d.key===divKey)?.label}.<br/>Play vs CPU to track your record.
               </div>
             );
             return (
               <>
+                {/* Big overall score */}
                 <div style={{display:"flex",gap:0,marginBottom:28}}>
                   {[["WINS",tot.wins,C.green],["LOSSES",tot.losses,C.red]].map(([l,v,col])=>(
                     <div key={l} style={{flex:1,textAlign:"center"}}>
@@ -524,6 +513,8 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                     </div>
                   ))}
                 </div>
+
+                {/* Win rate bar */}
                 <div style={{marginBottom:32}}>
                   <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
                     <Label style={{letterSpacing:4}}>Win Rate</Label>
@@ -533,7 +524,10 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                     <div style={{height:2,background:C.green,width:`${tot.wins/tot.total*100}%`,transition:"width 0.5s"}}/>
                   </div>
                 </div>
+
                 <Div mb={24}/>
+
+                {/* Per difficulty breakdown */}
                 <Label style={{marginBottom:16,letterSpacing:4}}>By Difficulty</Label>
                 {rows.map(r=>{
                   const rate = Math.round(r.wins/r.total*100);
@@ -566,11 +560,14 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
             const list = tricksForDiv(divKey);
             if (list.length===0) return (
               <div style={{fontFamily:BC,fontSize:14,color:C.muted,lineHeight:1.6}}>
-                No trick data yet for {currentDivLabel}.<br/>Attempt rates are tracked when you play vs CPU.
+                No trick data yet for {DIVISIONS.find(d=>d.key===divKey)?.label}.<br/>Attempt rates are tracked when you play vs CPU.
               </div>
             );
+
+            // Split into weak (<50%) and strong (>=50%)
             const weak   = list.filter(t=>t.rate<50);
             const strong = list.filter(t=>t.rate>=50);
+
             const TrickRow = ({trick,rate,att}) => {
               const col = rate>=70?C.green:rate>=40?C.yellow:C.red;
               return (
@@ -588,6 +585,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                 </div>
               );
             };
+
             return (
               <>
                 {weak.length>0 && (
@@ -607,47 +605,6 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
             );
           })()}
 
-          {/* ── HISTORY TAB ── */}
-          {!loading && tab==="history" && (()=>{
-            const rows = historyForDiv(divKey);
-            if (rows.length===0) return (
-              <div style={{fontFamily:BC,fontSize:14,color:C.muted,lineHeight:1.6}}>
-                No match history yet for {currentDivLabel}.<br/>Play vs CPU to start tracking.
-              </div>
-            );
-            return (
-              <>
-                <Label style={{marginBottom:16,letterSpacing:4}}>Last {rows.length} Matches</Label>
-                {rows.map((m,i)=>{
-                  const col = m.won?C.green:C.red;
-                  const diffCol = DIFF_COLORS[m.difficulty]||C.sub;
-                  const date = new Date(m.created_at);
-                  const dateStr = `${date.getDate()}/${date.getMonth()+1}`;
-                  return (
-                    <div key={m.id||i} className="fadeUp" style={{
-                      borderLeft:`3px solid ${col}`,paddingLeft:14,paddingTop:12,paddingBottom:12,
-                      marginBottom:8,display:"flex",alignItems:"center",justifyContent:"space-between",
-                      background:`${col}06`,animationDelay:`${i*0.04}s`,animationFillMode:"both",
-                    }}>
-                      <div style={{display:"flex",alignItems:"center",gap:12}}>
-                        <div style={{fontFamily:BB,fontSize:20,letterSpacing:2,color:col,width:24}}>{m.won?"W":"L"}</div>
-                        <div style={{fontFamily:BB,fontSize:22,letterSpacing:1,color:C.white}}>
-                          {m.your_score}–{m.cpu_score}
-                        </div>
-                      </div>
-                      <div style={{display:"flex",alignItems:"center",gap:12}}>
-                        <div style={{
-                          fontFamily:BB,fontSize:10,letterSpacing:3,color:diffCol,
-                          border:`1px solid ${diffCol}30`,padding:"4px 8px",borderRadius:R,
-                        }}>{DIFF_LABELS[m.difficulty]||m.difficulty}</div>
-                        <div style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,minWidth:36,textAlign:"right"}}>{dateStr}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </>
-            );
-          })()}
         </div>
       </div>
     </div>
@@ -712,16 +669,11 @@ export default function App() {
 
   async function handleSignOut() {
     await SB.auth.signOut();
-    setUser(null); setUsername(""); setIsGuest(false);
-    setScreen("home"); setSelectedComp(null); setSelectedDiv(null);
+    setUser(null); setUsername(""); setIsGuest(false); setScreen("home");
   }
 
   function enterAsGuest() {
     setIsGuest(true); setUsername("Guest"); setScreen("home");
-  }
-
-  function goToAuth() {
-    setIsGuest(false); setUser(null); setUsername(""); setScreen("home");
   }
 
   // Save trick attempt to DB (only in CPU mode, only for logged-in users)
@@ -746,15 +698,11 @@ export default function App() {
     if (error) console.error("match_results insert:", error.message);
   }
 
-  // ── FIXED: allTricks now uses selectedDiv ──
   const allTricks = () => {
-    if (!selectedDiv) return AM_TRICKS; // fallback
-    if (selectedDiv.tricks) return selectedDiv.tricks;
-    if (selectedDiv.trickSets) {
-      const set = selectedDiv.trickSets.find(s => s.key === openList);
-      return set ? set.tricks : selectedDiv.trickSets[0].tricks;
-    }
-    return [];
+    if (comp!=="open") return AM_TRICKS;
+    if (openList==="top16") return OPEN_TOP16;
+    if (openList==="mix")   return [...OPEN_REGULAR,...OPEN_TOP16];
+    return OPEN_REGULAR;
   };
 
   // ── CPU logic ────────────────────────────────────────────────────────────────
@@ -875,27 +823,22 @@ export default function App() {
   // Loading
   if (authLoading) return (
     <div style={{...root,alignItems:"center",justifyContent:"center"}}>
+      
       <img src={LOGO} alt="NXS" className="glow" style={{width:100,height:100,objectFit:"contain",mixBlendMode:"screen"}}/>
       <div className="fadeUp" style={{fontFamily:BB,fontSize:10,letterSpacing:6,color:C.muted,marginTop:16,animationDelay:"0.3s",animationFillMode:"both"}}>LOADING</div>
     </div>
   );
 
-  // Auth gate — guests bypass
-  if (!user && !isGuest) return <AuthScreen onAuth={(u,n)=>{setUser(u);setUsername(n);}} onGuest={enterAsGuest}/>;
+  // Auth gate
+  if (!user) return <AuthScreen onAuth={(u,n)=>{setUser(u);setUsername(n);}}/>;
 
   // Stats screen
-  if (screen==="stats") return (
-    <StatsScreen
-      user={user} username={username} isGuest={isGuest}
-      onBack={()=>setScreen(selectedDiv?"settings":"home")}
-      onAuth={goToAuth}
-      compDbKey={compDbKey} selectedComp={selectedComp} selectedDiv={selectedDiv}
-    />
-  );
+  if (screen==="stats") return <StatsScreen user={user} username={username} onBack={()=>setScreen("pick")}/>;
 
-  // ── HOME SCREEN ──────────────────────────────────────────────────────────────
-  if (screen==="home") return (
+  // ── PICK ─────────────────────────────────────────────────────────────────────
+  if (screen==="pick") return (
     <div style={root}>
+      
       <div style={{...page,alignItems:"center"}}>
 
         {/* User bar */}
@@ -903,42 +846,34 @@ export default function App() {
           <button onClick={()=>setScreen("stats")} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:11,letterSpacing:4,cursor:"pointer",padding:0}}>
             {username} · STATS →
           </button>
-          {isGuest ? (
-            <button onClick={goToAuth} style={{background:"transparent",border:"none",color:C.green,fontFamily:BB,fontSize:10,letterSpacing:4,cursor:"pointer",padding:0}}>
-              SIGN UP
-            </button>
-          ) : (
-            <button onClick={handleSignOut} style={{background:"transparent",border:"none",color:C.muted,fontFamily:BB,fontSize:10,letterSpacing:4,cursor:"pointer",padding:0}}>
-              LOG OUT
-            </button>
-          )}
+          <button onClick={handleSignOut} style={{background:"transparent",border:"none",color:C.muted,fontFamily:BB,fontSize:10,letterSpacing:4,cursor:"pointer",padding:0}}>
+            LOG OUT
+          </button>
         </div>
 
-        {/* Logo */}
         <div className="rise" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",width:"100%"}}>
-          <img src={LOGO} alt="NXS" style={{width:250,height:250,objectFit:"contain",mixBlendMode:"screen"}}/>
+          <img src={LOGO} alt="NXS" style={{width:300,height:300,objectFit:"contain",mixBlendMode:"screen"}}/>
         </div>
 
         <div style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.sub,marginBottom:20,textAlign:"center"}}>
           KENDAMA NXS · BATTLE TRAINER
         </div>
 
-        {/* Competition list */}
         <div className="rise" style={{width:"100%",animationDelay:"0.08s"}}>
-          <Label style={{letterSpacing:4,marginBottom:12}}>SELECT COMPETITION</Label>
           <div style={{display:"flex",flexDirection:"column"}}>
-            {COMPS.map((comp,i)=>(
-              <button key={comp.key} className="tap" onClick={()=>{setSelectedComp(comp);setScreen("division");}} style={{
+            {[
+              {key:"am_open",label:"AM OPEN", badge:"AMATEUR"},
+              {key:"open",   label:"PRO OPEN",badge:"PRO"},
+            ].map((o,i)=>(
+              <button key={o.key} className="tap" onClick={()=>{setComp(o.key);setScreen("settings");}} style={{
                 padding:"22px 0",background:"transparent",border:"none",
                 borderTop:`1px solid ${C.border}`,
-                borderBottom:i===COMPS.length-1?`1px solid ${C.border}`:"none",
+                borderBottom:i===1?`1px solid ${C.border}`:"none",
                 cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
                 transition:"opacity 0.1s",width:"100%",
               }}>
-                <span style={{fontFamily:BB,fontSize:32,letterSpacing:4,color:C.white}}>{comp.name}</span>
-                <span style={{fontFamily:BC,fontSize:11,letterSpacing:2,color:C.sub,fontWeight:600,textAlign:"right"}}>
-                  {comp.location.split("·")[0].trim()} · {comp.location.split("·")[1]?.trim()} →
-                </span>
+                <span style={{fontFamily:BB,fontSize:32,letterSpacing:4,color:C.white}}>{o.label}</span>
+                <span style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.sub}}>{o.badge} →</span>
               </button>
             ))}
           </div>
@@ -947,64 +882,27 @@ export default function App() {
     </div>
   );
 
-  // ── DIVISION SCREEN ──────────────────────────────────────────────────────────
-  if (screen==="division" && selectedComp) return (
-    <div style={root}>
-      <div style={page}>
-        <BackBtn onClick={()=>{setScreen("home");setSelectedComp(null);}} label="← HOME"/>
-        <div className="rise" style={{marginBottom:28}}>
-          <div style={{fontFamily:BB,fontSize:38,letterSpacing:5,lineHeight:1,color:C.white}}>
-            {selectedComp.name}
-          </div>
-          <div style={{fontFamily:BC,fontSize:13,color:C.muted,letterSpacing:3,marginTop:8,fontWeight:600}}>
-            {selectedComp.full}
-          </div>
-          <div style={{fontFamily:BC,fontSize:11,color:C.sub,letterSpacing:2,marginTop:4,fontWeight:600}}>
-            {selectedComp.location}
-          </div>
-        </div>
-        <Div mb={24}/>
-        <Label style={{letterSpacing:4,marginBottom:12}}>SELECT DIVISION</Label>
-        <div style={{display:"flex",flexDirection:"column"}}>
-          {selectedComp.divisions.map((div,i)=>(
-            <button key={div.key} className="tap" onClick={()=>{
-              setSelectedDiv(div);
-              setOpenList(div.trickSets?div.trickSets[0].key:"regular");
-              setScreen("settings");
-            }} style={{
-              padding:"22px 0",background:"transparent",border:"none",
-              borderTop:`1px solid ${C.border}`,
-              borderBottom:i===selectedComp.divisions.length-1?`1px solid ${C.border}`:"none",
-              cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
-              transition:"opacity 0.1s",width:"100%",
-            }}>
-              <span style={{fontFamily:BB,fontSize:28,letterSpacing:4,color:C.white}}>{div.name}</span>
-              <span style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.sub}}>{div.badge} →</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
   // ── SETTINGS ─────────────────────────────────────────────────────────────────
-  if (screen==="settings" && selectedDiv) return (
+  if (screen==="settings") return (
     <div style={root}>
+      
       <div style={page}>
-        <BackBtn onClick={()=>setScreen("division")}/>
+        <BackBtn onClick={()=>setScreen("pick")}/>
         <div className="rise" style={{marginBottom:28}}>
           <div style={{fontFamily:BB,fontSize:38,letterSpacing:5,lineHeight:1,color:C.white}}>
-            {selectedDiv.name}
+            {comp==="am_open"?"AM OPEN":"PRO OPEN"}
           </div>
           <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:4,marginTop:8,fontWeight:600}}>
-            {selectedComp?.name} · {selectedComp?.full}
+            KENDAMA NXS · Battle Trainer
           </div>
         </div>
         <Div mb={24}/>
-        {selectedDiv.trickSets && (
-          <Seg label="Trick List" val={openList} onChange={setOpenList} opts={
-            selectedDiv.trickSets.map(s=>({key:s.key,label:s.label,sub:s.sub}))
-          }/>
+        {comp==="open" && (
+          <Seg label="Trick List" val={openList} onChange={setOpenList} opts={[
+            {key:"regular",label:"REGULAR",sub:"15 tricks"},
+            {key:"top16",  label:"TOP 16", sub:"15 tricks"},
+            {key:"mix",    label:"MIX",    sub:"all 30"},
+          ]}/>
         )}
         <Seg label="Game Mode" val={mode} onChange={setMode} opts={[
           {key:"cpu",label:"CPU"},
@@ -1039,6 +937,8 @@ export default function App() {
     const resultColor = won?C.green:C.red;
     return (
       <div style={{...root,justifyContent:"center"}}>
+        
+        {/* Flash overlay on result */}
         <div style={{position:"fixed",inset:0,background:resultColor,opacity:0,animation:"flash 0.8s ease-out",zIndex:2,pointerEvents:"none"}}/>
         <div style={{position:"relative",zIndex:1,textAlign:"center",padding:"0 24px"}}>
           <div className="fadeUp" style={{animationDelay:"0s"}}>
@@ -1065,12 +965,9 @@ export default function App() {
           <div className="fadeUp" style={{marginTop:36,display:"flex",flexDirection:"column",gap:12,animationDelay:"0.65s",animationFillMode:"both"}}>
             <BtnPrimary onClick={()=>{haptic(12);setScreen("settings");setGs(null);}}>PLAY AGAIN</BtnPrimary>
             {!is2p && (
-              <BtnGhost color={C.sub} onClick={()=>{
-                if (isGuest) { goToAuth(); return; }
-                setScreen("stats");setGs(null);
-              }}>VIEW STATS →</BtnGhost>
+              <BtnGhost color={C.sub} onClick={()=>{setScreen("stats");setGs(null);}}>VIEW STATS →</BtnGhost>
             )}
-            <BtnGhost onClick={()=>{setScreen("home");setGs(null);setSelectedComp(null);setSelectedDiv(null);}}>← MAIN MENU</BtnGhost>
+            <BtnGhost onClick={()=>{setScreen("pick");setGs(null);setComp(null);}}>← MAIN MENU</BtnGhost>
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 {
-  "name": "EKC Battle Simulator",
-  "short_name": "EKC Battle",
+  "name": "KXS Battle Simulator",
+  "short_name": "KXS Battle",
   "description": "Battle simulator for the European Kendama Championship 2026",
   "start_url": "/",
   "display": "standalone",
