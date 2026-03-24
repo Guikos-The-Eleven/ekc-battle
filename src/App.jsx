@@ -408,15 +408,14 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
   const [history,  setHistory]  = useState(null);
   const [tab,      setTab]      = useState("record");
   const [expandedMatch, setExpandedMatch] = useState(null);
-  const [confirmReset, setConfirmReset] = useState(false);   // "record" | "tricks" | "history"
+  const [confirmReset, setConfirmReset] = useState(false); // false | "division" | "all"
 
-  // Build available divisions from all comps
-  const allDivisions = COMPS.flatMap(c => c.divisions.map(d => ({
-    compKey: c.key, divKey: d.key, label: `${d.name}`, compName: c.name,
-    dbKey: `${c.key}:${d.key}`,
-  })));
-
-  const [divKey, setDivKey] = useState(compDbKey || allDivisions[0]?.dbKey || "ekc_2026:am_open");
+  // Comp + division state
+  const initComp = selectedComp || COMPS[0];
+  const initDiv = selectedDiv || initComp?.divisions[0];
+  const [statsComp, setStatsComp] = useState(initComp);
+  const [statsDiv,  setStatsDiv]  = useState(initDiv);
+  const statsDivKey = statsComp && statsDiv ? `${statsComp.key}:${statsDiv.key}` : "ekc_2026:am_open";
 
   useEffect(() => {
     if (!user) return;
@@ -486,7 +485,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
     </div>
   );
 
-  const currentDivLabel = allDivisions.find(d=>d.dbKey===divKey)?.label || "AM OPEN";
+  const currentDivLabel = statsDiv?.name || "AM OPEN";
 
   return (
     <div style={root}>
@@ -498,16 +497,34 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
             <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:2,marginTop:6,fontWeight:600}}>Training Stats</div>
           </div>
 
+          {/* Comp switcher (only if multiple comps) */}
+          {COMPS.length>1 && (
+            <>
+              <div style={{display:"flex",gap:0,marginBottom:0}}>
+                {COMPS.map(c=>(
+                  <button key={c.key} onClick={()=>{setStatsComp(c);setStatsDiv(c.divisions[0]);setExpandedMatch(null);setConfirmReset(false);}} style={{
+                    flex:1,padding:"10px 0",background:"transparent",border:"none",
+                    borderBottom:`2px solid ${statsComp?.key===c.key?C.white:"transparent"}`,
+                    color:statsComp?.key===c.key?C.white:C.muted,
+                    fontFamily:BB,fontSize:13,letterSpacing:3,
+                    cursor:"pointer",transition:"all 0.15s",
+                  }}>{c.name}</button>
+                ))}
+              </div>
+              <Div/>
+            </>
+          )}
+
           {/* Division switcher */}
           <div style={{display:"flex",gap:0,marginBottom:0}}>
-            {allDivisions.map(d=>(
-              <button key={d.dbKey} onClick={()=>{setDivKey(d.dbKey);setExpandedMatch(null);}} style={{
+            {(statsComp?.divisions||[]).map(d=>(
+              <button key={d.key} onClick={()=>{setStatsDiv(d);setExpandedMatch(null);setConfirmReset(false);}} style={{
                 flex:1,padding:"10px 0",background:"transparent",border:"none",
-                borderBottom:`2px solid ${divKey===d.dbKey?C.white:"transparent"}`,
-                color:divKey===d.dbKey?C.white:C.muted,
+                borderBottom:`2px solid ${statsDiv?.key===d.key?C.white:"transparent"}`,
+                color:statsDiv?.key===d.key?C.white:C.muted,
                 fontFamily:BB,fontSize:14,letterSpacing:3,
                 cursor:"pointer",transition:"all 0.15s",
-              }}>{d.label}</button>
+              }}>{d.name}</button>
             ))}
           </div>
           <Div/>
@@ -515,7 +532,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
           {/* Tab switcher: RECORD | TRICKS | HISTORY */}
           <div style={{display:"flex",gap:0,marginTop:0}}>
             {[["record","RECORD"],["tricks","TRICKS"],["history","HISTORY"]].map(([k,l])=>(
-              <button key={k} onClick={()=>{setTab(k);setExpandedMatch(null);}} style={{
+              <button key={k} onClick={()=>{setTab(k);setExpandedMatch(null);setConfirmReset(false);}} style={{
                 flex:1,padding:"12px 0",background:"transparent",border:"none",
                 borderBottom:`2px solid ${tab===k?C.white:"transparent"}`,
                 color:tab===k?C.white:C.muted,
@@ -532,8 +549,8 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
 
           {/* ── RECORD TAB ── */}
           {!loading && tab==="record" && (()=>{
-            const rows = recordForDiv(divKey);
-            const tot  = totalRecord(divKey);
+            const rows = recordForDiv(statsDivKey);
+            const tot  = totalRecord(statsDivKey);
             if (rows.length===0) return (
               <div style={{fontFamily:BC,fontSize:14,color:C.muted,lineHeight:1.6}}>
                 No matches yet for {currentDivLabel}.<br/>Play vs CPU to track your record.
@@ -588,7 +605,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
 
           {/* ── TRICKS TAB ── */}
           {!loading && tab==="tricks" && (()=>{
-            const list = tricksForDiv(divKey);
+            const list = tricksForDiv(statsDivKey);
             if (list.length===0) return (
               <div style={{fontFamily:BC,fontSize:14,color:C.muted,lineHeight:1.6}}>
                 No trick data yet for {currentDivLabel}.<br/>Attempt rates are tracked when you play vs CPU.
@@ -634,7 +651,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
 
           {/* ── HISTORY TAB ── */}
           {!loading && tab==="history" && (()=>{
-            const rows = historyForDiv(divKey);
+            const rows = historyForDiv(statsDivKey);
             if (rows.length===0) return (
               <div style={{fontFamily:BC,fontSize:14,color:C.muted,lineHeight:1.6}}>
                 No match history yet for {currentDivLabel}.<br/>Play vs CPU to start tracking.
@@ -754,15 +771,24 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
           {!loading && (
             <div style={{marginTop:40,paddingTop:24,borderTop:`1px solid ${C.divider}`}}>
               {!confirmReset ? (
-                <button className="tap" onClick={()=>setConfirmReset(true)} style={{
-                  width:"100%",padding:"14px 0",background:"transparent",border:"none",
-                  fontFamily:BB,fontSize:11,letterSpacing:5,color:C.muted,cursor:"pointer",
-                  opacity:0.5,transition:"opacity 0.15s",
-                }}>RESET ALL STATS</button>
+                <div style={{display:"flex",gap:10}}>
+                  <button className="tap" onClick={()=>setConfirmReset("division")} style={{
+                    flex:1,padding:"14px 0",background:"transparent",border:"none",
+                    fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,cursor:"pointer",
+                    opacity:0.5,transition:"opacity 0.15s",
+                  }}>RESET {currentDivLabel}</button>
+                  <button className="tap" onClick={()=>setConfirmReset("all")} style={{
+                    flex:1,padding:"14px 0",background:"transparent",border:"none",
+                    fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,cursor:"pointer",
+                    opacity:0.5,transition:"opacity 0.15s",
+                  }}>RESET ALL STATS</button>
+                </div>
               ) : (
                 <div className="fadeUp" style={{textAlign:"center"}}>
                   <div style={{fontFamily:BC,fontSize:13,color:C.red,letterSpacing:2,fontWeight:600,marginBottom:14,lineHeight:1.5}}>
-                    This will permanently delete all your match history and trick data. Are you sure?
+                    {confirmReset==="division"
+                      ?`Delete all stats for ${currentDivLabel}?`
+                      :"Delete ALL match history and trick data across every competition?"}
                   </div>
                   <div style={{display:"flex",gap:10}}>
                     <button className="tap" onClick={()=>setConfirmReset(false)} style={{
@@ -770,14 +796,23 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                       borderRadius:R,fontFamily:BB,fontSize:13,letterSpacing:4,color:C.sub,cursor:"pointer",
                     }}>CANCEL</button>
                     <button className="tap" onClick={async()=>{
-                      await SB.from("match_results").delete().eq("user_id",user.id);
-                      await SB.from("trick_attempts").delete().eq("user_id",user.id);
-                      setMatches([]); setAttempts([]); setHistory([]);
+                      if (confirmReset==="division") {
+                        await SB.from("match_results").delete().eq("user_id",user.id).eq("competition",statsDivKey);
+                        await SB.from("trick_attempts").delete().eq("user_id",user.id).eq("competition",statsDivKey);
+                      } else {
+                        await SB.from("match_results").delete().eq("user_id",user.id);
+                        await SB.from("trick_attempts").delete().eq("user_id",user.id);
+                      }
+                      // Refetch
+                      const {data:m} = await SB.from("match_results").select("*").eq("user_id",user.id);
+                      const {data:a} = await SB.from("trick_attempts").select("trick,landed,competition").eq("user_id",user.id);
+                      const {data:h} = await SB.from("match_results").select("*").eq("user_id",user.id).order("created_at",{ascending:false}).limit(50);
+                      setMatches(m||[]); setAttempts(a||[]); setHistory(h||[]);
                       setConfirmReset(false);
                     }} style={{
                       flex:1,padding:"14px 0",background:`${C.red}15`,border:`1px solid ${C.red}40`,
                       borderRadius:R,fontFamily:BB,fontSize:13,letterSpacing:4,color:C.red,cursor:"pointer",
-                    }}>DELETE ALL</button>
+                    }}>DELETE</button>
                   </div>
                 </div>
               )}
