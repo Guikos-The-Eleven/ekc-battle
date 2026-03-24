@@ -48,6 +48,8 @@ if (typeof document !== "undefined") {
       button:disabled { opacity:0.4; cursor:not-allowed; }
       input::placeholder { color:#52525a; }
       input:focus { border-color:#3a3a42 !important; outline:none; }
+      textarea:focus { border-color:#3a3a42 !important; outline:none; }
+      textarea::placeholder { color:#52525a; }
       * { -webkit-tap-highlight-color:transparent; box-sizing:border-box; margin:0; padding:0; }
       html, body { height:100%; overflow:hidden; overscroll-behavior:none; background:#0b0b0c; }
       body::after {
@@ -170,15 +172,24 @@ const roll = (diff, streak, streaksOn, gameState={}) => {
 const applyStreak = (streak, pointWinner, streaksOn) => {
   if (!streaksOn) return { active:false, dir:"hot", left:0 };
   if (pointWinner==="cpu") {
+    // If cold streak active, it persists (CPU scoring doesn't break cold)
+    if (streak.active && streak.dir==="cold")
+      return streak.left<=1 ? { active:false, dir:"hot", left:0 } : { ...streak, left:streak.left-1 };
+    // If hot, keep it
     if (streak.active && streak.dir==="hot") return streak;
+    // 20% chance to start hot
     return Math.random()<0.20 ? { active:true, dir:"hot", left:0 } : { active:false, dir:"hot", left:0 };
   }
   if (pointWinner==="you") {
+    // Hot streak ends immediately when player scores
     if (streak.active && streak.dir==="hot") return { active:false, dir:"hot", left:0 };
-    if (!streak.active)
-      return Math.random()<0.22 ? { active:true, dir:"cold", left:2+Math.floor(Math.random()*2) } : { active:false, dir:"hot", left:0 };
-    return streak.left<=1 ? { active:false, dir:"hot", left:0 } : { ...streak, left:streak.left-1 };
+    // Cold streak: if active, decrement
+    if (streak.active && streak.dir==="cold")
+      return streak.left<=1 ? { active:false, dir:"hot", left:0 } : { ...streak, left:streak.left-1 };
+    // 22% chance to start cold (only if no streak active)
+    return Math.random()<0.22 ? { active:true, dir:"cold", left:2+Math.floor(Math.random()*2) } : { active:false, dir:"hot", left:0 };
   }
+  // Null: cold decrements, hot persists
   if (streak.active && streak.dir==="cold")
     return streak.left<=1 ? { active:false, dir:"hot", left:0 } : { ...streak, left:streak.left-1 };
   return streak;
@@ -848,6 +859,8 @@ export default function App() {
   const [drillSource, setDrillSource] = useState("weakest");     // "weakest" | "full" | "pick"
   const [drill,       setDrill]       = useState(null);          // active drill state
   const [pickedTricks, setPickedTricks] = useState([]);          // multi-select for pick mode
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackSent, setFeedbackSent] = useState(false);
 
   // Derived: competition key for DB
   const compDbKey = selectedComp && selectedDiv ? `${selectedComp.key}:${selectedDiv.key}` : null;
@@ -1488,6 +1501,79 @@ export default function App() {
     );
   }
 
+  // ── FEEDBACK SCREEN ─────────────────────────────────────────────────────────
+  if (screen==="feedback") {
+    const sendFeedback = async () => {
+      if (!feedbackText.trim()) return;
+      // Try saving to Supabase feedback table
+      try {
+        await SB.from("feedback").insert({
+          user_id: user?.id || null,
+          username: username || "Guest",
+          message: feedbackText.trim(),
+        });
+      } catch {}
+      setFeedbackSent(true);
+    };
+
+    return (
+      <div style={root}>
+        <div style={page}>
+          <BackBtn onClick={()=>{setScreen("home");setFeedbackText("");setFeedbackSent(false);}}/>
+
+          {feedbackSent ? (
+            <div className="fadeUp" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",gap:16}}>
+              <div style={{fontFamily:BB,fontSize:42,letterSpacing:3,color:C.green}}>THANKS</div>
+              <div style={{fontFamily:BC,fontSize:14,color:C.sub,lineHeight:1.6,letterSpacing:1,maxWidth:300}}>
+                Your feedback helps us make Comp Grind better for everyone.
+              </div>
+              <BtnGhost color={C.sub} onClick={()=>{setScreen("home");setFeedbackText("");setFeedbackSent(false);}} style={{marginTop:16,maxWidth:280}}>← BACK</BtnGhost>
+            </div>
+          ) : (
+            <>
+              <div className="rise" style={{marginBottom:24}}>
+                <div style={{fontFamily:BB,fontSize:32,letterSpacing:4,lineHeight:1,color:C.white}}>
+                  FEEDBACK
+                </div>
+                <div style={{fontFamily:BC,fontSize:13,color:C.muted,letterSpacing:2,marginTop:8,fontWeight:600,lineHeight:1.5}}>
+                  Found a bug? Want a feature? Have a trick list to add? Tell us.
+                </div>
+              </div>
+              <Div mb={20}/>
+              <Label style={{letterSpacing:3,marginBottom:8}}>Your message</Label>
+              <textarea
+                value={feedbackText}
+                onChange={e=>setFeedbackText(e.target.value)}
+                placeholder="What's on your mind..."
+                rows={6}
+                style={{
+                  width:"100%",padding:"14px 16px",background:C.surface,
+                  border:`1px solid ${C.border}`,borderRadius:R,color:C.white,
+                  fontFamily:BC,fontSize:15,letterSpacing:2,lineHeight:1.5,
+                  outline:"none",resize:"vertical",minHeight:140,
+                  transition:"border-color 0.15s",
+                }}
+              />
+              <div style={{fontFamily:BC,fontSize:10,color:C.muted,marginTop:6,letterSpacing:1}}>
+                {feedbackText.length > 0 ? `${feedbackText.length} characters` : ""}
+              </div>
+              <div style={{flex:1}}/>
+              <BtnPrimary onClick={sendFeedback}
+                style={{opacity:feedbackText.trim().length<3?0.3:1,pointerEvents:feedbackText.trim().length<3?"none":"auto",marginTop:20}}>
+                SEND FEEDBACK
+              </BtnPrimary>
+              <div style={{marginTop:12,textAlign:"center"}}>
+                <a href="https://github.com/Guikos-The-Eleven/ekc-battle/issues" target="_blank" rel="noopener noreferrer" style={{
+                  fontFamily:BC,fontSize:10,letterSpacing:2,color:C.muted,textDecoration:"none",opacity:0.5,
+                }}>or open an issue on GitHub</a>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   // ── HOME SCREEN ──────────────────────────────────────────────────────────────
   if (screen==="home") return (
     <div style={root}>
@@ -1514,11 +1600,8 @@ export default function App() {
           <img src={LOGO} alt="NXS" style={{width:250,height:250,objectFit:"contain"}}/>
         </div>
 
-        <div style={{fontFamily:BB,fontSize:12,letterSpacing:6,color:C.sub,marginBottom:6,textAlign:"center"}}>
+        <div style={{fontFamily:BB,fontSize:12,letterSpacing:6,color:C.sub,marginBottom:24,textAlign:"center"}}>
           COMP GRIND
-        </div>
-        <div style={{marginBottom:24,display:"flex",justifyContent:"center"}}>
-          <IgLink size={14} fontSize={12}/>
         </div>
 
         {/* Competition list */}
@@ -1542,18 +1625,20 @@ export default function App() {
           </div>
         </div>
 
-        {/* Feedback link */}
-        <div style={{marginTop:16,display:"flex",justifyContent:"center"}}>
-          <a href="https://github.com/Guikos-The-Eleven/ekc-battle/issues" target="_blank" rel="noopener noreferrer" style={{
-            fontFamily:BC,fontSize:11,letterSpacing:3,color:C.muted,fontWeight:600,
-            textDecoration:"none",display:"inline-flex",alignItems:"center",gap:6,
-            opacity:0.5,transition:"opacity 0.15s",
+        {/* Footer */}
+        <div style={{marginTop:20,display:"flex",justifyContent:"center",alignItems:"center",gap:20}}>
+          <IgLink size={13} fontSize={11}/>
+          <span style={{color:C.border,fontSize:10}}>·</span>
+          <button className="tap" onClick={()=>{setFeedbackText("");setFeedbackSent(false);setScreen("feedback");}} style={{
+            background:"transparent",border:"none",fontFamily:BC,fontSize:11,letterSpacing:3,
+            color:C.muted,fontWeight:600,cursor:"pointer",padding:0,
+            display:"inline-flex",alignItems:"center",gap:6,opacity:0.7,
           }}>
-            <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
+            <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
-            Feedback & Suggestions
-          </a>
+            Feedback
+          </button>
         </div>
       </div>
     </div>
@@ -1568,11 +1653,8 @@ export default function App() {
           <div style={{fontFamily:BB,fontSize:38,letterSpacing:5,lineHeight:1,color:C.white}}>
             {selectedComp.name}
           </div>
-          <div style={{fontFamily:BC,fontSize:13,color:C.muted,letterSpacing:3,marginTop:8,fontWeight:600}}>
-            {selectedComp.full}
-          </div>
-          <div style={{fontFamily:BC,fontSize:11,color:C.sub,letterSpacing:2,marginTop:4,fontWeight:600}}>
-            {selectedComp.location}
+          <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:2,marginTop:8,fontWeight:600}}>
+            {selectedComp.full} · {selectedComp.location}
           </div>
         </div>
         <Div mb={24}/>
@@ -1619,8 +1701,8 @@ export default function App() {
           <div style={{fontFamily:BB,fontSize:38,letterSpacing:5,lineHeight:1,color:C.white}}>
             {selectedDiv.name}
           </div>
-          <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:4,marginTop:8,fontWeight:600}}>
-            {selectedComp?.name} · {selectedComp?.full}
+          <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:3,marginTop:8,fontWeight:600}}>
+            {selectedComp?.name}
           </div>
         </div>
 
@@ -1814,7 +1896,7 @@ export default function App() {
 
   const MenuBack = () => (
     <div style={{padding:"12px 24px calc(22px + env(safe-area-inset-bottom, 0px))",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-      <button onClick={()=>setScreen("settings")} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:11,letterSpacing:5,cursor:"pointer",padding:0}}>← MENU</button>
+      <button onClick={()=>setScreen("settings")} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:11,letterSpacing:5,cursor:"pointer",padding:0}}>← QUIT</button>
       <div style={{fontFamily:BB,fontSize:9,letterSpacing:4,color:C.muted}}>
         COMP GRIND
       </div>
