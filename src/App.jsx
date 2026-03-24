@@ -269,6 +269,25 @@ const BackBtn = ({ onClick, label="← BACK" }) => (
   <button onClick={onClick} style={{background:"transparent",border:"none",color:C.muted,fontFamily:BB,fontSize:11,letterSpacing:5,cursor:"pointer",textAlign:"left",marginBottom:24,padding:0,display:"block"}}>{label}</button>
 );
 
+const IgIcon = ({ size=14, color=C.muted }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block",verticalAlign:"middle",flexShrink:0}}>
+    <rect x="2" y="2" width="20" height="20" rx="5"/>
+    <circle cx="12" cy="12" r="5"/>
+    <circle cx="17.5" cy="6.5" r="1.5" fill={color} stroke="none"/>
+  </svg>
+);
+
+const IgLink = ({ size=14, fontSize=12, style={} }) => (
+  <a href="https://instagram.com/kendamanxs" target="_blank" rel="noopener noreferrer" style={{
+    fontFamily:BC,fontSize,letterSpacing:3,color:C.muted,fontWeight:600,
+    textDecoration:"none",display:"inline-flex",alignItems:"center",gap:6,
+    transition:"opacity 0.15s",...style,
+  }}>
+    <IgIcon size={size} color={C.muted}/>
+    @kendamanxs
+  </a>
+);
+
 // ─── AUTH SCREEN ─────────────────────────────────────────────────────────────
 function AuthScreen({ onAuth, onGuest }) {
   const [tab,    setTab]    = useState("login");
@@ -317,10 +336,9 @@ function AuthScreen({ onAuth, onGuest }) {
         <div style={{textAlign:"center",marginBottom:36}}>
           <img src={LOGO} alt="NXS" style={{width:120,height:120,objectFit:"contain",marginBottom:12,display:"block",margin:"0 auto 12px"}}/>
           <div style={{fontFamily:BB,fontSize:9,letterSpacing:5,color:C.muted}}>NXS BATTLE · KENDAMA TRAINER</div>
-          <a href="https://instagram.com/kendamanxs" target="_blank" rel="noopener noreferrer" style={{
-            fontFamily:BC,fontSize:11,letterSpacing:3,color:C.muted,fontWeight:600,
-            textDecoration:"none",marginTop:6,display:"block",transition:"color 0.15s",
-          }}>@kendamanxs</a>
+          <div style={{marginTop:8,textAlign:"center",display:"flex",justifyContent:"center"}}>
+            <IgLink size={13} fontSize={11}/>
+          </div>
         </div>
 
         {confirmed ? (
@@ -926,13 +944,9 @@ export default function App() {
         <div style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.sub,marginBottom:6,textAlign:"center"}}>
           KENDAMA NXS · BATTLE TRAINER
         </div>
-        <a href="https://instagram.com/kendamanxs" target="_blank" rel="noopener noreferrer" style={{
-          fontFamily:BC,fontSize:12,letterSpacing:3,color:C.muted,fontWeight:600,
-          textDecoration:"none",marginBottom:24,textAlign:"center",display:"block",
-          transition:"color 0.15s",
-        }}>
-          @kendamanxs
-        </a>
+        <div style={{marginBottom:24,display:"flex",justifyContent:"center"}}>
+          <IgLink size={14} fontSize={12}/>
+        </div>
 
         {/* Competition list */}
         <div className="rise" style={{width:"100%",animationDelay:"0.08s"}}>
@@ -994,10 +1008,9 @@ export default function App() {
           ))}
         </div>
         <div style={{flex:1}}/>
-        <a href="https://instagram.com/kendamanxs" target="_blank" rel="noopener noreferrer" style={{
-          fontFamily:BC,fontSize:11,letterSpacing:3,color:C.muted,fontWeight:600,
-          textDecoration:"none",textAlign:"center",display:"block",opacity:0.6,
-        }}>@kendamanxs</a>
+        <div style={{display:"flex",justifyContent:"center",opacity:0.6}}>
+          <IgLink size={13} fontSize={11}/>
+        </div>
       </div>
     </div>
   );
