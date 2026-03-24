@@ -772,6 +772,12 @@ export default function App() {
   const [result,   setResult]   = useState(null);
   const [gs,       setGs]       = useState(null);
 
+  // Drill mode state
+  const [drillType,   setDrillType]   = useState("consistency"); // "consistency" | "firsttry"
+  const [drillTarget, setDrillTarget] = useState(3);             // streak target for consistency
+  const [drillSource, setDrillSource] = useState("weakest");     // "weakest" | "full" | "pick"
+  const [drill,       setDrill]       = useState(null);          // active drill state
+
   // Derived: competition key for DB
   const compDbKey = selectedComp && selectedDiv ? `${selectedComp.key}:${selectedDiv.key}` : null;
 
@@ -974,6 +980,107 @@ export default function App() {
     setScreen("battle");
   }
 
+  // ── DRILL logic ──────────────────────────────────────────────────────────────
+  async function buildDrillQueue(source) {
+    const tricks = allTricks();
+    if (source==="full") {
+      const shuffled = [...tricks].sort(()=>Math.random()-0.5);
+      return shuffled;
+    }
+    if (source==="weakest" && userRef.current) {
+      const { data } = await SB.from("trick_attempts").select("trick,landed,competition")
+        .eq("user_id",userRef.current.id);
+      const stats = {};
+      (data||[]).filter(a=>a.competition===compDbKeyRef.current).forEach(a=>{
+        if (!stats[a.trick]) stats[a.trick]={land:0,miss:0};
+        if (a.landed) stats[a.trick].land++; else stats[a.trick].miss++;
+      });
+      // Sort: untried first (random), then lowest rate first
+      const rated = tricks.map(t=>{
+        const s = stats[t];
+        if (!s) return {trick:t, rate:-1}; // untried
+        return {trick:t, rate:s.land/(s.land+s.miss)};
+      });
+      rated.sort((a,b)=>a.rate-b.rate);
+      return rated.map(r=>r.trick);
+    }
+    // fallback: shuffled
+    return [...tricks].sort(()=>Math.random()-0.5);
+  }
+
+  async function startDrill() {
+    if (drillSource==="pick") {
+      // Go to trick picker screen
+      setScreen("drill_pick");
+      return;
+    }
+    const queue = await buildDrillQueue(drillSource);
+    if (queue.length===0) return;
+    if (drillType==="consistency") {
+      setDrill({type:"consistency",target:drillTarget,trick:queue[0],streak:0,attempts:0,
+        cleared:[],queue:queue.slice(1),totalAttempts:0,totalLands:0,bestStreak:0});
+    } else {
+      setDrill({type:"firsttry",trick:queue[0],queue:queue.slice(1),
+        results:[],index:0,total:queue.length,phase:"active"});
+    }
+    setScreen("drill");
+  }
+
+  function startDrillPick(trick) {
+    if (drillType==="consistency") {
+      setDrill({type:"consistency",target:drillTarget,trick,streak:0,attempts:0,
+        cleared:[],queue:[],totalAttempts:0,totalLands:0,bestStreak:0,pickMode:true});
+    } else {
+      setDrill({type:"firsttry",trick,queue:[],
+        results:[],index:0,total:1,phase:"active",pickMode:true});
+    }
+    setScreen("drill");
+  }
+
+  function onDrillAttempt(landed) {
+    haptic(landed?15:8);
+    if (drill.type==="consistency") {
+      saveTrickAttempt(drill.trick, landed);
+      const newStreak = landed ? drill.streak+1 : 0;
+      const newAttempts = drill.attempts+1;
+      const newTotal = drill.totalAttempts+1;
+      const newLands = drill.totalLands+(landed?1:0);
+      const newBest = Math.max(drill.bestStreak, newStreak);
+
+      if (newStreak >= drill.target) {
+        // Trick cleared!
+        haptic(30);
+        const newCleared = [...drill.cleared, {trick:drill.trick, attempts:newAttempts}];
+        if (drill.queue.length>0 && !drill.pickMode) {
+          // Show cleared, then load next trick
+          setDrill(p=>({...p,streak:newStreak,attempts:newAttempts,totalAttempts:newTotal,
+            totalLands:newLands,bestStreak:newBest,cleared:newCleared,
+            nextTrick:p.queue[0],nextQueue:p.queue.slice(1),phase:"cleared"}));
+        } else {
+          // Done — all cleared or pick mode
+          setDrill(p=>({...p,streak:newStreak,attempts:newAttempts,totalAttempts:newTotal,
+            totalLands:newLands,bestStreak:newBest,cleared:newCleared,phase:"done"}));
+        }
+      } else {
+        setDrill(p=>({...p,streak:newStreak,attempts:newAttempts,totalAttempts:newTotal,
+          totalLands:newLands,bestStreak:newBest}));
+      }
+    } else {
+      // First try
+      saveTrickAttempt(drill.trick, landed);
+      const newResults = [...drill.results, {trick:drill.trick, landed}];
+      if (drill.queue.length>0) {
+        setDrill(p=>({...p,results:newResults,phase:"ft_result"}));
+        setTimeout(()=>{
+          setDrill(p=>({...p,trick:p.queue[0],queue:p.queue.slice(1),
+            index:p.index+1,phase:"active"}));
+        },1200);
+      } else {
+        setDrill(p=>({...p,results:newResults,phase:"done"}));
+      }
+    }
+  }
+
   const root = {
     fontFamily:BC,background:C.bg,color:C.text,
     height:"100dvh",maxWidth:440,margin:"0 auto",
@@ -1006,6 +1113,268 @@ export default function App() {
       compDbKey={compDbKey} selectedComp={selectedComp} selectedDiv={selectedDiv}
     />
   );
+
+  // ── DRILL: PICK SCREEN ───────────────────────────────────────────────────────
+  if (screen==="drill_pick") {
+    const tricks = allTricks();
+    const clearedTricks = drill?.cleared?.map(c=>c.trick) || [];
+    return (
+      <div style={root}>
+        <div style={page}>
+          <BackBtn onClick={()=>setScreen("settings")}/>
+          <div className="rise" style={{marginBottom:20}}>
+            <div style={{fontFamily:BB,fontSize:28,letterSpacing:4,lineHeight:1,color:C.white}}>
+              {drillType==="consistency"?"PICK A TRICK":"FIRST TRY"}
+            </div>
+            <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:3,marginTop:6,fontWeight:600}}>
+              {drillType==="consistency"?`Land ${drillTarget}× in a row to clear`:"Tap to start"}
+            </div>
+          </div>
+          <Div mb={16}/>
+          <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",margin:"0 -24px",padding:"0 24px"}}>
+            {tricks.map((t,i)=>{
+              const done = clearedTricks.includes(t);
+              return (
+                <button key={i} className="tap" onClick={()=>!done&&startDrillPick(t)} disabled={done} style={{
+                  width:"100%",padding:"14px 0",background:"transparent",border:"none",
+                  borderTop:i===0?`1px solid ${C.border}`:"none",
+                  borderBottom:`1px solid ${C.border}`,
+                  cursor:done?"default":"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
+                  opacity:done?0.35:1,transition:"opacity 0.1s",
+                }}>
+                  <span style={{fontFamily:BC,fontSize:13,color:done?C.muted:C.sub,fontWeight:600,
+                    textAlign:"left",lineHeight:1.3,flex:1,paddingRight:12}}>{t}</span>
+                  {done
+                    ? <span style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:C.green}}>CLEARED</span>
+                    : <span style={{fontFamily:BB,fontSize:12,letterSpacing:3,color:C.muted}}>→</span>
+                  }
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── DRILL: ACTIVE SCREEN ─────────────────────────────────────────────────────
+  if (screen==="drill" && drill) {
+
+    // Done state — drill result
+    if (drill.phase==="done") {
+      const isCons = drill.type==="consistency";
+      const cleared = drill.cleared||[];
+      const ftResults = drill.results||[];
+      const ftLanded = ftResults.filter(r=>r.landed).length;
+      const ftRate = ftResults.length>0 ? Math.round(ftLanded/ftResults.length*100) : 0;
+
+      return (
+        <div style={{...root,justifyContent:"center"}}>
+          <div style={{position:"relative",zIndex:1,textAlign:"center",padding:"0 24px"}}>
+            <div className="fadeUp" style={{animationDelay:"0s"}}>
+              <img src={LOGO} alt="NXS" style={{width:48,height:48,objectFit:"contain",margin:"0 auto 16px",display:"block",opacity:0.3}}/>
+            </div>
+            <div className="pop" style={{animationDelay:"0.1s",animationFillMode:"both"}}>
+              <div style={{fontFamily:BB,fontSize:48,letterSpacing:2,lineHeight:0.9,color:C.white}}>
+                {isCons?"DRILL DONE":"FIRST TRY"}
+              </div>
+            </div>
+
+            <div className="fadeUp" style={{animationDelay:"0.25s",animationFillMode:"both"}}>
+              <Div mt={24} mb={24}/>
+              {isCons ? (
+                <>
+                  <div style={{display:"flex",justifyContent:"center",gap:32,marginBottom:24}}>
+                    <div style={{textAlign:"center"}}>
+                      <div style={{fontFamily:BB,fontSize:48,lineHeight:0.9,color:C.green}}>{cleared.length}</div>
+                      <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:8}}>CLEARED</div>
+                    </div>
+                    <div style={{textAlign:"center"}}>
+                      <div style={{fontFamily:BB,fontSize:48,lineHeight:0.9,color:C.white}}>{drill.totalAttempts}</div>
+                      <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:8}}>ATTEMPTS</div>
+                    </div>
+                    <div style={{textAlign:"center"}}>
+                      <div style={{fontFamily:BB,fontSize:48,lineHeight:0.9,color:C.yellow}}>{drill.bestStreak}</div>
+                      <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:8}}>BEST RUN</div>
+                    </div>
+                  </div>
+                  {cleared.length>0 && (
+                    <>
+                      <Div mb={16}/>
+                      {cleared.map((c,i)=>(
+                        <div key={i} style={{borderLeft:`3px solid ${C.green}`,paddingLeft:12,paddingTop:6,paddingBottom:6,
+                          marginBottom:4,textAlign:"left",background:`${C.green}06`}}>
+                          <span style={{fontFamily:BC,fontSize:12,color:C.sub,fontWeight:600}}>{c.trick}</span>
+                          <span style={{fontFamily:BC,fontSize:10,color:C.muted,marginLeft:8}}>{c.attempts} att</span>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div style={{display:"flex",justifyContent:"center",gap:32,marginBottom:24}}>
+                    <div style={{textAlign:"center"}}>
+                      <div style={{fontFamily:BB,fontSize:56,lineHeight:0.9,color:ftRate>=50?C.green:C.red}}>{ftRate}%</div>
+                      <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:8}}>FIRST TRY RATE</div>
+                    </div>
+                    <div style={{textAlign:"center"}}>
+                      <div style={{fontFamily:BB,fontSize:56,lineHeight:0.9,color:C.white}}>{ftLanded}/{ftResults.length}</div>
+                      <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:8}}>LANDED</div>
+                    </div>
+                  </div>
+                  {ftResults.length>0 && (
+                    <>
+                      <Div mb={16}/>
+                      <div style={{maxHeight:200,overflowY:"auto",textAlign:"left"}}>
+                        {ftResults.map((r,i)=>(
+                          <div key={i} style={{borderLeft:`3px solid ${r.landed?C.green:C.red}`,paddingLeft:12,
+                            paddingTop:5,paddingBottom:5,marginBottom:3,background:`${r.landed?C.green:C.red}06`}}>
+                            <span style={{fontFamily:BC,fontSize:12,color:C.sub,fontWeight:600}}>{r.trick}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="fadeUp" style={{marginTop:28,display:"flex",flexDirection:"column",gap:12,animationDelay:"0.45s",animationFillMode:"both"}}>
+              {drill.pickMode ? (
+                <BtnPrimary onClick={()=>{
+                  setDrill(p=>({...p,phase:undefined,trick:null,streak:0,attempts:0}));
+                  setScreen("drill_pick");
+                }}>PICK ANOTHER</BtnPrimary>
+              ) : (
+                <BtnPrimary onClick={()=>{setDrill(null);setScreen("settings");}}>DRILL AGAIN</BtnPrimary>
+              )}
+              <BtnGhost onClick={()=>{setDrill(null);setScreen("home");setSelectedComp(null);setSelectedDiv(null);}}>← MAIN MENU</BtnGhost>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Cleared animation (consistency, auto-queue)
+    if (drill.phase==="cleared" && drill.type==="consistency") {
+      setTimeout(()=>{
+        setDrill(p=>{
+          if (p.phase!=="cleared") return p;
+          return {...p,trick:p.nextTrick,queue:p.nextQueue,streak:0,attempts:0,
+            nextTrick:undefined,nextQueue:undefined,phase:undefined};
+        });
+      },1400);
+      return (
+        <div style={root}>
+          <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+            <div className="pop" style={{textAlign:"center"}}>
+              <div style={{fontFamily:BB,fontSize:48,letterSpacing:3,color:C.green,textShadow:`0 0 30px ${C.green}30`}}>CLEARED</div>
+              <div style={{fontFamily:BC,fontSize:13,color:C.muted,letterSpacing:3,fontWeight:600,marginTop:8}}>Next trick loading...</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // First-try flash result
+    if (drill.phase==="ft_result" && drill.type==="firsttry") {
+      const last = drill.results[drill.results.length-1];
+      const col = last?.landed?C.green:C.red;
+      return (
+        <div style={root}>
+          <div style={{position:"fixed",inset:0,background:col,opacity:0,animation:"flash 0.6s ease-out",zIndex:3,pointerEvents:"none"}}/>
+          <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+            <div className="pop" style={{fontFamily:BB,fontSize:56,letterSpacing:3,color:col}}>
+              {last?.landed?"LANDED":"MISSED"}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Active drill screen
+    const isCons = drill.type==="consistency";
+    const progress = isCons ? drill.streak/drill.target : (drill.index+1)/drill.total;
+    const progressLabel = isCons
+      ? `${drill.streak} / ${drill.target}`
+      : `${drill.index+1} / ${drill.total}`;
+
+    return (
+      <div style={root}>
+        <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
+
+          {/* Drill header */}
+          <div style={{padding:"calc(20px + env(safe-area-inset-top, 0px)) 24px 0"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+              <div style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.muted}}>
+                {isCons?"CONSISTENCY":"FIRST TRY"}
+              </div>
+              <div style={{fontFamily:BB,fontSize:14,letterSpacing:2,color:C.white}}>{progressLabel}</div>
+            </div>
+            {/* Progress bar */}
+            <div style={{height:2,background:C.border,marginBottom:6}}>
+              <div style={{height:2,background:isCons?C.green:C.white,width:`${Math.min(progress*100,100)}%`,
+                transition:"width 0.3s cubic-bezier(0.34,1.56,0.64,1)"}}/>
+            </div>
+            {isCons && drill.cleared.length>0 && (
+              <div style={{fontFamily:BC,fontSize:10,color:C.muted,letterSpacing:2,fontWeight:600,textAlign:"right"}}>
+                {drill.cleared.length} cleared · {drill.totalAttempts} total
+              </div>
+            )}
+            <Div mt={12}/>
+          </div>
+
+          {/* Trick display */}
+          <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 28px",gap:16}}>
+            <div className="slideIn" key={drill.trick} style={{borderLeft:`3px solid ${C.white}`,paddingLeft:20}}>
+              <div style={{fontFamily:BB,fontSize:drill.trick.length>40?28:36,letterSpacing:2,lineHeight:1.1,color:C.white}}>
+                {drill.trick}
+              </div>
+            </div>
+            {isCons && drill.streak>0 && (
+              <div className="fadeUp" style={{display:"flex",alignItems:"center",gap:8,paddingLeft:23}}>
+                <div style={{display:"flex",gap:3}}>
+                  {Array.from({length:drill.target}).map((_,i)=>(
+                    <div key={i} style={{width:14,height:3,
+                      background:i<drill.streak?C.green:C.border,
+                      boxShadow:i<drill.streak?`0 0 4px ${C.green}40`:undefined,
+                      transition:"all 0.2s"}}/>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* LAND / MISS buttons */}
+          <div style={{padding:"0 24px 28px"}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+              <button className="tap" onClick={()=>onDrillAttempt(true)} style={{
+                padding:"0",height:isCons?120:140,background:C.green,border:"none",borderRadius:2,
+                color:C.bg,fontFamily:BB,fontSize:32,letterSpacing:4,cursor:"pointer",
+                transition:"all 0.1s",boxShadow:`0 0 24px ${C.green}25`}}>LAND</button>
+              <button className="tap" onClick={()=>onDrillAttempt(false)} style={{
+                padding:"0",height:isCons?120:140,background:`${C.red}08`,
+                border:`1px solid ${C.red}30`,borderRadius:2,color:`${C.red}cc`,
+                fontFamily:BB,fontSize:32,letterSpacing:4,cursor:"pointer",
+                transition:"all 0.1s"}}>MISS</button>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div style={{padding:"0 24px calc(16px + env(safe-area-inset-bottom, 0px))",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <button onClick={()=>{
+              if (drill.pickMode) { setDrill(null);setScreen("drill_pick"); }
+              else { setDrill(null);setScreen("settings"); }
+            }} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:11,letterSpacing:5,cursor:"pointer",padding:0}}>
+              ← {drill.pickMode?"TRICKS":"MENU"}
+            </button>
+            <div style={{fontFamily:BB,fontSize:9,letterSpacing:4,color:C.muted}}>COMP GRIND</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ── HOME SCREEN ──────────────────────────────────────────────────────────────
   if (screen==="home") return (
@@ -1130,6 +1499,7 @@ export default function App() {
         <Seg label="Game Mode" val={mode} onChange={setMode} opts={[
           {key:"cpu",label:"CPU"},
           {key:"2p", label:"2 PLAYER"},
+          {key:"drill",label:"DRILL"},
         ]}/>
         {mode==="cpu" && (<>
           <Seg label="CPU Difficulty" val={diff} onChange={setDiff} opts={[
@@ -1142,12 +1512,34 @@ export default function App() {
             {key:false,label:"OFF",sub:"steady rate"},
           ]}/>
         </>)}
-        <Seg label="Race To" val={race} onChange={setRace} opts={[
-          {key:3,label:"3"},
-          {key:5,label:"5"},
-        ]}/>
+        {mode==="drill" && (<>
+          <Seg label="Drill Type" val={drillType} onChange={setDrillType} opts={[
+            {key:"consistency",label:"CONSISTENCY",sub:`land ${drillTarget}× in a row`},
+            {key:"firsttry",   label:"FIRST TRY",  sub:"one shot per trick"},
+          ]}/>
+          {drillType==="consistency" && (
+            <Seg label="Streak Target" val={drillTarget} onChange={setDrillTarget} opts={[
+              {key:3, label:"3×"},
+              {key:5, label:"5×"},
+              {key:10,label:"10×"},
+            ]}/>
+          )}
+          <Seg label="Trick Source" val={drillSource} onChange={setDrillSource} opts={[
+            {key:"weakest",label:"WEAKEST",sub:"from stats"},
+            {key:"full",   label:"FULL LIST",sub:"shuffled"},
+            {key:"pick",   label:"PICK",sub:"choose trick"},
+          ]}/>
+        </>)}
+        {mode!=="drill" && (
+          <Seg label="Race To" val={race} onChange={setRace} opts={[
+            {key:3,label:"3"},
+            {key:5,label:"5"},
+          ]}/>
+        )}
         <div style={{flex:1}}/>
-        <BtnPrimary onClick={startGame}>START BATTLE</BtnPrimary>
+        <BtnPrimary onClick={mode==="drill"?startDrill:startGame}>
+          {mode==="drill"?"START DRILL":"START BATTLE"}
+        </BtnPrimary>
       </div>
     </div>
   );
