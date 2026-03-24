@@ -1508,6 +1508,20 @@ export default function App() {
             ))}
           </div>
         </div>
+
+        {/* Feedback link */}
+        <div style={{marginTop:16,display:"flex",justifyContent:"center"}}>
+          <a href="https://github.com/Guikos-The-Eleven/ekc-battle/issues" target="_blank" rel="noopener noreferrer" style={{
+            fontFamily:BC,fontSize:11,letterSpacing:3,color:C.muted,fontWeight:600,
+            textDecoration:"none",display:"inline-flex",alignItems:"center",gap:6,
+            opacity:0.5,transition:"opacity 0.15s",
+          }}>
+            <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            Feedback & Suggestions
+          </a>
+        </div>
       </div>
     </div>
   );
