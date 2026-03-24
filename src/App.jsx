@@ -317,6 +317,10 @@ function AuthScreen({ onAuth, onGuest }) {
         <div style={{textAlign:"center",marginBottom:36}}>
           <img src={LOGO} alt="NXS" style={{width:120,height:120,objectFit:"contain",marginBottom:12,display:"block",margin:"0 auto 12px"}}/>
           <div style={{fontFamily:BB,fontSize:9,letterSpacing:5,color:C.muted}}>NXS BATTLE · KENDAMA TRAINER</div>
+          <a href="https://instagram.com/kendamanxs" target="_blank" rel="noopener noreferrer" style={{
+            fontFamily:BC,fontSize:11,letterSpacing:3,color:C.muted,fontWeight:600,
+            textDecoration:"none",marginTop:6,display:"block",transition:"color 0.15s",
+          }}>@kendamanxs</a>
         </div>
 
         {confirmed ? (
@@ -919,13 +923,19 @@ export default function App() {
           <img src={LOGO} alt="NXS" style={{width:250,height:250,objectFit:"contain"}}/>
         </div>
 
-        <div style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.sub,marginBottom:20,textAlign:"center"}}>
+        <div style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.sub,marginBottom:6,textAlign:"center"}}>
           KENDAMA NXS · BATTLE TRAINER
         </div>
+        <a href="https://instagram.com/kendamanxs" target="_blank" rel="noopener noreferrer" style={{
+          fontFamily:BC,fontSize:12,letterSpacing:3,color:C.muted,fontWeight:600,
+          textDecoration:"none",marginBottom:24,textAlign:"center",display:"block",
+          transition:"color 0.15s",
+        }}>
+          @kendamanxs
+        </a>
 
         {/* Competition list */}
         <div className="rise" style={{width:"100%",animationDelay:"0.08s"}}>
-          <Label style={{letterSpacing:4,marginBottom:12}}>SELECT COMPETITION</Label>
           <div style={{display:"flex",flexDirection:"column"}}>
             {COMPS.map((comp,i)=>(
               <button key={comp.key} className="tap" onClick={()=>{setSelectedComp(comp);setScreen("division");}} style={{
@@ -936,9 +946,10 @@ export default function App() {
                 transition:"opacity 0.1s",width:"100%",
               }}>
                 <span style={{fontFamily:BB,fontSize:32,letterSpacing:4,color:C.white}}>{comp.name}</span>
-                <span style={{fontFamily:BC,fontSize:11,letterSpacing:2,color:C.sub,fontWeight:600,textAlign:"right"}}>
-                  {comp.location.split("·")[0].trim()} · {comp.location.split("·")[1]?.trim()} →
-                </span>
+                <div style={{textAlign:"right",display:"flex",alignItems:"center",gap:10}}>
+                  <span style={{fontFamily:BC,fontSize:11,letterSpacing:2,color:C.sub,fontWeight:600}}>{comp.location}</span>
+                  <span style={{fontFamily:BB,fontSize:12,letterSpacing:2,color:C.muted}}>→</span>
+                </div>
               </button>
             ))}
           </div>
@@ -964,7 +975,6 @@ export default function App() {
           </div>
         </div>
         <Div mb={24}/>
-        <Label style={{letterSpacing:4,marginBottom:12}}>SELECT DIVISION</Label>
         <div style={{display:"flex",flexDirection:"column"}}>
           {selectedComp.divisions.map((div,i)=>(
             <button key={div.key} className="tap" onClick={()=>{
@@ -979,10 +989,15 @@ export default function App() {
               transition:"opacity 0.1s",width:"100%",
             }}>
               <span style={{fontFamily:BB,fontSize:28,letterSpacing:4,color:C.white}}>{div.name}</span>
-              <span style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.sub}}>{div.badge} →</span>
+              <span style={{fontFamily:BB,fontSize:12,letterSpacing:4,color:C.muted}}>→</span>
             </button>
           ))}
         </div>
+        <div style={{flex:1}}/>
+        <a href="https://instagram.com/kendamanxs" target="_blank" rel="noopener noreferrer" style={{
+          fontFamily:BC,fontSize:11,letterSpacing:3,color:C.muted,fontWeight:600,
+          textDecoration:"none",textAlign:"center",display:"block",opacity:0.6,
+        }}>@kendamanxs</a>
       </div>
     </div>
   );
