@@ -1123,13 +1123,13 @@ export default function App() {
         // Trick cleared!
         haptic(30);
         const newCleared = [...drill.cleared, {trick:drill.trick, attempts:newAttempts}];
-        if (drill.queue.length>0 && !drill.pickMode) {
+        if (drill.queue.length>0) {
           // Show cleared, then load next trick
           setDrill(p=>({...p,streak:newStreak,attempts:newAttempts,totalAttempts:newTotal,
             totalLands:newLands,bestStreak:newBest,cleared:newCleared,
             nextTrick:p.queue[0],nextQueue:p.queue.slice(1),phase:"cleared"}));
         } else {
-          // Done — all cleared or pick mode
+          // Done — all tricks cleared
           setDrill(p=>({...p,streak:newStreak,attempts:newAttempts,totalAttempts:newTotal,
             totalLands:newLands,bestStreak:newBest,cleared:newCleared,phase:"done"}));
         }
@@ -1354,15 +1354,14 @@ export default function App() {
             </div>
 
             <div className="fadeUp" style={{marginTop:28,display:"flex",flexDirection:"column",gap:12,animationDelay:"0.45s",animationFillMode:"both"}}>
-              {drill.pickMode ? (
+              {drill.pickMode && (
                 <BtnPrimary onClick={()=>{
                   setPickedTricks([]);
                   setDrill(p=>({...p,phase:undefined,trick:null,streak:0,attempts:0}));
                   setScreen("drill_pick");
                 }}>PICK MORE TRICKS</BtnPrimary>
-              ) : (
-                <BtnPrimary onClick={()=>{setDrill(null);setScreen("settings");}}>DRILL AGAIN</BtnPrimary>
               )}
+              <BtnGhost color={C.sub} onClick={()=>{setDrill(null);setScreen("settings");}}>← SETTINGS</BtnGhost>
               <BtnGhost onClick={()=>{setDrill(null);setScreen("home");setSelectedComp(null);setSelectedDiv(null);}}>← MAIN MENU</BtnGhost>
             </div>
           </div>
@@ -1478,10 +1477,9 @@ export default function App() {
           {/* Footer */}
           <div style={{padding:"0 24px calc(16px + env(safe-area-inset-bottom, 0px))",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <button onClick={()=>{
-              if (drill.pickMode) { setPickedTricks([]);setDrill(null);setScreen("drill_pick"); }
-              else { setDrill(null);setScreen("settings"); }
+              setPickedTricks([]);setDrill(null);setScreen("settings");
             }} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:11,letterSpacing:5,cursor:"pointer",padding:0}}>
-              ← {drill.pickMode?"TRICKS":"MENU"}
+              ← QUIT
             </button>
             <div style={{fontFamily:BB,fontSize:9,letterSpacing:4,color:C.muted}}>COMP GRIND</div>
           </div>
