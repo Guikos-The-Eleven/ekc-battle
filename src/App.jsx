@@ -1605,9 +1605,9 @@ export default function App() {
         </div>
 
         {/* Logo + Name */}
-        <div className="rise" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:"100%",flex:1}}>
-          <img src={LOGO} alt="NXS" style={{width:130,height:130,objectFit:"contain"}}/>
-          <div style={{fontFamily:BB,fontSize:48,letterSpacing:10,color:C.white,marginTop:-2,textAlign:"center"}}>
+        <div className="rise" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:"100%"}}>
+          <img src={LOGO} alt="NXS" style={{width:120,height:120,objectFit:"contain"}}/>
+          <div style={{fontFamily:BB,fontSize:44,letterSpacing:10,color:C.white,marginTop:-2,textAlign:"center"}}>
             KOMP
           </div>
           <div style={{fontFamily:BC,fontSize:10,letterSpacing:3,color:C.muted,fontWeight:600,marginTop:2}}>
@@ -1615,15 +1615,15 @@ export default function App() {
           </div>
         </div>
 
-        {/* Mode cards — 2x2 grid */}
-        <div className="rise" style={{width:"100%",display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,animationDelay:"0.06s"}}>
+        {/* Mode cards — 2x2 grid, fills remaining space */}
+        <div className="rise" style={{width:"100%",display:"grid",gridTemplateColumns:"1fr 1fr",gridTemplateRows:"1fr 1fr",gap:8,animationDelay:"0.06s",flex:1,marginTop:16}}>
           {modeCards.map(m=>(
             <button key={m.key} className="tap" onClick={()=>{
               if (!m.available) return;
               setMode(m.key);
               setScreen("compPick");
             }} style={{
-              padding:"16px 16px",height:80,background:m.available?C.surface:"transparent",
+              padding:"16px 16px",background:m.available?C.surface:"transparent",
               border:`1px solid ${m.available?C.border:`${C.border}60`}`,borderRadius:R,
               cursor:m.available?"pointer":"default",textAlign:"left",
               transition:"all 0.12s",opacity:m.available?1:0.35,
