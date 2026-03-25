@@ -1615,33 +1615,33 @@ export default function App() {
           </div>
         </div>
 
-        {/* Mode cards */}
-        <div className="rise" style={{width:"100%",display:"flex",flexDirection:"column",gap:8,animationDelay:"0.06s",flex:1}}>
+        {/* Mode cards — 2x2 grid */}
+        <div className="rise" style={{width:"100%",display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,animationDelay:"0.06s"}}>
           {modeCards.map(m=>(
             <button key={m.key} className="tap" onClick={()=>{
               if (!m.available) return;
               setMode(m.key);
               setScreen("compPick");
             }} style={{
-              width:"100%",padding:"18px 20px",background:m.available?C.surface:"transparent",
+              padding:"20px 16px",background:m.available?C.surface:"transparent",
               border:`1px solid ${m.available?C.border:`${C.border}60`}`,borderRadius:R,
               cursor:m.available?"pointer":"default",textAlign:"left",
               transition:"all 0.12s",opacity:m.available?1:0.35,
-              display:"flex",alignItems:"center",gap:16,
+              display:"flex",flexDirection:"column",gap:6,
             }}>
-              <div style={{fontFamily:BB,fontSize:22,color:m.available?C.white:C.muted,opacity:0.6,width:28,textAlign:"center"}}>{m.icon}</div>
-              <div style={{flex:1}}>
-                <div style={{display:"flex",alignItems:"center",gap:10}}>
-                  <span style={{fontFamily:BB,fontSize:20,letterSpacing:4,color:m.available?C.white:C.muted}}>{m.label}</span>
-                  {!m.available && <span style={{fontFamily:BC,fontSize:9,letterSpacing:2,color:C.muted,fontWeight:600,
-                    border:`1px solid ${C.border}`,padding:"2px 6px",borderRadius:R}}>SOON</span>}
-                </div>
-                <div style={{fontFamily:BC,fontSize:12,letterSpacing:2,color:m.available?C.sub:C.muted,fontWeight:600,marginTop:2}}>{m.desc}</div>
+              <div style={{fontFamily:BB,fontSize:20,letterSpacing:4,color:m.available?C.white:C.muted}}>
+                {m.label}
               </div>
-              {m.available && <span style={{fontFamily:BB,fontSize:14,color:C.muted}}>→</span>}
+              <div style={{fontFamily:BC,fontSize:11,letterSpacing:1,color:m.available?C.sub:C.muted,fontWeight:600,lineHeight:1.3}}>
+                {m.desc}
+              </div>
+              {!m.available && <span style={{fontFamily:BC,fontSize:9,letterSpacing:2,color:C.muted,fontWeight:600,
+                border:`1px solid ${C.border}`,padding:"2px 6px",borderRadius:R,alignSelf:"flex-start",marginTop:2}}>SOON</span>}
             </button>
           ))}
         </div>
+
+        <div style={{flex:1}}/>
 
         {/* Footer */}
         <div style={{marginTop:16,display:"flex",justifyContent:"center",alignItems:"center",gap:20}}>
