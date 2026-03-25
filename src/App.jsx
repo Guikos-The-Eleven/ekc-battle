@@ -1605,9 +1605,9 @@ export default function App() {
         </div>
 
         {/* Logo + Name */}
-        <div className="rise" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:"100%",marginBottom:28,marginTop:12}}>
-          <img src={LOGO} alt="NXS" style={{width:160,height:160,objectFit:"contain"}}/>
-          <div style={{fontFamily:BB,fontSize:52,letterSpacing:10,color:C.white,marginTop:-4,textAlign:"center"}}>
+        <div className="rise" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:"100%",flex:1}}>
+          <img src={LOGO} alt="NXS" style={{width:130,height:130,objectFit:"contain"}}/>
+          <div style={{fontFamily:BB,fontSize:48,letterSpacing:10,color:C.white,marginTop:-2,textAlign:"center"}}>
             KOMP
           </div>
           <div style={{fontFamily:BC,fontSize:10,letterSpacing:3,color:C.muted,fontWeight:600,marginTop:2}}>
@@ -1623,28 +1623,28 @@ export default function App() {
               setMode(m.key);
               setScreen("compPick");
             }} style={{
-              padding:"20px 16px",background:m.available?C.surface:"transparent",
+              padding:"16px 16px",height:80,background:m.available?C.surface:"transparent",
               border:`1px solid ${m.available?C.border:`${C.border}60`}`,borderRadius:R,
               cursor:m.available?"pointer":"default",textAlign:"left",
               transition:"all 0.12s",opacity:m.available?1:0.35,
-              display:"flex",flexDirection:"column",gap:6,
+              display:"flex",flexDirection:"column",justifyContent:"center",gap:3,
+              position:"relative",
             }}>
-              <div style={{fontFamily:BB,fontSize:20,letterSpacing:4,color:m.available?C.white:C.muted}}>
+              <div style={{fontFamily:BB,fontSize:18,letterSpacing:4,color:m.available?C.white:C.muted}}>
                 {m.label}
               </div>
-              <div style={{fontFamily:BC,fontSize:11,letterSpacing:1,color:m.available?C.sub:C.muted,fontWeight:600,lineHeight:1.3}}>
+              <div style={{fontFamily:BC,fontSize:11,letterSpacing:1,color:m.available?C.sub:C.muted,fontWeight:600}}>
                 {m.desc}
               </div>
-              {!m.available && <span style={{fontFamily:BC,fontSize:9,letterSpacing:2,color:C.muted,fontWeight:600,
-                border:`1px solid ${C.border}`,padding:"2px 6px",borderRadius:R,alignSelf:"flex-start",marginTop:2}}>SOON</span>}
+              {!m.available && <span style={{fontFamily:BC,fontSize:8,letterSpacing:2,color:C.muted,fontWeight:600,
+                border:`1px solid ${C.border}`,padding:"1px 5px",borderRadius:R,
+                position:"absolute",top:8,right:8}}>SOON</span>}
             </button>
           ))}
         </div>
 
-        <div style={{flex:1}}/>
-
         {/* Footer */}
-        <div style={{marginTop:16,display:"flex",justifyContent:"center",alignItems:"center",gap:20}}>
+        <div style={{marginTop:20,display:"flex",justifyContent:"center",alignItems:"center",gap:20}}>
           <IgLink size={13} fontSize={11}/>
           <span style={{color:C.border,fontSize:10}}>·</span>
           <button className="tap" onClick={()=>{setFeedbackText("");setFeedbackSent(false);setScreen("feedback");}} style={{
