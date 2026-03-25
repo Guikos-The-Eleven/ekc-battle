@@ -1668,8 +1668,8 @@ export default function App() {
           <div style={{marginTop:20,marginBottom:20}}/>
         )}
 
-        {/* Mode cards — 2x2 grid with accent borders */}
-        <div style={{width:"100%",display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+        {/* Mode cards — 2x2 grid, fills remaining space */}
+        <div style={{width:"100%",display:"grid",gridTemplateColumns:"1fr 1fr",gridTemplateRows:"1fr 1fr",gap:8,flex:1}}>
           {modeCards.map((m,i)=>(
             <button key={m.key} className="tap fadeUp" onClick={()=>{
               if (!m.available) return;
@@ -1682,7 +1682,7 @@ export default function App() {
               cursor:m.available?"pointer":"default",textAlign:"left",
               transition:"all 0.12s",opacity:m.available?1:0.3,
               display:"flex",flexDirection:"column",justifyContent:"flex-end",gap:4,
-              position:"relative",minHeight:90,
+              position:"relative",
               animationDelay:`${0.12+i*0.06}s`,animationFillMode:"both",
             }}>
               {!m.available && <span style={{fontFamily:BC,fontSize:8,letterSpacing:2,color:C.muted,fontWeight:600,
@@ -1697,8 +1697,6 @@ export default function App() {
             </button>
           ))}
         </div>
-
-        <div style={{flex:1}}/>
 
         {/* Footer */}
         <div style={{marginTop:16,display:"flex",justifyContent:"center",alignItems:"center",gap:20}}>
