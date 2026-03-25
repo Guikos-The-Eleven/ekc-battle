@@ -1575,8 +1575,16 @@ export default function App() {
     );
   }
 
-  // ── HOME SCREEN ──────────────────────────────────────────────────────────────
-  if (screen==="home") return (
+  // ── HOME SCREEN — MODE SELECTOR ─────────────────────────────────────────────
+  if (screen==="home") {
+    const modeCards = [
+      {key:"cpu",   label:"BATTLE",     desc:"1v1 vs CPU",            icon:"⚔", available:true},
+      {key:"drill", label:"DRILL",      desc:"Train your tricks",     icon:"◎", available:true},
+      {key:"tournament", label:"TOURNAMENT", desc:"Bracket competition", icon:"🏆", available:false},
+      {key:"2p",    label:"2 PLAYER",   desc:"Local head to head",    icon:"⟷", available:true},
+    ];
+
+    return (
     <div style={root}>
       <div style={{...page,alignItems:"center"}}>
 
@@ -1597,39 +1605,46 @@ export default function App() {
         </div>
 
         {/* Logo + Name */}
-        <div className="rise" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:"100%"}}>
-          <img src={LOGO} alt="NXS" style={{width:220,height:220,objectFit:"contain"}}/>
-          <div style={{fontFamily:BB,fontSize:64,letterSpacing:12,color:C.white,marginTop:-8,textAlign:"center"}}>
+        <div className="rise" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:"100%",marginBottom:28,marginTop:12}}>
+          <img src={LOGO} alt="NXS" style={{width:160,height:160,objectFit:"contain"}}/>
+          <div style={{fontFamily:BB,fontSize:52,letterSpacing:10,color:C.white,marginTop:-4,textAlign:"center"}}>
             KOMP
           </div>
-          <div style={{fontFamily:BC,fontSize:11,letterSpacing:4,color:C.muted,fontWeight:600,marginTop:4}}>
+          <div style={{fontFamily:BC,fontSize:10,letterSpacing:3,color:C.muted,fontWeight:600,marginTop:2}}>
             KENDAMA COMPETITION TRAINER
           </div>
         </div>
 
-        {/* Competition list */}
-        <div className="rise" style={{width:"100%",animationDelay:"0.08s",marginTop:24}}>
-          <div style={{display:"flex",flexDirection:"column"}}>
-            {COMPS.map((comp,i)=>(
-              <button key={comp.key} className="tap" onClick={()=>{setSelectedComp(comp);setScreen("division");}} style={{
-                padding:"22px 0",background:"transparent",border:"none",
-                borderTop:`1px solid ${C.border}`,
-                borderBottom:i===COMPS.length-1?`1px solid ${C.border}`:"none",
-                cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
-                transition:"opacity 0.1s",width:"100%",
-              }}>
-                <span style={{fontFamily:BB,fontSize:32,letterSpacing:4,color:C.white}}>{comp.name}</span>
-                <div style={{textAlign:"right",display:"flex",alignItems:"center",gap:10}}>
-                  <span style={{fontFamily:BC,fontSize:11,letterSpacing:2,color:C.sub,fontWeight:600}}>{comp.location}</span>
-                  <span style={{fontFamily:BB,fontSize:12,letterSpacing:2,color:C.muted}}>→</span>
+        {/* Mode cards */}
+        <div className="rise" style={{width:"100%",display:"flex",flexDirection:"column",gap:8,animationDelay:"0.06s",flex:1}}>
+          {modeCards.map(m=>(
+            <button key={m.key} className="tap" onClick={()=>{
+              if (!m.available) return;
+              setMode(m.key);
+              setScreen("compPick");
+            }} style={{
+              width:"100%",padding:"18px 20px",background:m.available?C.surface:"transparent",
+              border:`1px solid ${m.available?C.border:`${C.border}60`}`,borderRadius:R,
+              cursor:m.available?"pointer":"default",textAlign:"left",
+              transition:"all 0.12s",opacity:m.available?1:0.35,
+              display:"flex",alignItems:"center",gap:16,
+            }}>
+              <div style={{fontFamily:BB,fontSize:22,color:m.available?C.white:C.muted,opacity:0.6,width:28,textAlign:"center"}}>{m.icon}</div>
+              <div style={{flex:1}}>
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <span style={{fontFamily:BB,fontSize:20,letterSpacing:4,color:m.available?C.white:C.muted}}>{m.label}</span>
+                  {!m.available && <span style={{fontFamily:BC,fontSize:9,letterSpacing:2,color:C.muted,fontWeight:600,
+                    border:`1px solid ${C.border}`,padding:"2px 6px",borderRadius:R}}>SOON</span>}
                 </div>
-              </button>
-            ))}
-          </div>
+                <div style={{fontFamily:BC,fontSize:12,letterSpacing:2,color:m.available?C.sub:C.muted,fontWeight:600,marginTop:2}}>{m.desc}</div>
+              </div>
+              {m.available && <span style={{fontFamily:BB,fontSize:14,color:C.muted}}>→</span>}
+            </button>
+          ))}
         </div>
 
         {/* Footer */}
-        <div style={{marginTop:20,display:"flex",justifyContent:"center",alignItems:"center",gap:20}}>
+        <div style={{marginTop:16,display:"flex",justifyContent:"center",alignItems:"center",gap:20}}>
           <IgLink size={13} fontSize={11}/>
           <span style={{color:C.border,fontSize:10}}>·</span>
           <button className="tap" onClick={()=>{setFeedbackText("");setFeedbackSent(false);setScreen("feedback");}} style={{
@@ -1645,100 +1660,95 @@ export default function App() {
         </div>
       </div>
     </div>
-  );
+    );
+  }
 
-  // ── DIVISION SCREEN ──────────────────────────────────────────────────────────
-  if (screen==="division" && selectedComp) return (
+  // ── COMP/DIVISION PICKER ─────────────────────────────────────────────────────
+  if (screen==="compPick") {
+    const modeLabel = {cpu:"BATTLE",drill:"DRILL","2p":"2 PLAYER",tournament:"TOURNAMENT"}[mode]||"";
+    return (
     <div style={root}>
       <div style={page}>
-        <BackBtn onClick={()=>{setScreen("home");setSelectedComp(null);}} label="← HOME"/>
-        <div className="rise" style={{marginBottom:28}}>
-          <div style={{fontFamily:BB,fontSize:38,letterSpacing:5,lineHeight:1,color:C.white}}>
-            {selectedComp.name}
+        <BackBtn onClick={()=>{setScreen("home");setSelectedComp(null);setSelectedDiv(null);}}/>
+        <div className="rise" style={{marginBottom:24}}>
+          <div style={{fontFamily:BB,fontSize:32,letterSpacing:5,lineHeight:1,color:C.white}}>
+            {modeLabel}
           </div>
-          <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:2,marginTop:8,fontWeight:600}}>
-            {selectedComp.full} · {selectedComp.location}
+          <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:2,marginTop:6,fontWeight:600}}>
+            Choose a competition & division
           </div>
         </div>
-        <Div mb={24}/>
-        <div style={{display:"flex",flexDirection:"column"}}>
-          {selectedComp.divisions.map((div,i)=>(
-            <button key={div.key} className="tap" onClick={()=>{
-              setSelectedDiv(div);
-              setOpenList(div.trickSets?div.trickSets[0].key:"regular");
-              setScreen("settings");
-            }} style={{
-              padding:"22px 0",background:"transparent",border:"none",
-              borderTop:`1px solid ${C.border}`,
-              borderBottom:i===selectedComp.divisions.length-1?`1px solid ${C.border}`:"none",
-              cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
-              transition:"opacity 0.1s",width:"100%",
-            }}>
-              <span style={{fontFamily:BB,fontSize:28,letterSpacing:4,color:C.white}}>{div.name}</span>
-              <span style={{fontFamily:BB,fontSize:12,letterSpacing:4,color:C.muted}}>→</span>
-            </button>
+
+        <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",margin:"0 -24px",padding:"0 24px"}}>
+          {COMPS.map((comp,ci)=>(
+            <div key={comp.key} style={{marginBottom:ci<COMPS.length-1?28:0}}>
+              {/* Comp header */}
+              <div style={{marginBottom:12}}>
+                <div style={{fontFamily:BB,fontSize:22,letterSpacing:4,color:C.sub}}>{comp.name}</div>
+                <div style={{fontFamily:BC,fontSize:11,letterSpacing:2,color:C.muted,fontWeight:600,marginTop:2}}>
+                  {comp.full} · {comp.location}
+                </div>
+              </div>
+
+              {/* Division rows */}
+              {comp.divisions.map((div,di)=>(
+                <button key={div.key} className="tap" onClick={()=>{
+                  setSelectedComp(comp);
+                  setSelectedDiv(div);
+                  setOpenList(div.trickSets?div.trickSets[0].key:"regular");
+                  setScreen("settings");
+                }} style={{
+                  width:"100%",padding:"18px 0",background:"transparent",border:"none",
+                  borderTop:`1px solid ${C.border}`,
+                  borderBottom:di===comp.divisions.length-1?`1px solid ${C.border}`:"none",
+                  cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
+                  transition:"opacity 0.1s",
+                }}>
+                  <span style={{fontFamily:BB,fontSize:24,letterSpacing:4,color:C.white}}>{div.name}</span>
+                  <span style={{fontFamily:BB,fontSize:12,letterSpacing:3,color:C.muted}}>→</span>
+                </button>
+              ))}
+
+              {/* Comp IG */}
+              {comp.ig && (
+                <div style={{marginTop:10,display:"flex",justifyContent:"flex-start"}}>
+                  <IgLink size={12} fontSize={10} href={comp.ig.href} label={comp.ig.label} style={{opacity:0.5}}/>
+                </div>
+              )}
+            </div>
           ))}
-        </div>
-        <div style={{flex:1}}/>
-        <div style={{display:"flex",justifyContent:"center",gap:20,opacity:0.6}}>
-          {selectedComp.ig && <IgLink size={13} fontSize={11} href={selectedComp.ig.href} label={selectedComp.ig.label}/>}
-          <IgLink size={13} fontSize={11}/>
         </div>
       </div>
     </div>
-  );
+    );
+  }
 
   // ── SETTINGS ─────────────────────────────────────────────────────────────────
   if (screen==="settings" && selectedDiv) {
-    const modes = [
-      {key:"cpu",   label:"CPU",      desc:"Battle a CPU opponent"},
-      {key:"2p",    label:"2 PLAYER", desc:"Head to head, locally"},
-      {key:"drill", label:"DRILL",    desc:"Train your tricklist"},
-    ];
+    const modeLabel = {cpu:"BATTLE",drill:"DRILL","2p":"2 PLAYER",tournament:"TOURNAMENT"}[mode]||"";
+    const startLabel = mode==="drill"?"START DRILL":"START "+modeLabel;
 
     return (
     <div style={root}>
       <div style={page}>
-        <BackBtn onClick={()=>setScreen("division")}/>
+        <BackBtn onClick={()=>setScreen("compPick")}/>
         <div className="rise" style={{marginBottom:24}}>
-          <div style={{fontFamily:BB,fontSize:38,letterSpacing:5,lineHeight:1,color:C.white}}>
+          <div style={{fontFamily:BB,fontSize:34,letterSpacing:5,lineHeight:1,color:C.white}}>
             {selectedDiv.name}
           </div>
-          <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:3,marginTop:8,fontWeight:600}}>
-            {selectedComp?.name}
+          <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:3,marginTop:6,fontWeight:600}}>
+            {selectedComp?.name} · {modeLabel}
           </div>
         </div>
 
         {/* Trick list selector (PRO OPEN) */}
         {selectedDiv.trickSets && (
-          <div style={{marginBottom:20}}>
-            <Seg label="Trick List" val={openList} onChange={setOpenList} opts={
-              selectedDiv.trickSets.map(s=>({key:s.key,label:s.label,sub:s.sub}))
-            }/>
-          </div>
+          <Seg label="Trick List" val={openList} onChange={setOpenList} opts={
+            selectedDiv.trickSets.map(s=>({key:s.key,label:s.label,sub:s.sub}))
+          }/>
         )}
 
         <Div mb={20}/>
-
-        {/* Mode cards */}
-        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:20}}>
-          {modes.map(m=>{
-            const sel = mode===m.key;
-            return (
-              <button key={m.key} className="tap" onClick={()=>setMode(m.key)} style={{
-                width:"100%",padding:"16px 18px",background:sel?`${C.white}08`:"transparent",
-                border:`1px solid ${sel?C.white+"30":C.border}`,borderRadius:R,
-                cursor:"pointer",textAlign:"left",transition:"all 0.15s",
-                borderLeft:sel?`3px solid ${C.white}`:`3px solid transparent`,
-              }}>
-                <div style={{fontFamily:BB,fontSize:18,letterSpacing:4,color:sel?C.white:C.sub,
-                  transition:"color 0.15s"}}>{m.label}</div>
-                <div style={{fontFamily:BC,fontSize:11,letterSpacing:2,color:sel?C.sub:C.muted,
-                  marginTop:2,fontWeight:600,transition:"color 0.15s"}}>{m.desc}</div>
-              </button>
-            );
-          })}
-        </div>
 
         {/* Mode-specific options */}
         <div className="rise" key={mode}>
@@ -1787,7 +1797,7 @@ export default function App() {
 
         <div style={{flex:1}}/>
         <BtnPrimary onClick={mode==="drill"?startDrill:startGame}>
-          {mode==="drill"?"START DRILL":"START BATTLE"}
+          {startLabel}
         </BtnPrimary>
       </div>
     </div>
