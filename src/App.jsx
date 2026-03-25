@@ -1024,7 +1024,7 @@ export default function App() {
   }
 
   useEffect(()=>{
-    if (!gs||modeRef.current!=="cpu") return;
+    if (!gs||(modeRef.current!=="cpu"&&modeRef.current!=="tournament")) return;
     let t;
     if (gs.phase==="reveal")
       t=setTimeout(()=>setGs(p=>({...p,phase:p.playerFirst?"p_first":"cpu_first"})),2000);
@@ -1269,9 +1269,19 @@ export default function App() {
     const tl = getTourneyTrickList(t.currentRound, totalRounds, selectedDiv);
     setDiff(d);
     if (tl) setOpenList(tl);
+    setRace(t.raceTo);
     setStreaks(true);
-    // Start a regular CPU battle
-    const r = drawTrick([],allTricks());
+    // Get tricks using the correct list for this round
+    const getTricks = () => {
+      if (!selectedDiv) return AM_TRICKS;
+      if (selectedDiv.tricks) return selectedDiv.tricks;
+      if (selectedDiv.trickSets) {
+        const set = selectedDiv.trickSets.find(s => s.key === (tl||openList));
+        return set ? set.tricks : selectedDiv.trickSets[0].tricks;
+      }
+      return [];
+    };
+    const r = drawTrick([],getTricks());
     const init={scores:{you:0,cpu:0},pool:r.pool,trick:r.trick,tryNum:1,
       playerFirst:true,phase:"reveal",cpuStreak:{active:false,dir:"hot",left:0},
       cpuFirst:null,pResult:null,msg:"",winner:null,cpuMomentum:[],lastScoreKey:0,
@@ -1751,119 +1761,159 @@ export default function App() {
     const isEliminated = t.phase==="eliminated";
     const isActive = t.phase==="bracket";
 
-    // Find player's next match
     const nextMatch = isActive ? t.rounds[t.currentRound]?.find(m=>
       (m.p1===t.playerSeed||m.p2===t.playerSeed)&&!m.played) : null;
     const nextDiff = isActive ? getTourneyDiff(t.currentRound, totalRounds, selectedDiv) : null;
     const nextTrickList = isActive ? getTourneyTrickList(t.currentRound, totalRounds, selectedDiv) : null;
     const nextOpponent = nextMatch ? getPlayer(nextMatch.p1===t.playerSeed?nextMatch.p2:nextMatch.p1) : null;
+    const lastRound = t.rounds[totalRounds-1];
+    const championSeed = lastRound?.[0]?.played ? lastRound[0].winner : null;
+    const champion = getPlayer(championSeed);
+
+    const PlayerSlot = ({seed, score, m, isTop}) => {
+      const p = getPlayer(seed);
+      const isWinner = m.played && m.winner===seed;
+      const isMe = seed===t.playerSeed;
+      if (!p) return (
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+          padding:"5px 8px",borderBottom:isTop?`1px solid ${C.divider}`:undefined,minHeight:26}}>
+          <span style={{fontFamily:BC,fontSize:10,color:C.border,fontWeight:600}}>TBD</span>
+        </div>
+      );
+      return (
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+          padding:"5px 8px",borderBottom:isTop?`1px solid ${C.divider}`:undefined,
+          background:isWinner?`${C.white}06`:"transparent",
+          opacity:m.played&&!isWinner?0.3:1,minHeight:26}}>
+          <div style={{display:"flex",alignItems:"center",gap:4,overflow:"hidden",flex:1}}>
+            {isMe && <div style={{width:3,height:3,borderRadius:"50%",background:C.green,flexShrink:0}}/>}
+            <span style={{fontFamily:BC,fontSize:10,fontWeight:600,letterSpacing:1,
+              color:isMe?C.white:isWinner?C.sub:C.muted,
+              whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.name}</span>
+          </div>
+          {m.played && <span style={{fontFamily:BB,fontSize:12,letterSpacing:1,
+            color:isWinner?C.white:C.muted,marginLeft:6,flexShrink:0}}>{score}</span>}
+        </div>
+      );
+    };
+
+    const MatchBox = ({m}) => {
+      const isMyMatch = m.p1===t.playerSeed||m.p2===t.playerSeed;
+      const accentCol = !m.played?C.border:isMyMatch?(m.winner===t.playerSeed?C.green:C.red):C.muted;
+      return (
+        <div style={{border:`1px solid ${accentCol}30`,borderRadius:R,borderLeft:`2px solid ${accentCol}`,
+          background:C.surface,overflow:"hidden",width:"100%"}}>
+          <PlayerSlot seed={m.p1} score={m.p1Score} m={m} isTop={true}/>
+          <PlayerSlot seed={m.p2} score={m.p2Score} m={m} isTop={false}/>
+        </div>
+      );
+    };
 
     return (
     <div style={root}>
-      <div style={page}>
-        <BackBtn onClick={()=>{setTourney(null);setScreen("home");setSelectedComp(null);setSelectedDiv(null);}} label="← QUIT TOURNAMENT"/>
+      <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",
+        padding:`calc(20px + env(safe-area-inset-top, 0px)) 0 calc(16px + env(safe-area-inset-bottom, 0px)) 0`,
+        overflow:"hidden"}}>
 
         {/* Header */}
-        <div className="rise" style={{textAlign:"center",marginBottom:20}}>
+        <div style={{padding:"0 24px",marginBottom:12,flexShrink:0}}>
+          <BackBtn onClick={()=>{setTourney(null);setScreen("home");setSelectedComp(null);setSelectedDiv(null);}} label="← QUIT"/>
+
           {isChampion && (
-            <>
-              <div style={{fontFamily:BB,fontSize:48,letterSpacing:3,color:C.yellow,textShadow:`0 0 30px ${C.yellow}30`}}>CHAMPION</div>
-              <div style={{fontFamily:BC,fontSize:13,color:C.sub,letterSpacing:2,fontWeight:600,marginTop:4}}>
+            <div className="pop" style={{textAlign:"center"}}>
+              <div style={{fontFamily:BB,fontSize:42,letterSpacing:3,color:C.yellow,textShadow:`0 0 30px ${C.yellow}30`}}>CHAMPION</div>
+              <div style={{fontFamily:BC,fontSize:11,color:C.sub,letterSpacing:2,fontWeight:600,marginTop:4}}>
                 {selectedDiv?.name} · {selectedComp?.name}
               </div>
-            </>
+            </div>
           )}
           {isEliminated && (
-            <>
-              <div style={{fontFamily:BB,fontSize:42,letterSpacing:3,color:C.red}}>ELIMINATED</div>
-              <div style={{fontFamily:BC,fontSize:13,color:C.sub,letterSpacing:2,fontWeight:600,marginTop:4}}>
-                Round {t.currentRound+1} of {totalRounds}
+            <div className="pop" style={{textAlign:"center"}}>
+              <div style={{fontFamily:BB,fontSize:36,letterSpacing:3,color:C.red}}>ELIMINATED</div>
+              <div style={{fontFamily:BC,fontSize:11,color:C.sub,letterSpacing:2,fontWeight:600,marginTop:4}}>
+                Round {t.currentRound+1} of {totalRounds} · {selectedDiv?.name}
               </div>
-            </>
+            </div>
           )}
           {isActive && (
-            <>
-              <div style={{fontFamily:BB,fontSize:28,letterSpacing:4,color:C.white}}>
+            <div className="rise" style={{textAlign:"center"}}>
+              <div style={{fontFamily:BB,fontSize:24,letterSpacing:4,color:C.white}}>
                 {roundNames[t.currentRound]||`ROUND ${t.currentRound+1}`}
               </div>
-              <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:2,fontWeight:600,marginTop:4}}>
+              <div style={{fontFamily:BC,fontSize:10,color:C.muted,letterSpacing:2,fontWeight:600,marginTop:4}}>
                 {selectedDiv?.name} · {selectedComp?.name}
               </div>
-            </>
+            </div>
           )}
         </div>
 
-        {/* Bracket visualization */}
-        <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",margin:"0 -24px",padding:"0 24px"}}>
-          {t.rounds.map((round,ri)=>(
-            <div key={ri} style={{marginBottom:20}}>
-              <Label style={{letterSpacing:4,marginBottom:10,color:ri===t.currentRound&&isActive?C.white:C.muted}}>
-                {roundNames[ri]||`ROUND ${ri+1}`}
-                {ri<totalRounds && (()=>{
-                  const d = getTourneyDiff(ri, totalRounds, selectedDiv);
-                  const tl = getTourneyTrickList(ri, totalRounds, selectedDiv);
-                  const diffCol = CPU_CFG[d]?.color||C.muted;
-                  return (
-                    <span style={{marginLeft:10,fontSize:9,letterSpacing:2,color:diffCol}}>
-                      {CPU_CFG[d]?.label}{tl?" · "+tl.toUpperCase():""}
-                    </span>
-                  );
-                })()}
-              </Label>
-              {round.map((m,mi)=>{
-                const p1 = getPlayer(m.p1);
-                const p2 = getPlayer(m.p2);
-                const isMyMatch = m.p1===t.playerSeed||m.p2===t.playerSeed;
-                const borderCol = isMyMatch?(m.played?(m.winner===t.playerSeed?C.green:C.red):C.white):C.border;
-                return (
-                  <div key={mi} style={{
-                    borderLeft:`3px solid ${borderCol}`,marginBottom:8,
-                    background:isMyMatch?`${borderCol}08`:"transparent",padding:"10px 14px",
-                  }}>
-                    {[m.p1,m.p2].map((seed,si)=>{
-                      const p = getPlayer(seed);
-                      if (!p) return <div key={si} style={{fontFamily:BC,fontSize:13,color:C.border,fontWeight:600,padding:"4px 0"}}>TBD</div>;
-                      const isWinner = m.played && m.winner===seed;
-                      const isLoser = m.played && m.winner!==seed;
-                      const isMe = seed===t.playerSeed;
-                      const score = m.played?(si===0?m.p1Score:m.p2Score):"";
-                      return (
-                        <div key={si} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 0",
-                          opacity:isLoser?0.35:1}}>
-                          <div style={{display:"flex",alignItems:"center",gap:8}}>
-                            {isMe && <div style={{width:4,height:4,borderRadius:"50%",background:C.green}}/>}
-                            <span style={{fontFamily:BB,fontSize:14,letterSpacing:3,
-                              color:isWinner?C.white:isMe?C.sub:C.muted}}>{p.name}</span>
-                          </div>
-                          {m.played && <span style={{fontFamily:BB,fontSize:16,letterSpacing:2,
-                            color:isWinner?C.white:C.muted}}>{score}</span>}
-                        </div>
-                      );
-                    })}
+        {/* Bracket — horizontal layout */}
+        <div style={{flex:1,overflowX:"auto",overflowY:"hidden",WebkitOverflowScrolling:"touch",
+          padding:"8px 12px",display:"flex",alignItems:"stretch"}}>
+          <div style={{display:"flex",alignItems:"stretch",gap:6,
+            minWidth:t.bracketSize===8?640:380,width:"100%",height:"100%"}}>
+
+            {t.rounds.map((round,ri)=>{
+              const diffForRound = getTourneyDiff(ri, totalRounds, selectedDiv);
+              const tlForRound = getTourneyTrickList(ri, totalRounds, selectedDiv);
+              const diffCol = CPU_CFG[diffForRound]?.color||C.muted;
+              const isCurrent = ri===t.currentRound&&isActive;
+
+              return (
+                <div key={ri} style={{flex:1,display:"flex",flexDirection:"column",minWidth:0}}>
+                  {/* Round header */}
+                  <div style={{textAlign:"center",marginBottom:6,flexShrink:0}}>
+                    <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:isCurrent?C.white:C.muted}}>
+                      {roundNames[ri]||`R${ri+1}`}
+                    </div>
+                    <div style={{fontFamily:BC,fontSize:7,letterSpacing:1,color:diffCol,fontWeight:600,marginTop:1}}>
+                      {CPU_CFG[diffForRound]?.label}{tlForRound?" · "+tlForRound.toUpperCase():""}
+                    </div>
                   </div>
-                );
-              })}
+
+                  {/* Matches — evenly spaced */}
+                  <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"space-around",gap:4}}>
+                    {round.map((m,mi)=><MatchBox key={mi} m={m}/>)}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Champion slot */}
+            <div style={{width:60,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",flexShrink:0}}>
+              <div style={{fontFamily:BB,fontSize:8,letterSpacing:3,color:C.yellow,marginBottom:6}}>WINNER</div>
+              <div style={{border:`1px solid ${champion?C.yellow+"40":C.border}`,borderRadius:R,
+                padding:"8px 6px",background:champion?`${C.yellow}08`:"transparent",textAlign:"center",width:"100%"}}>
+                {champion ? (
+                  <span style={{fontFamily:BC,fontSize:9,fontWeight:600,letterSpacing:1,
+                    color:champion.seed===t.playerSeed?C.yellow:C.sub}}>{champion.name}</span>
+                ) : (
+                  <span style={{fontFamily:BC,fontSize:10,color:C.border,fontWeight:600}}>?</span>
+                )}
+              </div>
             </div>
-          ))}
+          </div>
         </div>
 
-        {/* Action button */}
-        {isActive && nextMatch && (
-          <div style={{marginTop:12}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-              <Label style={{letterSpacing:3}}>Next: vs {nextOpponent?.name}</Label>
-              <Label style={{letterSpacing:2,color:CPU_CFG[nextDiff]?.color}}>{CPU_CFG[nextDiff]?.label}
-                {nextTrickList?` · ${nextTrickList.toUpperCase()}`:""}</Label>
+        {/* Action area */}
+        <div style={{padding:"8px 24px 0",flexShrink:0}}>
+          {isActive && nextMatch && (
+            <>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                <Label style={{letterSpacing:3}}>vs {nextOpponent?.name}</Label>
+                <Label style={{letterSpacing:2,color:CPU_CFG[nextDiff]?.color}}>{CPU_CFG[nextDiff]?.label}
+                  {nextTrickList?" · "+nextTrickList.toUpperCase():""}</Label>
+              </div>
+              <BtnPrimary onClick={startTournamentMatch}>PLAY NEXT MATCH</BtnPrimary>
+            </>
+          )}
+          {(isChampion||isEliminated) && (
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              <BtnPrimary onClick={()=>{setTourney(null);setScreen("settings");}}>NEW TOURNAMENT</BtnPrimary>
+              <BtnGhost onClick={()=>{setTourney(null);setScreen("home");setSelectedComp(null);setSelectedDiv(null);}}>← MAIN MENU</BtnGhost>
             </div>
-            <BtnPrimary onClick={startTournamentMatch}>PLAY NEXT MATCH</BtnPrimary>
-          </div>
-        )}
-        {(isChampion||isEliminated) && (
-          <div style={{marginTop:12,display:"flex",flexDirection:"column",gap:10}}>
-            <BtnPrimary onClick={()=>{setTourney(null);setScreen("settings");}}>NEW TOURNAMENT</BtnPrimary>
-            <BtnGhost onClick={()=>{setTourney(null);setScreen("home");setSelectedComp(null);setSelectedDiv(null);}}>← MAIN MENU</BtnGhost>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
     );
