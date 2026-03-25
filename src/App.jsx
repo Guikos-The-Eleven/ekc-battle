@@ -1625,7 +1625,7 @@ export default function App() {
         {/* Logo + Name */}
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:"100%",marginTop:8}}>
           <div className="rise">
-            <img src={LOGO} alt="NXS" style={{width:110,height:110,objectFit:"contain",display:"block",margin:"0 auto"}}/>
+            <img src={LOGO} alt="NXS" style={{width:140,height:140,objectFit:"contain",display:"block",margin:"0 auto"}}/>
           </div>
           <div className="rise" style={{animationDelay:"0.05s",animationFillMode:"both",textAlign:"center"}}>
             <div style={{fontFamily:BB,fontSize:46,letterSpacing:12,color:C.white,marginTop:-2}}>KOMP</div>
@@ -1681,7 +1681,7 @@ export default function App() {
               borderLeft:`3px solid ${m.available?m.color:`${C.muted}30`}`,
               cursor:m.available?"pointer":"default",textAlign:"left",
               transition:"all 0.12s",opacity:m.available?1:0.3,
-              display:"flex",flexDirection:"column",justifyContent:"flex-end",gap:4,
+              display:"flex",flexDirection:"column",justifyContent:"center",gap:4,
               position:"relative",
               animationDelay:`${0.12+i*0.06}s`,animationFillMode:"both",
             }}>
