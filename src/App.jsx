@@ -862,6 +862,7 @@ export default function App() {
   const [pickedTricks, setPickedTricks] = useState([]);          // multi-select for pick mode
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackSent, setFeedbackSent] = useState(false);
+  const [homeStats, setHomeStats] = useState(null); // {wins,losses,attempts}
 
   // Derived: competition key for DB
   const compDbKey = selectedComp && selectedDiv ? `${selectedComp.key}:${selectedDiv.key}` : null;
@@ -900,6 +901,23 @@ export default function App() {
       setAuthLoading(false);
     });
   },[]);
+
+  // Fetch quick stats for home screen
+  useEffect(()=>{
+    if (!user) { setHomeStats(null); return; }
+    Promise.all([
+      SB.from("match_results").select("won").eq("user_id",user.id),
+      SB.from("trick_attempts").select("landed").eq("user_id",user.id),
+    ]).then(([mRes, tRes])=>{
+      const matches = mRes.data||[];
+      const tricks = tRes.data||[];
+      const wins = matches.filter(m=>m.won).length;
+      setHomeStats({
+        wins, losses:matches.length-wins, total:matches.length,
+        trickLands:tricks.filter(t=>t.landed).length, trickTotal:tricks.length,
+      });
+    });
+  },[user]);
 
   async function handleSignOut() {
     await SB.auth.signOut();
@@ -1604,8 +1622,8 @@ export default function App() {
           )}
         </div>
 
-        {/* Logo + Name — centered in available space */}
-        <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:"100%"}}>
+        {/* Logo + Name */}
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:"100%",marginTop:8}}>
           <div className="rise">
             <img src={LOGO} alt="NXS" style={{width:110,height:110,objectFit:"contain",display:"block",margin:"0 auto"}}/>
           </div>
@@ -1614,6 +1632,41 @@ export default function App() {
             <div style={{fontFamily:BC,fontSize:9,letterSpacing:4,color:C.muted,fontWeight:600,marginTop:4}}>KENDAMA COMPETITION TRAINER</div>
           </div>
         </div>
+
+        {/* Stats snapshot */}
+        {homeStats && homeStats.total>0 ? (
+          <div className="fadeUp" style={{width:"100%",marginTop:20,marginBottom:20,animationDelay:"0.1s",animationFillMode:"both"}}>
+            <div style={{display:"flex",alignItems:"center",gap:0,width:"100%"}}>
+              <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
+                <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:C.green}}>{homeStats.wins}</div>
+                <div style={{fontFamily:BB,fontSize:8,letterSpacing:4,color:C.muted,marginTop:4}}>WINS</div>
+              </div>
+              <div style={{width:1,height:28,background:C.divider}}/>
+              <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
+                <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:C.red}}>{homeStats.losses}</div>
+                <div style={{fontFamily:BB,fontSize:8,letterSpacing:4,color:C.muted,marginTop:4}}>LOSSES</div>
+              </div>
+              <div style={{width:1,height:28,background:C.divider}}/>
+              <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
+                <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:C.white}}>
+                  {Math.round(homeStats.wins/homeStats.total*100)}%
+                </div>
+                <div style={{fontFamily:BB,fontSize:8,letterSpacing:4,color:C.muted,marginTop:4}}>WIN RATE</div>
+              </div>
+              {homeStats.trickTotal>0 && <>
+                <div style={{width:1,height:28,background:C.divider}}/>
+                <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
+                  <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:C.yellow}}>
+                    {Math.round(homeStats.trickLands/homeStats.trickTotal*100)}%
+                  </div>
+                  <div style={{fontFamily:BB,fontSize:8,letterSpacing:4,color:C.muted,marginTop:4}}>TRICK RATE</div>
+                </div>
+              </>}
+            </div>
+          </div>
+        ) : (
+          <div style={{marginTop:20,marginBottom:20}}/>
+        )}
 
         {/* Mode cards — 2x2 grid with accent borders */}
         <div style={{width:"100%",display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
@@ -1645,8 +1698,10 @@ export default function App() {
           ))}
         </div>
 
+        <div style={{flex:1}}/>
+
         {/* Footer */}
-        <div style={{marginTop:20,display:"flex",justifyContent:"center",alignItems:"center",gap:20}}>
+        <div style={{marginTop:16,display:"flex",justifyContent:"center",alignItems:"center",gap:20}}>
           <IgLink size={13} fontSize={11}/>
           <span style={{color:C.border,fontSize:10}}>·</span>
           <button className="tap" onClick={()=>{setFeedbackText("");setFeedbackSent(false);setScreen("feedback");}} style={{
