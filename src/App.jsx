@@ -127,6 +127,13 @@ const CPU_CFG = {
 // Haptic feedback helper (mobile vibration)
 const haptic = (ms=12) => { try { navigator?.vibrate?.(ms); } catch {} };
 
+// CPU opponent names for tournament
+const CPU_NAMES = [
+  "SPIKE LORD","KEN MASTER","LUNAR KING","STALL QUEEN","DAMA BOSS",
+  "TRICK SAGE","CUP WIZARD","FLIP NINJA","BIRD HAWK","SWAP DEMON",
+  "ORBIT ACE","GRIP FURY","LACE GOD","PULL PHANTOM","EARTH WALKER",
+];
+
 // Momentum: recent results nudge CPU rate (last 4 outcomes tracked)
 const applyMomentum = (rate, momentum=[]) => {
   if (momentum.length < 2) return rate;
@@ -862,7 +869,11 @@ export default function App() {
   const [pickedTricks, setPickedTricks] = useState([]);          // multi-select for pick mode
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackSent, setFeedbackSent] = useState(false);
-  const [homeStats, setHomeStats] = useState(null); // {wins,losses,attempts}
+  const [homeStats, setHomeStats] = useState(null);
+
+  // Tournament state
+  const [bracketSize, setBracketSize] = useState(8);
+  const [tourney, setTourney] = useState(null); // {wins,losses,attempts}
 
   // Derived: competition key for DB
   const compDbKey = selectedComp && selectedDiv ? `${selectedComp.key}:${selectedDiv.key}` : null;
@@ -875,6 +886,7 @@ export default function App() {
   const streaksRef  = useRef(streaks);
   const userRef     = useRef(user);
   const compDbKeyRef= useRef(compDbKey);
+  const tourneyRef  = useRef(tourney);
 
   useEffect(()=>{ gsRef.current      = gs;       },[gs]);
   useEffect(()=>{ diffRef.current    = diff;     },[diff]);
@@ -884,6 +896,7 @@ export default function App() {
   useEffect(()=>{ streaksRef.current = streaks;  },[streaks]);
   useEffect(()=>{ userRef.current    = user;     },[user]);
   useEffect(()=>{ compDbKeyRef.current= compDbKey; },[compDbKey]);
+  useEffect(()=>{ tourneyRef.current = tourney;  },[tourney]);
 
   // Check existing session on load
   useEffect(()=>{
@@ -1029,8 +1042,12 @@ export default function App() {
         if (s.scores.you>=raceRef.current||s.scores.cpu>=raceRef.current) {
           const won = s.scores.you>=raceRef.current;
           saveMatchResult(s.scores, won);
-          setResult({scores:s.scores,won});
-          setScreen("result");
+          if (tourneyRef.current) {
+            handleTournamentResult(won, s.scores);
+          } else {
+            setResult({scores:s.scores,won});
+            setScreen("result");
+          }
         } else nextCpuTrick(s);
       },2000);
     return ()=>clearTimeout(t);
@@ -1183,6 +1200,137 @@ export default function App() {
         setDrill(p=>({...p,results:newResults,phase:"done"}));
       }
     }
+  }
+
+  // ── TOURNAMENT logic ──────────────────────────────────────────────────────────
+  const ROUND_NAMES = {2:["SEMI-FINAL","FINAL"],3:["QUARTER-FINAL","SEMI-FINAL","FINAL"]};
+
+  function getTourneyDiff(roundIdx, totalRounds, div) {
+    // Scale difficulty per round
+    const diffs3 = ["easy","medium","hard"]; // 3 rounds
+    const diffs2 = ["medium","hard"];         // 2 rounds
+    const pool = totalRounds===3?diffs3:diffs2;
+    return pool[Math.min(roundIdx, pool.length-1)];
+  }
+
+  function getTourneyTrickList(roundIdx, totalRounds, div) {
+    // For PRO OPEN: switch to top16 in the final
+    if (div?.trickSets) {
+      if (roundIdx >= totalRounds-1) return "top16"; // Final uses top16
+      return "regular"; // Earlier rounds use regular
+    }
+    return null; // AM OPEN uses single list
+  }
+
+  function generateBracket(size) {
+    const names = [...CPU_NAMES].sort(()=>Math.random()-0.5).slice(0,size-1);
+    const players = [{seed:0, name:username||"YOU", isHuman:true, eliminated:false}];
+    names.forEach((n,i)=>players.push({seed:i+1, name:n, isHuman:false, eliminated:false}));
+    // Shuffle seeding
+    const seeds = players.sort(()=>Math.random()-0.5).map((p,i)=>({...p,seed:i}));
+    const totalRounds = size===4?2:3;
+    const rounds = [];
+    // Round 1 matches
+    const r1 = [];
+    for (let i=0;i<size;i+=2) r1.push({p1:seeds[i].seed,p2:seeds[i+1].seed,winner:null,p1Score:0,p2Score:0,played:false});
+    rounds.push(r1);
+    // Future rounds (empty slots)
+    let matchCount = size/4;
+    while (matchCount>=1) { rounds.push(Array.from({length:matchCount},()=>({p1:null,p2:null,winner:null,p1Score:0,p2Score:0,played:false}))); matchCount/=2; }
+    return {bracketSize:size,raceTo:race,players:seeds,rounds,currentRound:0,
+      phase:"bracket",playerSeed:seeds.find(p=>p.isHuman).seed};
+  }
+
+  function simulateCpuMatch(match, players, roundIdx, totalRounds, div) {
+    // Simulate a match between two CPUs
+    const diff = getTourneyDiff(roundIdx, totalRounds, div);
+    const rate = CPU_CFG[diff].base;
+    let s1=0, s2=0;
+    const rt = tourney?.raceTo||race;
+    while (s1<rt && s2<rt) { Math.random()<rate+0.05*(Math.random()-0.5) ? s1++ : s2++; }
+    return {...match, winner:s1>=rt?match.p1:match.p2, p1Score:s1, p2Score:s2, played:true};
+  }
+
+  function startTournament() {
+    const t = generateBracket(bracketSize);
+    setTourney(t);
+    setScreen("bracket");
+  }
+
+  function startTournamentMatch() {
+    const t = tourneyRef.current||tourney;
+    if (!t) return;
+    const round = t.rounds[t.currentRound];
+    const myMatch = round.find(m=>m.p1===t.playerSeed||m.p2===t.playerSeed);
+    if (!myMatch) return;
+    // Set difficulty and tricklist for this round
+    const totalRounds = t.rounds.length;
+    const d = getTourneyDiff(t.currentRound, totalRounds, selectedDiv);
+    const tl = getTourneyTrickList(t.currentRound, totalRounds, selectedDiv);
+    setDiff(d);
+    if (tl) setOpenList(tl);
+    setStreaks(true);
+    // Start a regular CPU battle
+    const r = drawTrick([],allTricks());
+    const init={scores:{you:0,cpu:0},pool:r.pool,trick:r.trick,tryNum:1,
+      playerFirst:true,phase:"reveal",cpuStreak:{active:false,dir:"hot",left:0},
+      cpuFirst:null,pResult:null,msg:"",winner:null,cpuMomentum:[],lastScoreKey:0,
+      gameLog:[],currentTries:[]};
+    gsRef.current=init; setGs(init);
+    setScreen("battle");
+  }
+
+  function handleTournamentResult(won, scores) {
+    setTourney(prev=>{
+      if (!prev) return prev;
+      const t = {...prev, rounds:prev.rounds.map(r=>r.map(m=>({...m})))};
+      const round = t.rounds[t.currentRound];
+      // Update player match
+      const mi = round.findIndex(m=>m.p1===t.playerSeed||m.p2===t.playerSeed);
+      if (mi>=0) {
+        const m = round[mi];
+        const isP1 = m.p1===t.playerSeed;
+        round[mi] = {...m, winner:won?t.playerSeed:(isP1?m.p2:m.p1),
+          p1Score:isP1?scores.you:scores.cpu, p2Score:isP1?scores.cpu:scores.you, played:true};
+        if (!won) {
+          const pi = t.players.findIndex(p=>p.seed===t.playerSeed);
+          if (pi>=0) t.players[pi] = {...t.players[pi], eliminated:true};
+        }
+      }
+      // Simulate remaining CPU matches in this round
+      round.forEach((m,i)=>{
+        if (!m.played && m.p1!==null && m.p2!==null) {
+          round[i] = simulateCpuMatch(m, t.players, t.currentRound, t.rounds.length, selectedDiv);
+          // Mark loser eliminated
+          const loser = round[i].winner===round[i].p1?round[i].p2:round[i].p1;
+          const li = t.players.findIndex(p=>p.seed===loser);
+          if (li>=0) t.players[li] = {...t.players[li], eliminated:true};
+        }
+      });
+      // Populate next round
+      if (t.currentRound < t.rounds.length-1) {
+        const nextRound = t.rounds[t.currentRound+1];
+        for (let i=0;i<round.length;i+=2) {
+          const ni = Math.floor(i/2);
+          if (ni<nextRound.length) {
+            nextRound[ni] = {...nextRound[ni], p1:round[i]?.winner, p2:round[i+1]?.winner};
+          }
+        }
+      }
+      // Check tournament state
+      const lastRound = t.rounds[t.rounds.length-1];
+      if (lastRound[0]?.played) {
+        t.phase = lastRound[0].winner===t.playerSeed?"champion":"eliminated";
+      } else if (!won) {
+        t.phase = "eliminated";
+      } else {
+        t.currentRound++;
+        t.phase = "bracket";
+      }
+      return t;
+    });
+    setResult({scores,won,mode:"tournament"});
+    setScreen("result");
   }
 
   const root = {
@@ -1593,12 +1741,140 @@ export default function App() {
     );
   }
 
+  // ── BRACKET SCREEN ────────────────────────────────────────────────────────────
+  if (screen==="bracket" && tourney) {
+    const t = tourney;
+    const totalRounds = t.rounds.length;
+    const roundNames = ROUND_NAMES[totalRounds]||[];
+    const getPlayer = (seed) => seed!==null&&seed!==undefined ? t.players.find(p=>p.seed===seed) : null;
+    const isChampion = t.phase==="champion";
+    const isEliminated = t.phase==="eliminated";
+    const isActive = t.phase==="bracket";
+
+    // Find player's next match
+    const nextMatch = isActive ? t.rounds[t.currentRound]?.find(m=>
+      (m.p1===t.playerSeed||m.p2===t.playerSeed)&&!m.played) : null;
+    const nextDiff = isActive ? getTourneyDiff(t.currentRound, totalRounds, selectedDiv) : null;
+    const nextTrickList = isActive ? getTourneyTrickList(t.currentRound, totalRounds, selectedDiv) : null;
+    const nextOpponent = nextMatch ? getPlayer(nextMatch.p1===t.playerSeed?nextMatch.p2:nextMatch.p1) : null;
+
+    return (
+    <div style={root}>
+      <div style={page}>
+        <BackBtn onClick={()=>{setTourney(null);setScreen("home");setSelectedComp(null);setSelectedDiv(null);}} label="← QUIT TOURNAMENT"/>
+
+        {/* Header */}
+        <div className="rise" style={{textAlign:"center",marginBottom:20}}>
+          {isChampion && (
+            <>
+              <div style={{fontFamily:BB,fontSize:48,letterSpacing:3,color:C.yellow,textShadow:`0 0 30px ${C.yellow}30`}}>CHAMPION</div>
+              <div style={{fontFamily:BC,fontSize:13,color:C.sub,letterSpacing:2,fontWeight:600,marginTop:4}}>
+                {selectedDiv?.name} · {selectedComp?.name}
+              </div>
+            </>
+          )}
+          {isEliminated && (
+            <>
+              <div style={{fontFamily:BB,fontSize:42,letterSpacing:3,color:C.red}}>ELIMINATED</div>
+              <div style={{fontFamily:BC,fontSize:13,color:C.sub,letterSpacing:2,fontWeight:600,marginTop:4}}>
+                Round {t.currentRound+1} of {totalRounds}
+              </div>
+            </>
+          )}
+          {isActive && (
+            <>
+              <div style={{fontFamily:BB,fontSize:28,letterSpacing:4,color:C.white}}>
+                {roundNames[t.currentRound]||`ROUND ${t.currentRound+1}`}
+              </div>
+              <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:2,fontWeight:600,marginTop:4}}>
+                {selectedDiv?.name} · {selectedComp?.name}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Bracket visualization */}
+        <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",margin:"0 -24px",padding:"0 24px"}}>
+          {t.rounds.map((round,ri)=>(
+            <div key={ri} style={{marginBottom:20}}>
+              <Label style={{letterSpacing:4,marginBottom:10,color:ri===t.currentRound&&isActive?C.white:C.muted}}>
+                {roundNames[ri]||`ROUND ${ri+1}`}
+                {ri<totalRounds && (()=>{
+                  const d = getTourneyDiff(ri, totalRounds, selectedDiv);
+                  const tl = getTourneyTrickList(ri, totalRounds, selectedDiv);
+                  const diffCol = CPU_CFG[d]?.color||C.muted;
+                  return (
+                    <span style={{marginLeft:10,fontSize:9,letterSpacing:2,color:diffCol}}>
+                      {CPU_CFG[d]?.label}{tl?" · "+tl.toUpperCase():""}
+                    </span>
+                  );
+                })()}
+              </Label>
+              {round.map((m,mi)=>{
+                const p1 = getPlayer(m.p1);
+                const p2 = getPlayer(m.p2);
+                const isMyMatch = m.p1===t.playerSeed||m.p2===t.playerSeed;
+                const borderCol = isMyMatch?(m.played?(m.winner===t.playerSeed?C.green:C.red):C.white):C.border;
+                return (
+                  <div key={mi} style={{
+                    borderLeft:`3px solid ${borderCol}`,marginBottom:8,
+                    background:isMyMatch?`${borderCol}08`:"transparent",padding:"10px 14px",
+                  }}>
+                    {[m.p1,m.p2].map((seed,si)=>{
+                      const p = getPlayer(seed);
+                      if (!p) return <div key={si} style={{fontFamily:BC,fontSize:13,color:C.border,fontWeight:600,padding:"4px 0"}}>TBD</div>;
+                      const isWinner = m.played && m.winner===seed;
+                      const isLoser = m.played && m.winner!==seed;
+                      const isMe = seed===t.playerSeed;
+                      const score = m.played?(si===0?m.p1Score:m.p2Score):"";
+                      return (
+                        <div key={si} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 0",
+                          opacity:isLoser?0.35:1}}>
+                          <div style={{display:"flex",alignItems:"center",gap:8}}>
+                            {isMe && <div style={{width:4,height:4,borderRadius:"50%",background:C.green}}/>}
+                            <span style={{fontFamily:BB,fontSize:14,letterSpacing:3,
+                              color:isWinner?C.white:isMe?C.sub:C.muted}}>{p.name}</span>
+                          </div>
+                          {m.played && <span style={{fontFamily:BB,fontSize:16,letterSpacing:2,
+                            color:isWinner?C.white:C.muted}}>{score}</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        {/* Action button */}
+        {isActive && nextMatch && (
+          <div style={{marginTop:12}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+              <Label style={{letterSpacing:3}}>Next: vs {nextOpponent?.name}</Label>
+              <Label style={{letterSpacing:2,color:CPU_CFG[nextDiff]?.color}}>{CPU_CFG[nextDiff]?.label}
+                {nextTrickList?` · ${nextTrickList.toUpperCase()}`:""}</Label>
+            </div>
+            <BtnPrimary onClick={startTournamentMatch}>PLAY NEXT MATCH</BtnPrimary>
+          </div>
+        )}
+        {(isChampion||isEliminated) && (
+          <div style={{marginTop:12,display:"flex",flexDirection:"column",gap:10}}>
+            <BtnPrimary onClick={()=>{setTourney(null);setScreen("settings");}}>NEW TOURNAMENT</BtnPrimary>
+            <BtnGhost onClick={()=>{setTourney(null);setScreen("home");setSelectedComp(null);setSelectedDiv(null);}}>← MAIN MENU</BtnGhost>
+          </div>
+        )}
+      </div>
+    </div>
+    );
+  }
+
   // ── HOME SCREEN — MODE SELECTOR ─────────────────────────────────────────────
   if (screen==="home") {
     const modeCards = [
       {key:"cpu",   label:"BATTLE",     desc:"1v1 vs CPU",          color:C.green,  available:true},
       {key:"drill", label:"DRILL",      desc:"Train your tricks",   color:C.yellow, available:true},
-      {key:"tournament", label:"TOURNAMENT", desc:"Bracket competition", color:C.orange, available:false},
+      {key:"tournament", label:"TOURNAMENT", desc:"Bracket competition", color:C.orange, available:true},
       {key:"2p",    label:"2 PLAYER",   desc:"Local head to head",  color:C.sub,    available:true},
     ];
 
@@ -1796,8 +2072,8 @@ export default function App() {
           </div>
         </div>
 
-        {/* Trick list selector (PRO OPEN) */}
-        {selectedDiv.trickSets && (
+        {/* Trick list selector (PRO OPEN) — not for tournament, it auto-switches */}
+        {selectedDiv.trickSets && mode!=="tournament" && (
           <Seg label="Trick List" val={openList} onChange={setOpenList} opts={
             selectedDiv.trickSets.map(s=>({key:s.key,label:s.label,sub:s.sub}))
           }/>
@@ -1830,6 +2106,31 @@ export default function App() {
             ]}/>
           )}
 
+          {mode==="tournament" && (<>
+            <Seg label="Bracket Size" val={bracketSize} onChange={setBracketSize} opts={[
+              {key:4,label:"4",sub:"2 rounds"},
+              {key:8,label:"8",sub:"3 rounds"},
+            ]}/>
+            <Seg label="Race To" val={race} onChange={setRace} opts={[
+              {key:3,label:"3"},
+              {key:5,label:"5"},
+            ]}/>
+            {selectedDiv.trickSets && (
+              <div style={{borderLeft:`3px solid ${C.orange}`,paddingLeft:14,marginBottom:20}}>
+                <Label style={{letterSpacing:3,color:C.orange,marginBottom:4}}>Trick List Progression</Label>
+                <div style={{fontFamily:BC,fontSize:12,color:C.sub,fontWeight:600,lineHeight:1.5}}>
+                  Earlier rounds use REGULAR tricks. The final switches to TOP 16 — just like a real comp.
+                </div>
+              </div>
+            )}
+            <div style={{borderLeft:`3px solid ${C.muted}`,paddingLeft:14,marginBottom:20}}>
+              <Label style={{letterSpacing:3,marginBottom:4}}>Difficulty Scaling</Label>
+              <div style={{fontFamily:BC,fontSize:12,color:C.sub,fontWeight:600,lineHeight:1.5}}>
+                CPU gets harder each round. From ROOKIE to PRO as you climb the bracket.
+              </div>
+            </div>
+          </>)}
+
           {mode==="drill" && (<>
             <Seg label="Drill Type" val={drillType} onChange={setDrillType} opts={[
               {key:"consistency",label:"CONSISTENCY",sub:`land ${drillTarget}× in a row`},
@@ -1851,7 +2152,7 @@ export default function App() {
         </div>
 
         <div style={{flex:1}}/>
-        <BtnPrimary onClick={mode==="drill"?startDrill:startGame}>
+        <BtnPrimary onClick={mode==="drill"?startDrill:mode==="tournament"?startTournament:startGame}>
           {startLabel}
         </BtnPrimary>
       </div>
@@ -1863,7 +2164,9 @@ export default function App() {
   if (screen==="result" && result) {
     const { scores, won, mode:rm } = result;
     const is2p = rm==="2p";
+    const isTourney = rm==="tournament";
     const winLabel = is2p?(scores.p1>=race?"P1 WINS":"P2 WINS"):(won?"YOU WIN":"CPU WINS");
+    const subLabel = isTourney?(won?"You advance":"Tournament over"):is2p?"Match Over":(won?"Well Done":"Keep Training");
     const resultColor = won?C.green:C.red;
     return (
       <div style={{...root,justifyContent:"center"}}>
@@ -1873,7 +2176,7 @@ export default function App() {
             <img src={LOGO} alt="NXS" style={{width:64,height:64,objectFit:"contain",margin:"0 auto 20px",display:"block",opacity:0.4}}/>
           </div>
           <div className="fadeUp" style={{animationDelay:"0.1s",animationFillMode:"both"}}>
-            <Label style={{marginBottom:12,letterSpacing:5}}>{is2p?"Match Over":(won?"Well Done":"Keep Training")}</Label>
+            <Label style={{marginBottom:12,letterSpacing:5}}>{subLabel}</Label>
           </div>
           <div className="pop" style={{animationDelay:"0.15s",animationFillMode:"both"}}>
             <div style={{fontFamily:BB,fontSize:62,letterSpacing:2,lineHeight:0.88,color:won?C.white:C.red,textShadow:`0 0 40px ${resultColor}30`}}>{winLabel}</div>
@@ -1891,14 +2194,22 @@ export default function App() {
             </div>
           </div>
           <div className="fadeUp" style={{marginTop:36,display:"flex",flexDirection:"column",gap:12,animationDelay:"0.65s",animationFillMode:"both"}}>
-            <BtnPrimary onClick={()=>{haptic(12);setScreen("settings");setGs(null);}}>PLAY AGAIN</BtnPrimary>
-            {!is2p && (
-              <BtnGhost color={C.sub} onClick={()=>{
-                if (isGuest) { goToAuth(); return; }
-                setScreen("stats");setGs(null);
-              }}>VIEW STATS →</BtnGhost>
+            {rm==="tournament" ? (
+              <BtnPrimary onClick={()=>{haptic(12);setGs(null);setScreen("bracket");}}>
+                {won?"BACK TO BRACKET":"VIEW BRACKET"}
+              </BtnPrimary>
+            ) : (
+              <>
+                <BtnPrimary onClick={()=>{haptic(12);setScreen("settings");setGs(null);}}>PLAY AGAIN</BtnPrimary>
+                {!is2p && (
+                  <BtnGhost color={C.sub} onClick={()=>{
+                    if (isGuest) { goToAuth(); return; }
+                    setScreen("stats");setGs(null);
+                  }}>VIEW STATS →</BtnGhost>
+                )}
+              </>
             )}
-            <BtnGhost onClick={()=>{setScreen("home");setGs(null);setSelectedComp(null);setSelectedDiv(null);}}>← MAIN MENU</BtnGhost>
+            <BtnGhost onClick={()=>{setScreen("home");setGs(null);setTourney(null);setSelectedComp(null);setSelectedDiv(null);}}>← MAIN MENU</BtnGhost>
           </div>
         </div>
       </div>
