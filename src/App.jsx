@@ -1578,10 +1578,10 @@ export default function App() {
   // ── HOME SCREEN — MODE SELECTOR ─────────────────────────────────────────────
   if (screen==="home") {
     const modeCards = [
-      {key:"cpu",   label:"BATTLE",     desc:"1v1 vs CPU",            icon:"⚔", available:true},
-      {key:"drill", label:"DRILL",      desc:"Train your tricks",     icon:"◎", available:true},
-      {key:"tournament", label:"TOURNAMENT", desc:"Bracket competition", icon:"🏆", available:false},
-      {key:"2p",    label:"2 PLAYER",   desc:"Local head to head",    icon:"⟷", available:true},
+      {key:"cpu",   label:"BATTLE",     desc:"1v1 vs CPU",          color:C.green,  available:true},
+      {key:"drill", label:"DRILL",      desc:"Train your tricks",   color:C.yellow, available:true},
+      {key:"tournament", label:"TOURNAMENT", desc:"Bracket competition", color:C.orange, available:false},
+      {key:"2p",    label:"2 PLAYER",   desc:"Local head to head",  color:C.sub,    available:true},
     ];
 
     return (
@@ -1589,7 +1589,7 @@ export default function App() {
       <div style={{...page,alignItems:"center"}}>
 
         {/* User bar */}
-        <div style={{width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+        <div style={{width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:0}}>
           <button onClick={()=>setScreen("stats")} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:11,letterSpacing:4,cursor:"pointer",padding:0}}>
             {username} · STATS →
           </button>
@@ -1604,41 +1604,43 @@ export default function App() {
           )}
         </div>
 
-        {/* Logo + Name */}
-        <div className="rise" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:"100%"}}>
-          <img src={LOGO} alt="NXS" style={{width:120,height:120,objectFit:"contain"}}/>
-          <div style={{fontFamily:BB,fontSize:44,letterSpacing:10,color:C.white,marginTop:-2,textAlign:"center"}}>
-            KOMP
+        {/* Logo + Name — centered in available space */}
+        <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:"100%"}}>
+          <div className="rise">
+            <img src={LOGO} alt="NXS" style={{width:110,height:110,objectFit:"contain",display:"block",margin:"0 auto"}}/>
           </div>
-          <div style={{fontFamily:BC,fontSize:10,letterSpacing:3,color:C.muted,fontWeight:600,marginTop:2}}>
-            KENDAMA COMPETITION TRAINER
+          <div className="rise" style={{animationDelay:"0.05s",animationFillMode:"both",textAlign:"center"}}>
+            <div style={{fontFamily:BB,fontSize:46,letterSpacing:12,color:C.white,marginTop:-2}}>KOMP</div>
+            <div style={{fontFamily:BC,fontSize:9,letterSpacing:4,color:C.muted,fontWeight:600,marginTop:4}}>KENDAMA COMPETITION TRAINER</div>
           </div>
         </div>
 
-        {/* Mode cards — 2x2 grid, fills remaining space */}
-        <div className="rise" style={{width:"100%",display:"grid",gridTemplateColumns:"1fr 1fr",gridTemplateRows:"1fr 1fr",gap:8,animationDelay:"0.06s",flex:1,marginTop:16}}>
-          {modeCards.map(m=>(
-            <button key={m.key} className="tap" onClick={()=>{
+        {/* Mode cards — 2x2 grid with accent borders */}
+        <div style={{width:"100%",display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+          {modeCards.map((m,i)=>(
+            <button key={m.key} className="tap fadeUp" onClick={()=>{
               if (!m.available) return;
               setMode(m.key);
               setScreen("compPick");
             }} style={{
-              padding:"16px 16px",background:m.available?C.surface:"transparent",
-              border:`1px solid ${m.available?C.border:`${C.border}60`}`,borderRadius:R,
+              padding:"20px 16px",background:m.available?C.surface:"transparent",
+              border:`1px solid ${m.available?C.border:`${C.border}50`}`,borderRadius:R,
+              borderLeft:`3px solid ${m.available?m.color:`${C.muted}30`}`,
               cursor:m.available?"pointer":"default",textAlign:"left",
-              transition:"all 0.12s",opacity:m.available?1:0.35,
-              display:"flex",flexDirection:"column",justifyContent:"center",gap:3,
-              position:"relative",
+              transition:"all 0.12s",opacity:m.available?1:0.3,
+              display:"flex",flexDirection:"column",justifyContent:"flex-end",gap:4,
+              position:"relative",minHeight:90,
+              animationDelay:`${0.12+i*0.06}s`,animationFillMode:"both",
             }}>
-              <div style={{fontFamily:BB,fontSize:18,letterSpacing:4,color:m.available?C.white:C.muted}}>
+              {!m.available && <span style={{fontFamily:BC,fontSize:8,letterSpacing:2,color:C.muted,fontWeight:600,
+                border:`1px solid ${C.border}`,padding:"1px 5px",borderRadius:R,
+                position:"absolute",top:10,right:10}}>SOON</span>}
+              <div style={{fontFamily:BB,fontSize:20,letterSpacing:5,color:m.available?C.white:C.muted,lineHeight:1}}>
                 {m.label}
               </div>
               <div style={{fontFamily:BC,fontSize:11,letterSpacing:1,color:m.available?C.sub:C.muted,fontWeight:600}}>
                 {m.desc}
               </div>
-              {!m.available && <span style={{fontFamily:BC,fontSize:8,letterSpacing:2,color:C.muted,fontWeight:600,
-                border:`1px solid ${C.border}`,padding:"1px 5px",borderRadius:R,
-                position:"absolute",top:8,right:8}}>SOON</span>}
             </button>
           ))}
         </div>
