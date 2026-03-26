@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { SB } from "./supabase";
 import { LOGO, C, BB, BC, R, AM_TRICKS, OPEN_REGULAR, OPEN_TOP16, COMPS, CPU_CFG, haptic, CPU_NAMES } from "./config";
 import { applyMomentum, applyComeback, applyClutch, cpuThinkTime, roll, applyStreak, drawTrick } from "./cpu";
-import { Label, Div, BtnPrimary, BtnGhost, Seg, Dots, StreakDot, TryDots, BackBtn, IgIcon, IgLink } from "./components/ui";
+import { Label, Div, BtnPrimary, BtnGhost, Seg, Dots, StreakDot, TryDots, BackBtn, IgIcon, IgLink, ChatIcon } from "./components/ui";
 import AuthScreen from "./components/Auth";
 import StatsScreen from "./components/Stats";
 
@@ -36,7 +36,16 @@ export default function App() {
 
   // Tournament state
   const [bracketSize, setBracketSize] = useState(8);
-  const [tourney, setTourney] = useState(null); // {wins,losses,attempts}
+  const [tourney, setTourney] = useState(null);
+
+  // 2P state
+  const [p1Name, setP1Name] = useState("P1");
+  const [p2Name, setP2Name] = useState("P2");
+  const P1_COL = C.green;
+  const P2_COL = C.orange;
+
+  // CompPick accordion
+  const [expandedComp, setExpandedComp] = useState(null); // {wins,losses,attempts}
 
   // Derived: competition key for DB
   const compDbKey = selectedComp && selectedDiv ? `${selectedComp.key}:${selectedDiv.key}` : null;
@@ -532,6 +541,8 @@ export default function App() {
     display:"flex",flexDirection:"column",position:"relative",
     overscrollBehavior:"none",overflow:"hidden",
   };
+  // Semantic wrapper: screens use <main> via root, nav via BackBtn
+  
   const page = {
     position:"relative",zIndex:1,flex:1,
     display:"flex",flexDirection:"column",padding:"calc(28px + env(safe-area-inset-top, 0px)) 24px calc(28px + env(safe-area-inset-bottom, 0px)) 24px",
@@ -540,8 +551,8 @@ export default function App() {
 
   // Loading
   if (authLoading) return (
-    <div style={{...root,alignItems:"center",justifyContent:"center"}}>
-      <img src={LOGO} alt="NXS" className="glow" style={{width:100,height:100,objectFit:"contain"}}/>
+    <div style={{...root,alignItems:"center",justifyContent:"center"}} role="status" aria-label="Loading app">
+      <img src={LOGO} alt="KOMP" className="glow" style={{width:100,height:100,objectFit:"contain"}}/>
       <div className="fadeUp" style={{fontFamily:BB,fontSize:10,letterSpacing:6,color:C.muted,marginTop:16,animationDelay:"0.3s",animationFillMode:"both"}}>LOADING</div>
     </div>
   );
@@ -835,11 +846,11 @@ export default function App() {
           {/* LAND / MISS buttons */}
           <div style={{padding:"0 24px 28px"}}>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-              <button className="tap" onClick={()=>onDrillAttempt(true)} style={{
+              <button className="tap" onClick={()=>onDrillAttempt(true)} aria-label="Land trick" style={{
                 padding:"0",height:isCons?120:140,background:C.green,border:"none",borderRadius:2,
                 color:C.bg,fontFamily:BB,fontSize:32,letterSpacing:4,cursor:"pointer",
                 transition:"all 0.1s",boxShadow:`0 0 24px ${C.green}25`}}>LAND</button>
-              <button className="tap" onClick={()=>onDrillAttempt(false)} style={{
+              <button className="tap" onClick={()=>onDrillAttempt(false)} aria-label="Miss trick" style={{
                 padding:"0",height:isCons?120:140,background:`${C.red}08`,
                 border:`1px solid ${C.red}30`,borderRadius:2,color:`${C.red}cc`,
                 fontFamily:BB,fontSize:32,letterSpacing:4,cursor:"pointer",
@@ -918,8 +929,7 @@ export default function App() {
                 {feedbackText.length > 0 ? `${feedbackText.length} characters` : ""}
               </div>
               <div style={{flex:1}}/>
-              <BtnPrimary onClick={sendFeedback}
-                style={{opacity:feedbackText.trim().length<3?0.3:1,pointerEvents:feedbackText.trim().length<3?"none":"auto",marginTop:20}}>
+              <BtnPrimary onClick={sendFeedback} disabled={feedbackText.trim().length<3} style={{marginTop:20}}>
                 SEND FEEDBACK
               </BtnPrimary>
               <div style={{marginTop:12,textAlign:"center"}}>
@@ -1245,9 +1255,7 @@ export default function App() {
             color:C.muted,fontWeight:600,cursor:"pointer",padding:0,
             display:"inline-flex",alignItems:"center",gap:6,opacity:0.7,
           }}>
-            <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
+            <ChatIcon/>
             Feedback
           </button>
         </div>
@@ -1262,54 +1270,72 @@ export default function App() {
     return (
     <div style={root}>
       <div style={page}>
-        <BackBtn onClick={()=>{setScreen("home");setSelectedComp(null);setSelectedDiv(null);}}/>
+        <BackBtn onClick={()=>{setScreen("home");setSelectedComp(null);setSelectedDiv(null);setExpandedComp(null);}}/>
         <div className="rise" style={{marginBottom:24}}>
           <div style={{fontFamily:BB,fontSize:32,letterSpacing:5,lineHeight:1,color:C.white}}>
             {modeLabel}
           </div>
           <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:2,marginTop:6,fontWeight:600}}>
-            Choose a competition & division
+            Pick a competition
           </div>
         </div>
 
         <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",margin:"0 -24px",padding:"0 24px"}}>
-          {COMPS.map((comp,ci)=>(
-            <div key={comp.key} style={{marginBottom:ci<COMPS.length-1?28:0}}>
-              {/* Comp header */}
-              <div style={{marginBottom:12}}>
-                <div style={{fontFamily:BB,fontSize:22,letterSpacing:4,color:C.sub}}>{comp.name}</div>
-                <div style={{fontFamily:BC,fontSize:11,letterSpacing:2,color:C.muted,fontWeight:600,marginTop:2}}>
-                  {comp.full} · {comp.location}
-                </div>
-              </div>
-
-              {/* Division rows */}
-              {comp.divisions.map((div,di)=>(
-                <button key={div.key} className="tap" onClick={()=>{
-                  setSelectedComp(comp);
-                  setSelectedDiv(div);
-                  setOpenList(div.trickSets?div.trickSets[0].key:"regular");
-                  setScreen("settings");
-                }} style={{
-                  width:"100%",padding:"18px 0",background:"transparent",border:"none",
-                  borderTop:`1px solid ${C.border}`,
-                  borderBottom:di===comp.divisions.length-1?`1px solid ${C.border}`:"none",
+          {COMPS.map((comp)=>{
+            const isOpen = expandedComp===comp.key;
+            return (
+              <div key={comp.key} style={{marginBottom:8}}>
+                {/* Comp header — clickable accordion */}
+                <button className="tap" onClick={()=>setExpandedComp(isOpen?null:comp.key)} style={{
+                  width:"100%",padding:"18px 16px",background:isOpen?`${C.white}06`:C.surface,
+                  border:`1px solid ${isOpen?C.white+"20":C.border}`,borderRadius:R,
                   cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
-                  transition:"opacity 0.1s",
+                  transition:"all 0.15s",
                 }}>
-                  <span style={{fontFamily:BB,fontSize:24,letterSpacing:4,color:C.white}}>{div.name}</span>
-                  <span style={{fontFamily:BB,fontSize:12,letterSpacing:3,color:C.muted}}>→</span>
+                  <div style={{textAlign:"left"}}>
+                    <div style={{fontFamily:BB,fontSize:24,letterSpacing:4,color:isOpen?C.white:C.sub}}>{comp.name}</div>
+                    <div style={{fontFamily:BC,fontSize:10,letterSpacing:2,color:C.muted,fontWeight:600,marginTop:2}}>
+                      {comp.full} · {comp.location}
+                    </div>
+                  </div>
+                  <span style={{fontFamily:BB,fontSize:14,color:C.muted,transition:"transform 0.2s",
+                    transform:isOpen?"rotate(90deg)":"rotate(0deg)"}}>→</span>
                 </button>
-              ))}
 
-              {/* Comp IG */}
-              {comp.ig && (
-                <div style={{marginTop:10,display:"flex",justifyContent:"flex-start"}}>
-                  <IgLink size={12} fontSize={10} href={comp.ig.href} label={comp.ig.label} style={{opacity:0.5}}/>
-                </div>
-              )}
-            </div>
-          ))}
+                {/* Divisions — expand below */}
+                {isOpen && (
+                  <div className="rise" style={{paddingLeft:16,borderLeft:`2px solid ${C.border}`,marginLeft:12,marginTop:4}}>
+                    {comp.divisions.map((div)=>(
+                      <button key={div.key} className="tap" onClick={()=>{
+                        setSelectedComp(comp);
+                        setSelectedDiv(div);
+                        setOpenList(div.trickSets?div.trickSets[0].key:"regular");
+                        setExpandedComp(null);
+                        setScreen("settings");
+                      }} style={{
+                        width:"100%",padding:"16px 12px",background:"transparent",border:"none",
+                        borderBottom:`1px solid ${C.divider}`,
+                        cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
+                        transition:"opacity 0.1s",
+                      }}>
+                        <div style={{textAlign:"left"}}>
+                          <span style={{fontFamily:BB,fontSize:20,letterSpacing:4,color:C.white}}>{div.name}</span>
+                          {div.badge && <span style={{fontFamily:BC,fontSize:9,letterSpacing:2,color:C.muted,fontWeight:600,marginLeft:10}}>{div.badge}</span>}
+                        </div>
+                        <span style={{fontFamily:BB,fontSize:12,letterSpacing:3,color:C.muted}}>→</span>
+                      </button>
+                    ))}
+                    {/* Comp IG */}
+                    {comp.ig && (
+                      <div style={{padding:"10px 12px"}}>
+                        <IgLink size={11} fontSize={9} href={comp.ig.href} label={comp.ig.label} style={{opacity:0.5}}/>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -1361,12 +1387,33 @@ export default function App() {
             ]}/>
           </>)}
 
-          {mode==="2p" && (
+          {mode==="2p" && (<>
+            {/* Player name inputs */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
+              <div>
+                <Label style={{textAlign:"center",marginBottom:8,color:P1_COL}}>Player 1</Label>
+                <input value={p1Name} onChange={e=>setP1Name(e.target.value||"")}
+                  placeholder="P1" maxLength={12} aria-label="Player 1 name"
+                  style={{width:"100%",padding:"12px 10px",background:C.surface,
+                    border:`1px solid ${P1_COL}40`,borderLeft:`3px solid ${P1_COL}`,borderRadius:R,
+                    color:C.white,fontFamily:BB,fontSize:18,letterSpacing:3,textAlign:"center",
+                    outline:"none",transition:"border-color 0.15s"}}/>
+              </div>
+              <div>
+                <Label style={{textAlign:"center",marginBottom:8,color:P2_COL}}>Player 2</Label>
+                <input value={p2Name} onChange={e=>setP2Name(e.target.value||"")}
+                  placeholder="P2" maxLength={12} aria-label="Player 2 name"
+                  style={{width:"100%",padding:"12px 10px",background:C.surface,
+                    border:`1px solid ${P2_COL}40`,borderLeft:`3px solid ${P2_COL}`,borderRadius:R,
+                    color:C.white,fontFamily:BB,fontSize:18,letterSpacing:3,textAlign:"center",
+                    outline:"none",transition:"border-color 0.15s"}}/>
+              </div>
+            </div>
             <Seg label="Race To" val={race} onChange={setRace} opts={[
               {key:3,label:"3"},
               {key:5,label:"5"},
             ]}/>
-          )}
+          </>)}
 
           {mode==="tournament" && (<>
             <Seg label="Base Difficulty" val={diff} onChange={setDiff} opts={[
@@ -1431,29 +1478,30 @@ export default function App() {
   if (screen==="result" && result) {
     const { scores, won, mode:rm } = result;
     const is2p = rm==="2p";
-    const winLabel = is2p?(scores.p1>=race?"P1 WINS":"P2 WINS"):(won?"YOU WIN":"CPU WINS");
+    const p1Won = is2p && scores.p1>=race;
+    const winLabel = is2p?(p1Won?`${p1Name||"P1"} WINS`:`${p2Name||"P2"} WINS`):(won?"YOU WIN":"CPU WINS");
     const subLabel = is2p?"Match Over":(won?"Well Done":"Keep Training");
-    const resultColor = won?C.green:C.red;
+    const resultColor = is2p?(p1Won?P1_COL:P2_COL):(won?C.green:C.red);
     return (
       <div style={{...root,justifyContent:"center"}}>
         <div style={{position:"fixed",inset:0,background:resultColor,opacity:0,animation:"flash 0.8s ease-out",zIndex:2,pointerEvents:"none"}}/>
         <div style={{position:"relative",zIndex:1,textAlign:"center",padding:"0 24px"}}>
           <div className="fadeUp" style={{animationDelay:"0s"}}>
-            <img src={LOGO} alt="NXS" style={{width:64,height:64,objectFit:"contain",margin:"0 auto 20px",display:"block",opacity:0.4}}/>
+            <img src={LOGO} alt="KOMP" style={{width:64,height:64,objectFit:"contain",margin:"0 auto 20px",display:"block",opacity:0.4}}/>
           </div>
           <div className="fadeUp" style={{animationDelay:"0.1s",animationFillMode:"both"}}>
             <Label style={{marginBottom:12,letterSpacing:5}}>{subLabel}</Label>
           </div>
           <div className="pop" style={{animationDelay:"0.15s",animationFillMode:"both"}}>
-            <div style={{fontFamily:BB,fontSize:62,letterSpacing:2,lineHeight:0.88,color:won?C.white:C.red,textShadow:`0 0 40px ${resultColor}30`}}>{winLabel}</div>
+            <div style={{fontFamily:BB,fontSize:is2p?48:62,letterSpacing:2,lineHeight:0.88,color:resultColor,textShadow:`0 0 40px ${resultColor}30`}}>{winLabel}</div>
           </div>
           <div className="fadeUp" style={{animationDelay:"0.35s",animationFillMode:"both"}}>
             <Div mt={28} mb={28}/>
             <Label style={{marginBottom:16,letterSpacing:5}}>Final Score</Label>
             <div style={{display:"flex",justifyContent:"center",gap:32}}>
-              {(is2p?[["P1",scores.p1],["P2",scores.p2]]:[["YOU",scores.you],["CPU",scores.cpu]]).map(([l,v],i)=>(
+              {(is2p?[[p1Name||"P1",scores.p1,P1_COL],[p2Name||"P2",scores.p2,P2_COL]]:[["YOU",scores.you,C.green],["CPU",scores.cpu,C.red]]).map(([l,v,col],i)=>(
                 <div key={l} className="fadeUp" style={{textAlign:"center",animationDelay:`${0.45+i*0.1}s`,animationFillMode:"both"}}>
-                  <Label style={{marginBottom:8}}>{l}</Label>
+                  <Label style={{marginBottom:8,color:is2p?col:C.sub}}>{l}</Label>
                   <div style={{fontFamily:BB,fontSize:76,lineHeight:0.9,color:C.white}}>{v}</div>
                 </div>
               ))}
@@ -1487,17 +1535,23 @@ export default function App() {
     <div style={{padding:"calc(20px + env(safe-area-inset-top, 0px)) 24px 0"}}>
       <div style={{display:"flex",alignItems:"flex-start",justifyContent:"center",gap:16}}>
         {is2p
-          ? [["P1",scores.p1],["P2",scores.p2]].map(([l,v])=>(
-              <div key={l} style={{flex:1,textAlign:"center"}}>
-                <Label style={{marginBottom:6,letterSpacing:4}}>{l}</Label>
-                <div key={`${l}-${v}`} className="scorePulse" style={{fontFamily:BB,fontSize:52,lineHeight:1}}>{v}</div>
-                <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:10}}>
-                  {Array.from({length:race}).map((_,i)=>(
-                    <div key={i} style={{width:16,height:2,background:i<v?C.white:C.border,transition:"background 0.25s"}}/>
-                  ))}
-                </div>
-              </div>
-            ))
+          ? <>
+              {[[p1Name||"P1",scores.p1,P1_COL],[p2Name||"P2",scores.p2,P2_COL]].map(([l,v,col],idx)=>(
+                <React.Fragment key={l}>
+                  {idx===1 && <div style={{fontFamily:BB,fontSize:18,color:C.border,paddingTop:24}}>vs</div>}
+                  <div style={{flex:1,textAlign:"center"}}>
+                    <Label style={{marginBottom:6,letterSpacing:4,color:col}}>{l}</Label>
+                    <div key={`${l}-${v}`} className="scorePulse" style={{fontFamily:BB,fontSize:52,lineHeight:1,color:C.white}}>{v}</div>
+                    <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:10}}>
+                      {Array.from({length:race}).map((_,i)=>(
+                        <div key={i} style={{width:16,height:2,background:i<v?col:C.border,transition:"background 0.25s",
+                          boxShadow:i<v?`0 0 4px ${col}40`:undefined}}/>
+                      ))}
+                    </div>
+                  </div>
+                </React.Fragment>
+              ))}
+            </>
           : <>
               <div style={{flex:1,textAlign:"center"}}>
                 <Label style={{marginBottom:6,letterSpacing:4,color:youMatchPoint?C.green:C.sub}}>
@@ -1551,8 +1605,8 @@ export default function App() {
           </div>
           <div className="fadeUp" style={{display:"flex",alignItems:"center",gap:10,animationDelay:"0.2s",animationFillMode:"both"}}>
             <div style={{width:20,height:1,background:C.border}}/>
-            <div style={{fontFamily:BB,fontSize:10,letterSpacing:6,color:playerFirst?C.green:C.red}}>
-              {is2p?(playerFirst?"P1 FIRST":"P2 FIRST"):(playerFirst?"YOU FIRST":"CPU FIRST")}
+            <div style={{fontFamily:BB,fontSize:10,letterSpacing:6,color:is2p?(playerFirst?P1_COL:P2_COL):(playerFirst?C.green:C.red)}}>
+              {is2p?(playerFirst?`${p1Name||"P1"} FIRST`:`${p2Name||"P2"} FIRST`):(playerFirst?"YOU FIRST":"CPU FIRST")}
             </div>
           </div>
         </div>
@@ -1572,13 +1626,21 @@ export default function App() {
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20}}>
             <div style={{width:20,height:1,background:C.border}}/>
-            <div style={{fontFamily:BB,fontSize:10,letterSpacing:6,color:C.muted}}>{playerFirst?"P1 FIRST":"P2 FIRST"}</div>
+            <div style={{fontFamily:BB,fontSize:10,letterSpacing:6,color:playerFirst?P1_COL:P2_COL}}>{playerFirst?`${p1Name||"P1"} FIRST`:`${p2Name||"P2"} FIRST`}</div>
           </div>
           <Div mb={20}/>
           <Label style={{textAlign:"center",marginBottom:16,letterSpacing:5}}>Who scored?</Label>
           <div style={{display:"flex",flexDirection:"column",gap:10,flex:1,justifyContent:"center"}}>
-            <BtnPrimary onClick={()=>on2PScore("p1")}>P1 SCORED</BtnPrimary>
-            <BtnPrimary onClick={()=>on2PScore("p2")}>P2 SCORED</BtnPrimary>
+            <button className="tap" onClick={()=>on2PScore("p1")} style={{
+              width:"100%",padding:"18px 20px",background:`${P1_COL}15`,border:`1px solid ${P1_COL}40`,
+              borderLeft:`3px solid ${P1_COL}`,borderRadius:R,color:P1_COL,
+              fontFamily:BB,fontSize:20,letterSpacing:5,cursor:"pointer",transition:"all 0.12s",
+            }}>{p1Name||"P1"} SCORED</button>
+            <button className="tap" onClick={()=>on2PScore("p2")} style={{
+              width:"100%",padding:"18px 20px",background:`${P2_COL}15`,border:`1px solid ${P2_COL}40`,
+              borderLeft:`3px solid ${P2_COL}`,borderRadius:R,color:P2_COL,
+              fontFamily:BB,fontSize:20,letterSpacing:5,cursor:"pointer",transition:"all 0.12s",
+            }}>{p2Name||"P2"} SCORED</button>
             <BtnGhost onClick={()=>on2PScore("null")}>NULL — NEXT TRICK</BtnGhost>
           </div>
         </div>
@@ -1592,7 +1654,8 @@ export default function App() {
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar/>
         <div key={pk} className="pop" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center"}}>
-          <div style={{fontFamily:BB,fontSize:52,letterSpacing:2,color:C.white}}>{winner==="p1"?"P1":"P2"} SCORED</div>
+          <div style={{fontFamily:BB,fontSize:48,letterSpacing:2,color:winner==="p1"?P1_COL:P2_COL,
+            textShadow:`0 0 30px ${winner==="p1"?P1_COL:P2_COL}30`}}>{winner==="p1"?(p1Name||"P1"):(p2Name||"P2")} SCORED</div>
         </div>
       </div>
     </div>
