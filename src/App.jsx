@@ -898,6 +898,18 @@ export default function App() {
   useEffect(()=>{ compDbKeyRef.current= compDbKey; },[compDbKey]);
   useEffect(()=>{ tourneyRef.current = tourney;  },[tourney]);
 
+  // Tournament: auto-advance from "advancing" phase to next round
+  useEffect(()=>{
+    if (!tourney||tourney.phase!=="advancing") return;
+    const t = setTimeout(()=>{
+      setTourney(prev=>{
+        if (!prev||prev.phase!=="advancing") return prev;
+        return {...prev, currentRound:prev.currentRound+1, phase:"bracket", lastWonScores:undefined};
+      });
+    },2400);
+    return ()=>clearTimeout(t);
+  },[tourney?.phase]);
+
   // Check existing session on load
   useEffect(()=>{
     SB.auth.getSession().then(async ({ data:{ session } })=>{
@@ -1311,7 +1323,6 @@ export default function App() {
       round.forEach((m,i)=>{
         if (!m.played && m.p1!==null && m.p2!==null) {
           round[i] = simulateCpuMatch(m, t.players, t.currentRound, t.rounds.length, selectedDiv);
-          // Mark loser eliminated
           const loser = round[i].winner===round[i].p1?round[i].p2:round[i].p1;
           const li = t.players.findIndex(p=>p.seed===loser);
           if (li>=0) t.players[li] = {...t.players[li], eliminated:true};
@@ -1327,20 +1338,22 @@ export default function App() {
           }
         }
       }
-      // Check tournament state
+      // Set phase: advancing (won, more rounds), champion, or eliminated
       const lastRound = t.rounds[t.rounds.length-1];
       if (lastRound[0]?.played) {
         t.phase = lastRound[0].winner===t.playerSeed?"champion":"eliminated";
       } else if (!won) {
         t.phase = "eliminated";
       } else {
-        t.currentRound++;
-        t.phase = "bracket";
+        // Don't increment round yet — advancing animation will do it
+        t.phase = "advancing";
+        t.lastWonScores = scores;
       }
       return t;
     });
-    setResult({scores,won,mode:"tournament"});
-    setScreen("result");
+    // Go straight to bracket — no result screen
+    setGs(null);
+    setScreen("bracket");
   }
 
   const root = {
@@ -1759,7 +1772,8 @@ export default function App() {
     const getPlayer = (seed) => seed!==null&&seed!==undefined ? t.players.find(p=>p.seed===seed) : null;
     const isChampion = t.phase==="champion";
     const isEliminated = t.phase==="eliminated";
-    const isActive = t.phase==="bracket";
+    const isAdvancing = t.phase==="advancing";
+    const isActive = t.phase==="bracket"||isAdvancing;
 
     const nextMatch = isActive ? t.rounds[t.currentRound]?.find(m=>
       (m.p1===t.playerSeed||m.p2===t.playerSeed)&&!m.played) : null;
@@ -1770,10 +1784,12 @@ export default function App() {
     const championSeed = lastRound?.[0]?.played ? lastRound[0].winner : null;
     const champion = getPlayer(championSeed);
 
-    const PlayerSlot = ({seed, score, m, isTop}) => {
+    const PlayerSlot = ({seed, score, m, isTop, roundIdx}) => {
       const p = getPlayer(seed);
       const isWinner = m.played && m.winner===seed;
       const isMe = seed===t.playerSeed;
+      const justAdvanced = isAdvancing && isMe && isWinner;
+      const justAppeared = isAdvancing && isMe && !m.played && roundIdx===t.currentRound+1;
       if (!p) return (
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
           padding:"5px 8px",borderBottom:isTop?`1px solid ${C.divider}`:undefined,minHeight:26}}>
@@ -1781,36 +1797,52 @@ export default function App() {
         </div>
       );
       return (
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+        <div className={justAppeared?"fadeUp":""} style={{display:"flex",justifyContent:"space-between",alignItems:"center",
           padding:"5px 8px",borderBottom:isTop?`1px solid ${C.divider}`:undefined,
-          background:isWinner?`${C.white}06`:"transparent",
-          opacity:m.played&&!isWinner?0.3:1,minHeight:26}}>
+          background:justAdvanced?`${C.green}15`:isWinner?`${C.white}06`:"transparent",
+          opacity:m.played&&!isWinner?0.3:1,minHeight:26,
+          transition:"all 0.4s ease",
+          ...(justAppeared?{animationDelay:"0.6s",animationFillMode:"both"}:{})}}>
           <div style={{display:"flex",alignItems:"center",gap:4,overflow:"hidden",flex:1}}>
-            {isMe && <div style={{width:3,height:3,borderRadius:"50%",background:C.green,flexShrink:0}}/>}
+            {isMe && <div style={{width:3,height:3,borderRadius:"50%",
+              background:C.green,flexShrink:0,
+              boxShadow:(justAdvanced||justAppeared)?`0 0 8px ${C.green}`:undefined}}/>}
             <span style={{fontFamily:BC,fontSize:10,fontWeight:600,letterSpacing:1,
-              color:isMe?C.white:isWinner?C.sub:C.muted,
+              color:(justAdvanced||justAppeared)?C.green:isMe?C.white:isWinner?C.sub:C.muted,
+              textShadow:(justAdvanced||justAppeared)?`0 0 12px ${C.green}40`:undefined,
               whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.name}</span>
           </div>
           {m.played && <span style={{fontFamily:BB,fontSize:12,letterSpacing:1,
-            color:isWinner?C.white:C.muted,marginLeft:6,flexShrink:0}}>{score}</span>}
+            color:justAdvanced?C.green:isWinner?C.white:C.muted,marginLeft:6,flexShrink:0}}>{score}</span>}
         </div>
       );
     };
 
-    const MatchBox = ({m}) => {
+    const MatchBox = ({m, ri}) => {
       const isMyMatch = m.p1===t.playerSeed||m.p2===t.playerSeed;
+      const justWon = isAdvancing && isMyMatch && m.played && m.winner===t.playerSeed;
       const accentCol = !m.played?C.border:isMyMatch?(m.winner===t.playerSeed?C.green:C.red):C.muted;
       return (
-        <div style={{border:`1px solid ${accentCol}30`,borderRadius:R,borderLeft:`2px solid ${accentCol}`,
-          background:C.surface,overflow:"hidden",width:"100%"}}>
-          <PlayerSlot seed={m.p1} score={m.p1Score} m={m} isTop={true}/>
-          <PlayerSlot seed={m.p2} score={m.p2Score} m={m} isTop={false}/>
+        <div style={{border:`1px solid ${justWon?C.green+"60":accentCol+"30"}`,borderRadius:R,
+          borderLeft:`2px solid ${accentCol}`,
+          background:C.surface,overflow:"hidden",width:"100%",
+          boxShadow:justWon?`0 0 16px ${C.green}20`:undefined,
+          transition:"box-shadow 0.5s ease"}}>
+          <PlayerSlot seed={m.p1} score={m.p1Score} m={m} isTop={true} roundIdx={ri}/>
+          <PlayerSlot seed={m.p2} score={m.p2Score} m={m} isTop={false} roundIdx={ri}/>
         </div>
       );
     };
 
     return (
     <div style={root}>
+      {/* Flash overlay for advancing */}
+      {isAdvancing && (
+        <div style={{position:"fixed",inset:0,background:C.green,opacity:0,animation:"flash 0.8s ease-out",zIndex:3,pointerEvents:"none"}}/>
+      )}
+      {isEliminated && (
+        <div style={{position:"fixed",inset:0,background:C.red,opacity:0,animation:"flash 0.8s ease-out",zIndex:3,pointerEvents:"none"}}/>
+      )}
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",
         padding:`calc(20px + env(safe-area-inset-top, 0px)) 0 calc(16px + env(safe-area-inset-bottom, 0px)) 0`,
         overflow:"hidden"}}>
@@ -1835,7 +1867,17 @@ export default function App() {
               </div>
             </div>
           )}
-          {isActive && (
+          {isAdvancing && (
+            <div className="pop" style={{textAlign:"center"}}>
+              <div style={{fontFamily:BB,fontSize:28,letterSpacing:6,color:C.green,textShadow:`0 0 20px ${C.green}30`}}>
+                ADVANCING
+              </div>
+              <div style={{fontFamily:BC,fontSize:11,color:C.sub,letterSpacing:2,fontWeight:600,marginTop:4}}>
+                {t.lastWonScores?`${t.lastWonScores.you}–${t.lastWonScores.cpu}`:""} · Next: {roundNames[t.currentRound+1]||"FINAL"}
+              </div>
+            </div>
+          )}
+          {!isAdvancing && !isChampion && !isEliminated && isActive && (
             <div className="rise" style={{textAlign:"center"}}>
               <div style={{fontFamily:BB,fontSize:24,letterSpacing:4,color:C.white}}>
                 {roundNames[t.currentRound]||`ROUND ${t.currentRound+1}`}
@@ -1873,7 +1915,7 @@ export default function App() {
 
                   {/* Matches — evenly spaced */}
                   <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"space-around",gap:4}}>
-                    {round.map((m,mi)=><MatchBox key={mi} m={m}/>)}
+                    {round.map((m,mi)=><MatchBox key={mi} m={m} ri={ri}/>)}
                   </div>
                 </div>
               );
@@ -1897,7 +1939,7 @@ export default function App() {
 
         {/* Action area */}
         <div style={{padding:"8px 24px 0",flexShrink:0}}>
-          {isActive && nextMatch && (
+          {isActive && !isAdvancing && nextMatch && (
             <>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
                 <Label style={{letterSpacing:3}}>vs {nextOpponent?.name}</Label>
@@ -2214,9 +2256,8 @@ export default function App() {
   if (screen==="result" && result) {
     const { scores, won, mode:rm } = result;
     const is2p = rm==="2p";
-    const isTourney = rm==="tournament";
     const winLabel = is2p?(scores.p1>=race?"P1 WINS":"P2 WINS"):(won?"YOU WIN":"CPU WINS");
-    const subLabel = isTourney?(won?"You advance":"Tournament over"):is2p?"Match Over":(won?"Well Done":"Keep Training");
+    const subLabel = is2p?"Match Over":(won?"Well Done":"Keep Training");
     const resultColor = won?C.green:C.red;
     return (
       <div style={{...root,justifyContent:"center"}}>
@@ -2244,20 +2285,12 @@ export default function App() {
             </div>
           </div>
           <div className="fadeUp" style={{marginTop:36,display:"flex",flexDirection:"column",gap:12,animationDelay:"0.65s",animationFillMode:"both"}}>
-            {rm==="tournament" ? (
-              <BtnPrimary onClick={()=>{haptic(12);setGs(null);setScreen("bracket");}}>
-                {won?"BACK TO BRACKET":"VIEW BRACKET"}
-              </BtnPrimary>
-            ) : (
-              <>
-                <BtnPrimary onClick={()=>{haptic(12);setScreen("settings");setGs(null);}}>PLAY AGAIN</BtnPrimary>
-                {!is2p && (
-                  <BtnGhost color={C.sub} onClick={()=>{
-                    if (isGuest) { goToAuth(); return; }
-                    setScreen("stats");setGs(null);
-                  }}>VIEW STATS →</BtnGhost>
-                )}
-              </>
+            <BtnPrimary onClick={()=>{haptic(12);setScreen("settings");setGs(null);}}>PLAY AGAIN</BtnPrimary>
+            {!is2p && (
+              <BtnGhost color={C.sub} onClick={()=>{
+                if (isGuest) { goToAuth(); return; }
+                setScreen("stats");setGs(null);
+              }}>VIEW STATS →</BtnGhost>
             )}
             <BtnGhost onClick={()=>{setScreen("home");setGs(null);setTourney(null);setSelectedComp(null);setSelectedDiv(null);}}>← MAIN MENU</BtnGhost>
           </div>
