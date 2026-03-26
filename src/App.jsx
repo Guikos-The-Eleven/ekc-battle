@@ -168,6 +168,7 @@ const cpuThinkTime = (diff) => {
 
 const roll = (diff, streak, streaksOn, gameState={}) => {
   let r = CPU_CFG[diff].base;
+  if (gameState.cpuNudge) r = Math.min(0.92, r + gameState.cpuNudge);
   if (streaksOn && streak.active)
     r = streak.dir==="hot" ? Math.min(0.88,r+0.12) : Math.max(0.12,r-0.18);
   if (gameState.cpuMomentum) r = applyMomentum(r, gameState.cpuMomentum);
@@ -1011,10 +1012,13 @@ export default function App() {
         return {...p,cpuStreak:ns,phase:"tie",msg:pLanded?"BOTH LANDED":"BOTH MISSED",currentTries:newTries};
       }
       const winner = pLanded?"you":"cpu";
-      const ns = applyStreak(p.cpuStreak,winner,streaksRef.current);
+      const newScores = {...p.scores,[winner]:p.scores[winner]+1};
+      const matchOver = newScores.you>=raceRef.current||newScores.cpu>=raceRef.current;
+      // Don't update streaks/momentum on match-ending point
+      const ns = matchOver ? p.cpuStreak : applyStreak(p.cpuStreak,winner,streaksRef.current);
       haptic(winner==="you"?20:8);
       const entry = {trick:p.trick, playerFirst:p.playerFirst, tries:newTries, result:winner};
-      return {...p,cpuStreak:ns,scores:{...p.scores,[winner]:p.scores[winner]+1},winner,phase:"point",
+      return {...p,cpuStreak:ns,scores:newScores,winner,phase:"point",
         lastScoreKey:(p.lastScoreKey||0)+1,gameLog:[...(p.gameLog||[]),entry],currentTries:[]};
     });
   }
@@ -1039,21 +1043,24 @@ export default function App() {
     if (!gs||(modeRef.current!=="cpu"&&modeRef.current!=="tournament")) return;
     let t;
     if (gs.phase==="reveal")
-      t=setTimeout(()=>setGs(p=>({...p,phase:p.playerFirst?"p_first":"cpu_first"})),2000);
+      t=setTimeout(()=>{if(!gsRef.current)return;setGs(p=>({...p,phase:p.playerFirst?"p_first":"cpu_first"}));},2000);
     else if (gs.phase==="cpu_first")
-      t=setTimeout(()=>{const s=gsRef.current;const landed=roll(diffRef.current,s.cpuStreak,streaksRef.current,{cpuMomentum:s.cpuMomentum,scores:s.scores,raceTo:raceRef.current});setGs(p=>({...p,cpuFirst:landed,cpuMomentum:[...p.cpuMomentum,landed].slice(-6),phase:"p_second"}));},cpuThinkTime(diffRef.current));
+      t=setTimeout(()=>{const s=gsRef.current;if(!s)return;const landed=roll(diffRef.current,s.cpuStreak,streaksRef.current,{cpuMomentum:s.cpuMomentum,scores:s.scores,raceTo:raceRef.current,cpuNudge:s.cpuNudge||0});setGs(p=>({...p,cpuFirst:landed,cpuMomentum:[...p.cpuMomentum,landed].slice(-6),phase:"p_second"}));},cpuThinkTime(diffRef.current));
     else if (gs.phase==="cpu_resp")
-      t=setTimeout(()=>{const s=gsRef.current;const landed=roll(diffRef.current,s.cpuStreak,streaksRef.current,{cpuMomentum:s.cpuMomentum,scores:s.scores,raceTo:raceRef.current});setGs(p=>({...p,cpuMomentum:[...p.cpuMomentum,landed].slice(-6)}));resolveCpu(s.pResult,landed);},cpuThinkTime(diffRef.current));
+      t=setTimeout(()=>{const s=gsRef.current;if(!s)return;const landed=roll(diffRef.current,s.cpuStreak,streaksRef.current,{cpuMomentum:s.cpuMomentum,scores:s.scores,raceTo:raceRef.current,cpuNudge:s.cpuNudge||0});setGs(p=>({...p,cpuMomentum:[...p.cpuMomentum,landed].slice(-6)}));resolveCpu(s.pResult,landed);},cpuThinkTime(diffRef.current));
     else if (gs.phase==="tie")
-      t=setTimeout(()=>setGs(p=>({...p,tryNum:p.tryNum+1,pResult:null,cpuFirst:null,msg:"",phase:p.playerFirst?"p_first":"cpu_first"})),1800);
+      t=setTimeout(()=>{if(!gsRef.current)return;setGs(p=>({...p,tryNum:p.tryNum+1,pResult:null,cpuFirst:null,msg:"",phase:p.playerFirst?"p_first":"cpu_first"}));},1800);
     else if (gs.phase==="null")
-      t=setTimeout(()=>nextCpuTrick(gsRef.current),1800);
+      t=setTimeout(()=>{const s=gsRef.current;if(!s)return;nextCpuTrick(s);},1800);
     else if (gs.phase==="point")
       t=setTimeout(()=>{
         const s=gsRef.current;
+        if (!s) return;
         if (s.scores.you>=raceRef.current||s.scores.cpu>=raceRef.current) {
           const won = s.scores.you>=raceRef.current;
           saveMatchResult(s.scores, won);
+          // Null gs immediately to stop all CPU logic
+          gsRef.current=null; setGs(null);
           if (tourneyRef.current) {
             handleTournamentResult(won, s.scores);
           } else {
@@ -1217,12 +1224,14 @@ export default function App() {
   // ── TOURNAMENT logic ──────────────────────────────────────────────────────────
   const ROUND_NAMES = {2:["SEMI-FINAL","FINAL"],3:["QUARTER-FINAL","SEMI-FINAL","FINAL"]};
 
-  function getTourneyDiff(roundIdx, totalRounds, div) {
-    // Scale difficulty per round
-    const diffs3 = ["easy","medium","hard"]; // 3 rounds
-    const diffs2 = ["medium","hard"];         // 2 rounds
-    const pool = totalRounds===3?diffs3:diffs2;
-    return pool[Math.min(roundIdx, pool.length-1)];
+  function getTourneyDiff(roundIdx, totalRounds, div, baseDiff) {
+    // User-chosen base stays the same — just the key for display
+    return baseDiff||"medium";
+  }
+
+  // Small CPU rate nudge per round: +2% per round after the first
+  function getTourneyNudge(roundIdx) {
+    return roundIdx * 0.02;
   }
 
   function getTourneyTrickList(roundIdx, totalRounds, div) {
@@ -1249,16 +1258,16 @@ export default function App() {
     // Future rounds (empty slots)
     let matchCount = size/4;
     while (matchCount>=1) { rounds.push(Array.from({length:matchCount},()=>({p1:null,p2:null,winner:null,p1Score:0,p2Score:0,played:false}))); matchCount/=2; }
-    return {bracketSize:size,raceTo:race,players:seeds,rounds,currentRound:0,
+    return {bracketSize:size,raceTo:race,baseDiff:diff,players:seeds,rounds,currentRound:0,
       phase:"bracket",playerSeed:seeds.find(p=>p.isHuman).seed};
   }
 
   function simulateCpuMatch(match, players, roundIdx, totalRounds, div) {
-    // Simulate a match between two CPUs
-    const diff = getTourneyDiff(roundIdx, totalRounds, div);
-    const rate = CPU_CFG[diff].base;
+    const t = tourneyRef.current||tourney;
+    const baseDiff = t?.baseDiff||"medium";
+    const rate = CPU_CFG[baseDiff].base + getTourneyNudge(roundIdx);
     let s1=0, s2=0;
-    const rt = tourney?.raceTo||race;
+    const rt = t?.raceTo||race;
     while (s1<rt && s2<rt) { Math.random()<rate+0.05*(Math.random()-0.5) ? s1++ : s2++; }
     return {...match, winner:s1>=rt?match.p1:match.p2, p1Score:s1, p2Score:s2, played:true};
   }
@@ -1275,14 +1284,13 @@ export default function App() {
     const round = t.rounds[t.currentRound];
     const myMatch = round.find(m=>m.p1===t.playerSeed||m.p2===t.playerSeed);
     if (!myMatch) return;
-    // Set difficulty and tricklist for this round
     const totalRounds = t.rounds.length;
-    const d = getTourneyDiff(t.currentRound, totalRounds, selectedDiv);
     const tl = getTourneyTrickList(t.currentRound, totalRounds, selectedDiv);
-    setDiff(d);
+    setDiff(t.baseDiff);
     if (tl) setOpenList(tl);
     setRace(t.raceTo);
     setStreaks(true);
+    const nudge = getTourneyNudge(t.currentRound);
     // Get tricks using the correct list for this round
     const getTricks = () => {
       if (!selectedDiv) return AM_TRICKS;
@@ -1297,7 +1305,7 @@ export default function App() {
     const init={scores:{you:0,cpu:0},pool:r.pool,trick:r.trick,tryNum:1,
       playerFirst:true,phase:"reveal",cpuStreak:{active:false,dir:"hot",left:0},
       cpuFirst:null,pResult:null,msg:"",winner:null,cpuMomentum:[],lastScoreKey:0,
-      gameLog:[],currentTries:[]};
+      gameLog:[],currentTries:[],cpuNudge:nudge};
     gsRef.current=init; setGs(init);
     setScreen("battle");
   }
@@ -1777,7 +1785,7 @@ export default function App() {
 
     const nextMatch = isActive ? t.rounds[t.currentRound]?.find(m=>
       (m.p1===t.playerSeed||m.p2===t.playerSeed)&&!m.played) : null;
-    const nextDiff = isActive ? getTourneyDiff(t.currentRound, totalRounds, selectedDiv) : null;
+    const nextDiff = isActive ? getTourneyDiff(t.currentRound, totalRounds, selectedDiv, t.baseDiff) : null;
     const nextTrickList = isActive ? getTourneyTrickList(t.currentRound, totalRounds, selectedDiv) : null;
     const nextOpponent = nextMatch ? getPlayer(nextMatch.p1===t.playerSeed?nextMatch.p2:nextMatch.p1) : null;
     const lastRound = t.rounds[totalRounds-1];
@@ -1896,7 +1904,7 @@ export default function App() {
             minWidth:t.bracketSize===8?640:380,width:"100%",height:"100%"}}>
 
             {t.rounds.map((round,ri)=>{
-              const diffForRound = getTourneyDiff(ri, totalRounds, selectedDiv);
+              const diffForRound = getTourneyDiff(ri, totalRounds, selectedDiv, t.baseDiff);
               const tlForRound = getTourneyTrickList(ri, totalRounds, selectedDiv);
               const diffCol = CPU_CFG[diffForRound]?.color||C.muted;
               const isCurrent = ri===t.currentRound&&isActive;
@@ -1909,7 +1917,7 @@ export default function App() {
                       {roundNames[ri]||`R${ri+1}`}
                     </div>
                     <div style={{fontFamily:BC,fontSize:7,letterSpacing:1,color:diffCol,fontWeight:600,marginTop:1}}>
-                      {CPU_CFG[diffForRound]?.label}{tlForRound?" · "+tlForRound.toUpperCase():""}
+                      {CPU_CFG[diffForRound]?.label}{ri>0?` +${ri*2}%`:""}{tlForRound?" · "+tlForRound.toUpperCase():""}
                     </div>
                   </div>
 
@@ -1943,7 +1951,7 @@ export default function App() {
             <>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
                 <Label style={{letterSpacing:3}}>vs {nextOpponent?.name}</Label>
-                <Label style={{letterSpacing:2,color:CPU_CFG[nextDiff]?.color}}>{CPU_CFG[nextDiff]?.label}
+                <Label style={{letterSpacing:2,color:CPU_CFG[nextDiff]?.color}}>{CPU_CFG[nextDiff]?.label}{t.currentRound>0?` +${t.currentRound*2}%`:""}
                   {nextTrickList?" · "+nextTrickList.toUpperCase():""}</Label>
               </div>
               <BtnPrimary onClick={startTournamentMatch}>PLAY NEXT MATCH</BtnPrimary>
@@ -2199,6 +2207,11 @@ export default function App() {
           )}
 
           {mode==="tournament" && (<>
+            <Seg label="Base Difficulty" val={diff} onChange={setDiff} opts={[
+              {key:"easy",  label:"ROOKIE",  color:C.green, sub:"~48%"},
+              {key:"medium",label:"AMATEUR", color:C.yellow,sub:"~68%"},
+              {key:"hard",  label:"PRO",     color:C.red,   sub:"~87%"},
+            ]}/>
             <Seg label="Bracket Size" val={bracketSize} onChange={setBracketSize} opts={[
               {key:4,label:"4",sub:"2 rounds"},
               {key:8,label:"8",sub:"3 rounds"},
@@ -2218,7 +2231,7 @@ export default function App() {
             <div style={{borderLeft:`3px solid ${C.muted}`,paddingLeft:14,marginBottom:20}}>
               <Label style={{letterSpacing:3,marginBottom:4}}>Difficulty Scaling</Label>
               <div style={{fontFamily:BC,fontSize:12,color:C.sub,fontWeight:600,lineHeight:1.5}}>
-                CPU gets harder each round. From ROOKIE to PRO as you climb the bracket.
+                CPU gets slightly harder each round (+2%) on top of your chosen base difficulty.
               </div>
             </div>
           </>)}
