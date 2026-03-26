@@ -1228,13 +1228,13 @@ export default function App() {
               border:`1px solid ${m.available?C.border:`${C.border}50`}`,borderRadius:R,
               borderLeft:`3px solid ${m.available?m.color:`${C.muted}30`}`,
               cursor:m.available?"pointer":"default",textAlign:"left",
-              transition:"all 0.12s",opacity:m.available?1:0.3,
+              transition:"all 0.12s",opacity:m.available?1:0.45,
               display:"flex",flexDirection:"column",justifyContent:"center",gap:4,
               position:"relative",
               animationDelay:`${0.12+i*0.06}s`,animationFillMode:"both",
             }}>
-              {!m.available && <span style={{fontFamily:BC,fontSize:8,letterSpacing:2,color:C.muted,fontWeight:600,
-                border:`1px solid ${C.border}`,padding:"1px 5px",borderRadius:R,
+              {!m.available && <span style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,
+                border:`1px solid ${C.muted}50`,padding:"3px 8px",borderRadius:R,
                 position:"absolute",top:10,right:10}}>SOON</span>}
               <div style={{fontFamily:BB,fontSize:20,letterSpacing:5,color:m.available?C.white:C.muted,lineHeight:1}}>
                 {m.label}
@@ -1283,27 +1283,32 @@ export default function App() {
         <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",margin:"0 -24px",padding:"0 24px"}}>
           {COMPS.map((comp)=>{
             const isOpen = expandedComp===comp.key;
+            const isSoon = comp.soon;
             return (
-              <div key={comp.key} style={{marginBottom:8}}>
+              <div key={comp.key} style={{marginBottom:8,opacity:isSoon?0.4:1}}>
                 {/* Comp header — clickable accordion */}
-                <button className="tap" onClick={()=>setExpandedComp(isOpen?null:comp.key)} style={{
+                <button className="tap" onClick={()=>!isSoon&&setExpandedComp(isOpen?null:comp.key)} style={{
                   width:"100%",padding:"18px 16px",background:isOpen?`${C.white}06`:C.surface,
                   border:`1px solid ${isOpen?C.white+"20":C.border}`,borderRadius:R,
-                  cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
-                  transition:"all 0.15s",
+                  cursor:isSoon?"default":"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
+                  transition:"all 0.15s",position:"relative",
                 }}>
                   <div style={{textAlign:"left"}}>
-                    <div style={{fontFamily:BB,fontSize:24,letterSpacing:4,color:isOpen?C.white:C.sub}}>{comp.name}</div>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                      <span style={{fontFamily:BB,fontSize:24,letterSpacing:4,color:isOpen?C.white:C.sub}}>{comp.name}</span>
+                      {isSoon && <span style={{fontFamily:BC,fontSize:9,letterSpacing:2,color:C.muted,fontWeight:600,
+                        border:`1px solid ${C.border}`,padding:"2px 8px",borderRadius:R}}>SOON</span>}
+                    </div>
                     <div style={{fontFamily:BC,fontSize:10,letterSpacing:2,color:C.muted,fontWeight:600,marginTop:2}}>
                       {comp.full} · {comp.location}
                     </div>
                   </div>
-                  <span style={{fontFamily:BB,fontSize:14,color:C.muted,transition:"transform 0.2s",
-                    transform:isOpen?"rotate(90deg)":"rotate(0deg)"}}>→</span>
+                  {!isSoon && <span style={{fontFamily:BB,fontSize:14,color:C.muted,transition:"transform 0.2s",
+                    transform:isOpen?"rotate(90deg)":"rotate(0deg)"}}>→</span>}
                 </button>
 
                 {/* Divisions — expand below */}
-                {isOpen && (
+                {isOpen && !isSoon && (
                   <div className="rise" style={{paddingLeft:16,borderLeft:`2px solid ${C.border}`,marginLeft:12,marginTop:4}}>
                     {comp.divisions.map((div)=>(
                       <button key={div.key} className="tap" onClick={()=>{

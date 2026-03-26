@@ -111,6 +111,19 @@ const COMPS = [
       ]},
     ],
   },
+  {
+    key:"wko_2026", name:"WKO 2026", full:"World Kendama Open",
+    location:"Tokyo, JP · Aug 15–17",
+    soon:true,
+    divisions:[
+      { key:"am_open", name:"AM OPEN", badge:"COMING SOON", tricks:AM_TRICKS },
+      { key:"open", name:"PRO OPEN", badge:"COMING SOON", trickSets:[
+        { key:"regular", label:"REGULAR", sub:"15 tricks", tricks:OPEN_REGULAR },
+        { key:"top16",   label:"TOP 16",  sub:"15 tricks", tricks:OPEN_TOP16 },
+        { key:"mix",     label:"MIX",     sub:"all 30",    tricks:[...OPEN_REGULAR,...OPEN_TOP16] },
+      ]},
+    ],
+  },
 ];
 
 // ─── CPU CONFIG ──────────────────────────────────────────────────────────────
