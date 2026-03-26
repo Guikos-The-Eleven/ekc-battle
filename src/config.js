@@ -38,7 +38,10 @@ if (typeof document !== "undefined") {
       .slideIn { animation: slideIn 0.35s ease both }
       .fadeUp { animation: fadeUp 0.4s ease both }
       .tap:active { transform:scale(0.96); opacity:0.82; }
-      button:disabled { opacity:0.4; cursor:not-allowed; }
+      button:disabled { opacity:0.35; cursor:not-allowed; pointer-events:none; }
+      button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible {
+        outline:2px solid #4da3ff; outline-offset:2px;
+      }
       input::placeholder { color:#52525a; }
       input:focus { border-color:#3a3a42 !important; outline:none; }
       textarea:focus { border-color:#3a3a42 !important; outline:none; }

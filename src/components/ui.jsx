@@ -1,66 +1,78 @@
 import { useState, useEffect } from "react";
-import { C, BB, BC, R, LOGO } from "../config";
+import { C, BB, BC, R } from "../config";
 
-// ─── UI ATOMS ────────────────────────────────────────────────────────────────
-const Label = ({ children, style={} }) => (
-  <div style={{fontFamily:BC,fontSize:11,letterSpacing:1.5,color:C.sub,fontWeight:600,...style}}>{children}</div>
-);
-const Div = ({ mt=0, mb=0 }) => <div style={{height:1,background:C.divider,marginTop:mt,marginBottom:mb}}/>;
-
-const BtnPrimary = ({ children, onClick, style={} }) => (
-  <button className="tap" onClick={onClick} style={{
-    width:"100%",padding:"18px 20px",background:"#d4d4d4",border:"none",borderRadius:2,
-    color:"#0b0b0c",fontFamily:BB,fontSize:20,letterSpacing:5,cursor:"pointer",
-    transition:"opacity 0.1s ease",...style,
-  }}>{children}</button>
+/* ── Label ─────────────────────────────────────────────────────────────────── */
+const Label = ({ children, as: Tag="div", style={} }) => (
+  <Tag style={{fontFamily:BC,fontSize:11,letterSpacing:1.5,color:C.sub,fontWeight:600,...style}}>{children}</Tag>
 );
 
-const BtnGhost = ({ children, onClick, color=C.muted, style={} }) => (
-  <button className="tap" onClick={onClick} style={{
-    width:"100%",padding:"16px 24px",background:"transparent",
-    border:`1px solid ${color}`,borderRadius:R,color,
-    fontFamily:BB,fontSize:16,letterSpacing:5,cursor:"pointer",
-    transition:"opacity 0.12s",...style,
-  }}>{children}</button>
+/* ── Divider ───────────────────────────────────────────────────────────────── */
+const Div = ({ mt=0, mb=0 }) => <hr style={{height:1,background:C.divider,marginTop:mt,marginBottom:mb,border:"none"}} aria-hidden="true"/>;
+
+/* ── Primary Button ────────────────────────────────────────────────────────── */
+const BtnPrimary = ({ children, onClick, disabled=false, style={} }) => (
+  <button className="tap" onClick={disabled?undefined:onClick} disabled={disabled}
+    aria-disabled={disabled}
+    style={{
+      width:"100%",padding:"18px 20px",background:disabled?"#555":C.white,border:"none",borderRadius:R,
+      color:C.bg,fontFamily:BB,fontSize:20,letterSpacing:5,cursor:disabled?"not-allowed":"pointer",
+      transition:"all 0.15s ease",opacity:disabled?0.35:1,...style,
+    }}>{children}</button>
 );
 
+/* ── Ghost Button ──────────────────────────────────────────────────────────── */
+const BtnGhost = ({ children, onClick, color=C.muted, disabled=false, style={} }) => (
+  <button className="tap" onClick={disabled?undefined:onClick} disabled={disabled}
+    style={{
+      width:"100%",padding:"16px 24px",background:"transparent",
+      border:`1px solid ${color}`,borderRadius:R,color,
+      fontFamily:BB,fontSize:16,letterSpacing:5,cursor:disabled?"not-allowed":"pointer",
+      transition:"all 0.12s",...style,
+    }}>{children}</button>
+);
+
+/* ── Segmented Control ─────────────────────────────────────────────────────── */
 const Seg = ({ label, opts, val, onChange }) => (
-  <div style={{marginBottom:22}}>
-    {label && <Label style={{textAlign:"center",marginBottom:12}}>{label}</Label>}
+  <fieldset style={{marginBottom:22,border:"none",padding:0}} role="radiogroup" aria-label={label}>
+    {label && <Label as="legend" style={{textAlign:"center",marginBottom:12,width:"100%"}}>{label}</Label>}
     <div style={{display:"flex",gap:8}}>
       {opts.map(o=>{
         const sel = val===o.key;
         const selColor = o.color||"#c8c8c8";
         return (
-          <button key={String(o.key)} className="tap" onClick={()=>onChange(o.key)} style={{
-            flex:1, padding:o.sub?"12px 6px":"16px 6px",
-            background:sel?(o.color?o.color+"22":"#ffffff0f"):"transparent",
-            border:`1px solid ${sel?selColor:C.border}`,
-            color:sel?(o.color||"#d8d8d8"):C.sub,
-            fontFamily:BB,fontSize:14,letterSpacing:3,
-            cursor:"pointer",borderRadius:R,transition:"all 0.12s",
-          }}>
+          <button key={String(o.key)} className="tap" role="radio" aria-checked={sel}
+            onClick={()=>onChange(o.key)} style={{
+              flex:1, padding:o.sub?"12px 6px":"16px 6px",
+              background:sel?(o.color?o.color+"22":"#ffffff0f"):"transparent",
+              border:`1px solid ${sel?selColor:C.border}`,
+              color:sel?(o.color||"#d8d8d8"):C.sub,
+              fontFamily:BB,fontSize:14,letterSpacing:3,
+              cursor:"pointer",borderRadius:R,transition:"all 0.12s",
+            }}>
             <div>{o.label}</div>
             {o.sub && <div style={{fontSize:9,letterSpacing:2,opacity:sel?0.7:0.5,marginTop:4}}>{o.sub}</div>}
           </button>
         );
       })}
     </div>
-  </div>
+  </fieldset>
 );
 
+/* ── Loading Dots ──────────────────────────────────────────────────────────── */
 function Dots() {
   const [n,setN]=useState(1);
   useEffect(()=>{const t=setInterval(()=>setN(d=>(d%3)+1),450);return()=>clearInterval(t);},[]);
-  return <span style={{letterSpacing:5}}>{[1,2,3].map(i=><span key={i} style={{opacity:i<=n?1:0.18}}>●</span>)}</span>;
+  return <span role="status" aria-label="Loading" style={{letterSpacing:5}}>{[1,2,3].map(i=><span key={i} style={{opacity:i<=n?1:0.18}}>●</span>)}</span>;
 }
 
+/* ── Streak Indicator ──────────────────────────────────────────────────────── */
 function StreakDot({ streak }) {
   if (!streak?.active) return null;
   const hot = streak.dir==="hot";
   const col = hot?C.orange:C.blue;
   return (
-    <div className="pls" style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:6}}>
+    <div className="pls" role="status" aria-label={`CPU is ${hot?"hot":"cold"}`}
+      style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:6}}>
       <div style={{width:6,height:6,borderRadius:"50%",background:col,boxShadow:`0 0 8px ${col}80`}}/>
       <span style={{fontFamily:BC,fontSize:10,letterSpacing:3,color:col,fontWeight:600,opacity:0.9,textShadow:`0 0 12px ${col}40`}}>
         {hot?"HOT":"COLD"}
@@ -69,28 +81,35 @@ function StreakDot({ streak }) {
   );
 }
 
+/* ── Try Progress Dots ─────────────────────────────────────────────────────── */
 const TryDots = ({ current }) => (
-  <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:18}}>
+  <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:18}} role="status" aria-label={`Try ${current} of 3`}>
     {[1,2,3].map(t=>(
-      <div key={t} style={{width:32,height:3,background:t<current?C.white:t===current?C.sub:C.border,transition:"background 0.2s"}}/>
+      <div key={t} style={{width:32,height:3,background:t<current?C.white:t===current?C.sub:C.border,transition:"background 0.25s"}}/>
     ))}
   </div>
 );
 
+/* ── Back Button ───────────────────────────────────────────────────────────── */
 const BackBtn = ({ onClick, label="← BACK" }) => (
-  <button onClick={onClick} style={{background:"transparent",border:"none",color:C.muted,fontFamily:BB,fontSize:11,letterSpacing:5,cursor:"pointer",textAlign:"left",marginBottom:24,padding:0,display:"block"}}>{label}</button>
+  <nav>
+    <button onClick={onClick} aria-label="Go back"
+      style={{background:"transparent",border:"none",color:C.muted,fontFamily:BB,fontSize:11,letterSpacing:5,cursor:"pointer",textAlign:"left",marginBottom:24,padding:0,display:"block"}}>{label}</button>
+  </nav>
 );
 
+/* ── Instagram Icon ────────────────────────────────────────────────────────── */
 const IgIcon = ({ size=14, color=C.muted }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block",verticalAlign:"middle",flexShrink:0}}>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{display:"inline-block",verticalAlign:"middle",flexShrink:0}}>
     <rect x="2" y="2" width="20" height="20" rx="5"/>
     <circle cx="12" cy="12" r="5"/>
     <circle cx="17.5" cy="6.5" r="1.5" fill={color} stroke="none"/>
   </svg>
 );
 
+/* ── Instagram Link ────────────────────────────────────────────────────────── */
 const IgLink = ({ size=14, fontSize=12, href="https://instagram.com/kendamanxs", label="kendamanxs", style={} }) => (
-  <a href={href} target="_blank" rel="noopener noreferrer" style={{
+  <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`Follow ${label} on Instagram`} style={{
     fontFamily:BC,fontSize,letterSpacing:3,color:C.muted,fontWeight:600,
     textDecoration:"none",display:"inline-flex",alignItems:"center",gap:6,
     transition:"opacity 0.15s",...style,
@@ -100,4 +119,11 @@ const IgLink = ({ size=14, fontSize=12, href="https://instagram.com/kendamanxs",
   </a>
 );
 
-export { Label, Div, BtnPrimary, BtnGhost, Seg, Dots, StreakDot, TryDots, BackBtn, IgIcon, IgLink };
+/* ── Chat/Feedback Icon ────────────────────────────────────────────────────── */
+const ChatIcon = ({ size=12, color=C.muted }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}>
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </svg>
+);
+
+export { Label, Div, BtnPrimary, BtnGhost, Seg, Dots, StreakDot, TryDots, BackBtn, IgIcon, IgLink, ChatIcon };

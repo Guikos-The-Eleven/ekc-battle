@@ -86,17 +86,17 @@ function AuthScreen({ onAuth, onGuest }) {
             </div>
 
             {tab==="signup" && (
-              <input placeholder="Username" value={name} onChange={e=>setName(e.target.value)}
+              <input placeholder="Username" aria-label="Username" value={name} onChange={e=>setName(e.target.value)}
                 style={inputStyle}/>
             )}
-            <input placeholder="Email" type="email" value={email} onChange={e=>setEmail(e.target.value)}
+            <input placeholder="Email" aria-label="Email" type="email" value={email} onChange={e=>setEmail(e.target.value)}
               style={inputStyle}/>
-            <input placeholder="Password" type="password" value={pw} onChange={e=>setPw(e.target.value)}
+            <input placeholder="Password" aria-label="Password" type="password" value={pw} onChange={e=>setPw(e.target.value)}
               style={inputStyle} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
 
             {err && <div style={{fontFamily:BC,fontSize:13,color:C.red,marginBottom:14,letterSpacing:3,lineHeight:1.4}}>{err}</div>}
 
-            <BtnPrimary onClick={handleSubmit} style={{marginTop:4}}>
+            <BtnPrimary onClick={handleSubmit} disabled={loading} style={{marginTop:4}}>
               {loading ? "···" : tab==="login"?"LOG IN":"CREATE ACCOUNT"}
             </BtnPrimary>
 
