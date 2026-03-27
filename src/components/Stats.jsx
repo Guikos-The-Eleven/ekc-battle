@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { SB } from "../supabase";
-import { C, BB, BC, R, COMPS } from "../config";
+import { LOGO, C, BB, BC, R, COMPS } from "../config";
 import { Label, Div, BtnPrimary, BtnGhost, BackBtn } from "./ui";
 
 function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selectedComp, selectedDiv }) {
