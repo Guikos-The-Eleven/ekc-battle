@@ -12,6 +12,7 @@ export default function App() {
   const [username, setUsername] = useState("");
   const [authLoading, setAuthLoading] = useState(true);
   const [isGuest,  setIsGuest]  = useState(false);
+  const [authStartTab, setAuthStartTab] = useState("login");
 
   const [screen,   setScreen]   = useState("home");
   const [selectedComp, setSelectedComp] = useState(null);
@@ -126,7 +127,8 @@ export default function App() {
     setIsGuest(true); setUsername("Guest"); setScreen("home");
   }
 
-  function goToAuth() {
+  function goToAuth(tab="login") {
+    setAuthStartTab(tab);
     setIsGuest(false); setUser(null); setUsername(""); setScreen("home");
   }
 
@@ -558,7 +560,8 @@ export default function App() {
   );
 
   // Auth gate — guests bypass
-  if (!user && !isGuest) return <AuthScreen onAuth={(u,n)=>{setUser(u);setUsername(n);}} onGuest={enterAsGuest}/>;
+  if (!user && !isGuest) return <AuthScreen onAuth={(u,n)=>{setUser(u);setUsername(n);}} onGuest={enterAsGuest} startTab={authStartTab}/>
+
 
   // Stats screen
   if (screen==="stats") return (

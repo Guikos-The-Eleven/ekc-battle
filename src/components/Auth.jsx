@@ -3,8 +3,8 @@ import { SB } from "../supabase";
 import { C, BB, BC, R, LOGO } from "../config";
 import { BtnPrimary, IgLink } from "./ui";
 
-function AuthScreen({ onAuth, onGuest }) {
-  const [tab,    setTab]    = useState("login");
+function AuthScreen({ onAuth, onGuest, startTab="login" }) {
+  const [tab, setTab] = useState(startTab);
   const [email,  setEmail]  = useState("");
   const [pw,     setPw]     = useState("");
   const [name,   setName]   = useState("");

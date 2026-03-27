@@ -80,7 +80,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
           <div style={{fontFamily:BC,fontSize:14,color:C.sub,lineHeight:1.6,letterSpacing:1,maxWidth:280}}>
             Create an account to save your match history, trick stats, and win rates.
           </div>
-          <BtnPrimary onClick={onAuth} style={{marginTop:16,maxWidth:280}}>SIGN UP</BtnPrimary>
+          <BtnPrimary onClick={()=>onAuth("signup")} style={{marginTop:16,maxWidth:280}}>SIGN UP</BtnPrimary>
         </div>
       </div>
     </div>
