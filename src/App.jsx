@@ -1304,17 +1304,17 @@ export default function App() {
           <div className="fadeUp" style={{width:"100%",marginTop:20,marginBottom:20,animationDelay:"0.1s",animationFillMode:"both"}}>
             <div style={{display:"flex",alignItems:"center",gap:0,width:"100%"}}>
               <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
-                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.white}}>{homeStats.wins}</div>
+                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.teal}}>{homeStats.wins}</div>
                 <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:4}}>WINS</div>
               </div>
               <div style={{width:1,height:28,background:C.divider}}/>
               <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
-                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.muted}}>{homeStats.losses}</div>
+                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.violet}}>{homeStats.losses}</div>
                 <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:4}}>LOSSES</div>
               </div>
               <div style={{width:1,height:28,background:C.divider}}/>
               <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
-                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.white}}>
+                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.amber}}>
                   {Math.round(homeStats.wins/homeStats.total*100)}%
                 </div>
                 <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:4}}>WIN RATE</div>
@@ -1322,7 +1322,7 @@ export default function App() {
               {homeStats.trickTotal>0 && <>
                 <div style={{width:1,height:28,background:C.divider}}/>
                 <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
-                  <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.amber}}>
+                  <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.blue}}>
                     {Math.round(homeStats.trickLands/homeStats.trickTotal*100)}%
                   </div>
                   <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:4}}>TRICK RATE</div>
@@ -1500,9 +1500,9 @@ export default function App() {
         <div className="rise" key={mode}>
           {mode==="cpu" && (<>
             <Seg label="CPU Difficulty" val={diff} onChange={setDiff} opts={[
-              {key:"easy",  label:"ROOKIE"},
-              {key:"medium",label:"AMATEUR"},
-              {key:"hard",  label:"PRO"},
+              {key:"easy",  label:"ROOKIE",  color:C.green},
+              {key:"medium",label:"AMATEUR", color:C.yellow},
+              {key:"hard",  label:"PRO",     color:C.red},
             ]}/>
             <Seg label="CPU Streaks" val={streaks} onChange={setStreaks} opts={[
               {key:true, label:"ON"},
@@ -1544,9 +1544,9 @@ export default function App() {
 
           {mode==="tournament" && (<>
             <Seg label="Base Difficulty" val={diff} onChange={setDiff} opts={[
-              {key:"easy",  label:"ROOKIE"},
-              {key:"medium",label:"AMATEUR"},
-              {key:"hard",  label:"PRO"},
+              {key:"easy",  label:"ROOKIE",  color:C.green},
+              {key:"medium",label:"AMATEUR", color:C.yellow},
+              {key:"hard",  label:"PRO",     color:C.red},
             ]}/>
             <Seg label="Bracket Size" val={bracketSize} onChange={setBracketSize} opts={[
               {key:4,label:"4"},
