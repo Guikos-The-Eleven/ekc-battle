@@ -1352,10 +1352,10 @@ export default function App() {
               {!m.available && <span style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,
                 border:`1px solid ${C.muted}50`,padding:"3px 8px",borderRadius:R,
                 position:"absolute",top:10,right:10}}>SOON</span>}
-              <div style={{fontFamily:BB,fontSize:20,letterSpacing:5,color:m.available?C.white:C.muted,lineHeight:1}}>
+              <div style={{fontFamily:BB,fontSize:26,letterSpacing:5,color:m.available?C.white:C.muted,lineHeight:1}}>
                 {m.label}
               </div>
-              <div style={{fontFamily:BC,fontSize:11,letterSpacing:1,color:m.available?C.sub:C.muted,fontWeight:600}}>
+              <div style={{fontFamily:BC,fontSize:13,letterSpacing:1,color:m.available?C.sub:C.muted,fontWeight:600}}>
                 {m.desc}
               </div>
             </button>
