@@ -625,38 +625,36 @@ export default function App() {
     }}>?</button>
   );
 
-  const InfoOverlay = () => {
+const InfoOverlay = () => {
     if (!showInfo) return null;
     const info = INFO_TEXT[getInfoKey()];
     if (!info) return null;
+    const modeColor = {cpu:C.blue,drill:C.amber,tournament:C.violet,"2p":C.teal}[mode==="drill"?mode:mode]||C.white;
     return (
       <div onClick={()=>setShowInfo(false)} style={{
         position:"fixed",inset:0,zIndex:100,
-        background:"rgba(0,0,0,0.85)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",
-        display:"flex",alignItems:"center",justifyContent:"center",padding:32,
+        background:"rgba(0,0,0,0.75)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",
+        display:"flex",alignItems:"center",justifyContent:"center",padding:24,
       }}>
         <div className="pop" onClick={e=>e.stopPropagation()} style={{
-          maxWidth:340,width:"100%",padding:"28px 24px",
-          background:C.surface,border:`1px solid ${C.border}`,borderRadius:R,
-          borderLeft:`3px solid ${C.white}`,
+          maxWidth:360,width:"100%",padding:"32px 28px",
+          background:"#1a1a1f",border:`1px solid ${modeColor}30`,borderRadius:R,
+          borderTop:`3px solid ${modeColor}`,
         }}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-            <div style={{fontFamily:BB,fontSize:22,letterSpacing:5,color:C.white}}>{info.title}</div>
-            <button onClick={()=>setShowInfo(false)} style={{
-              background:"transparent",border:"none",color:C.muted,fontFamily:BB,fontSize:16,
-              cursor:"pointer",padding:0,lineHeight:1,
-            }}>✕</button>
+          <div style={{fontFamily:BB,fontSize:24,letterSpacing:6,color:modeColor,marginBottom:20}}>{info.title}</div>
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            {info.lines.map((line,i)=>(
+              <div key={i} style={{
+                fontFamily:BC,fontSize:15,color:C.text,fontWeight:600,lineHeight:1.6,
+                letterSpacing:1,paddingLeft:14,borderLeft:`2px solid ${modeColor}40`,
+              }}>{line}</div>
+            ))}
           </div>
-          {info.lines.map((line,i)=>(
-            <div key={i} style={{
-              fontFamily:BC,fontSize:15,color:C.sub,fontWeight:600,lineHeight:1.6,
-              letterSpacing:1,marginBottom:i<info.lines.length-1?8:0,
-              paddingLeft:12,borderLeft:`2px solid ${C.border}`,
-            }}>{line}</div>
-          ))}
-          <div style={{marginTop:20,textAlign:"center"}}>
-            <div style={{fontFamily:BC,fontSize:12,letterSpacing:3,color:C.muted,fontWeight:600}}>TAP ANYWHERE TO CLOSE</div>
-          </div>
+          <button onClick={()=>setShowInfo(false)} style={{
+            width:"100%",marginTop:24,padding:"14px 0",
+            background:`${modeColor}15`,border:`1px solid ${modeColor}30`,borderRadius:R,
+            fontFamily:BB,fontSize:14,letterSpacing:5,color:modeColor,cursor:"pointer",
+          }}>GOT IT</button>
         </div>
       </div>
     );
