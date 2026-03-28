@@ -617,9 +617,9 @@ export default function App() {
   const InfoBtn = ({style}) => (
     <button className="tap" onClick={()=>setShowInfo(true)} aria-label="Mode info" style={{
       position:"absolute",top:"calc(20px + env(safe-area-inset-top, 0px))",right:24,
-      width:28,height:28,borderRadius:"50%",
-      background:`${C.white}08`,border:`1px solid ${C.white}15`,
-      color:C.muted,fontFamily:BB,fontSize:12,letterSpacing:0,
+      width:36,height:36,borderRadius:"50%",
+      background:`${C.white}12`,border:`1.5px solid ${C.white}25`,
+      color:C.sub,fontFamily:BB,fontSize:16,letterSpacing:0,
       cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
       zIndex:5,transition:"all 0.12s",...style,
     }}>?</button>
@@ -1663,9 +1663,9 @@ export default function App() {
       <InfoOverlay/>
       <button className="tap" onClick={()=>setShowInfo(true)} aria-label="Mode info" style={{
         position:"absolute",top:"calc(8px + env(safe-area-inset-top, 0px))",right:24,
-        width:24,height:24,borderRadius:"50%",
-        background:`${C.white}08`,border:`1px solid ${C.white}15`,
-        color:C.muted,fontFamily:BB,fontSize:11,letterSpacing:0,
+        width:36,height:36,borderRadius:"50%",
+        background:`${C.white}12`,border:`1.5px solid ${C.white}25`,
+        color:C.sub,fontFamily:BB,fontSize:16,letterSpacing:0,
         cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
         zIndex:5,
       }}>?</button>
