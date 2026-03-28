@@ -45,6 +45,9 @@ export default function App() {
   const P1_COL = C.green;
   const P2_COL = C.orange;
 
+  // Info overlay
+  const [showInfo, setShowInfo] = useState(false);
+
   // CompPick accordion
   const [expandedComp, setExpandedComp] = useState(null); // {wins,losses,attempts}
 
@@ -70,6 +73,9 @@ export default function App() {
   useEffect(()=>{ userRef.current    = user;     },[user]);
   useEffect(()=>{ compDbKeyRef.current= compDbKey; },[compDbKey]);
   useEffect(()=>{ tourneyRef.current = tourney;  },[tourney]);
+
+  // Reset info overlay on screen change
+  useEffect(()=>{ setShowInfo(false); },[screen]);
 
   // Tournament: auto-advance from "advancing" phase to next round
   useEffect(()=>{
@@ -551,6 +557,108 @@ export default function App() {
     overflowY:"auto",WebkitOverflowScrolling:"touch",
   };
 
+  // ── INFO OVERLAY SYSTEM ───────────────────────────────────────────────────────
+  const INFO_TEXT = {
+    cpu: {
+      title: "BATTLE",
+      lines: [
+        "A trick is called — you and the CPU both attempt it.",
+        "Land it and the other misses → you score.",
+        "Both land or both miss → replay (up to 3×).",
+        `First to ${race} wins the match.`,
+        ...(streaks ? ["CPU streaks are ON — it can go hot or cold."] : []),
+      ],
+    },
+    "2p": {
+      title: "2 PLAYER",
+      lines: [
+        "A trick is called for both players.",
+        "Attempt it in real life, then tap who scored.",
+        "Both land or both miss → null, next trick.",
+        `First to ${race} wins.`,
+      ],
+    },
+    drill_consistency: {
+      title: "CONSISTENCY DRILL",
+      lines: [
+        `Land each trick ${drillTarget}× in a row to clear it.`,
+        "Miss once and the streak resets to 0.",
+        "Clear all tricks to finish the drill.",
+      ],
+    },
+    drill_firsttry: {
+      title: "FIRST TRY DRILL",
+      lines: [
+        "One attempt per trick — land or miss.",
+        "Tests your first-try rate under pressure.",
+        "Just like a real comp — no second chances.",
+      ],
+    },
+    tournament: {
+      title: "TOURNAMENT",
+      lines: [
+        "Single elimination bracket.",
+        "Win your match to advance — lose and you're out.",
+        `CPU gets +2% harder each round.`,
+        ...(selectedDiv?.trickSets ? ["Final round switches to TOP 16 trick list."] : []),
+        `First to ${race} per match.`,
+      ],
+    },
+  };
+
+  const getInfoKey = () => {
+    if (mode==="drill") return `drill_${drillType}`;
+    return mode;
+  };
+
+  const InfoBtn = ({style}) => (
+    <button className="tap" onClick={()=>setShowInfo(true)} aria-label="Mode info" style={{
+      position:"absolute",top:"calc(20px + env(safe-area-inset-top, 0px))",right:24,
+      width:28,height:28,borderRadius:"50%",
+      background:`${C.white}08`,border:`1px solid ${C.white}15`,
+      color:C.muted,fontFamily:BB,fontSize:12,letterSpacing:0,
+      cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+      zIndex:5,transition:"all 0.12s",...style,
+    }}>?</button>
+  );
+
+  const InfoOverlay = () => {
+    if (!showInfo) return null;
+    const info = INFO_TEXT[getInfoKey()];
+    if (!info) return null;
+    return (
+      <div onClick={()=>setShowInfo(false)} style={{
+        position:"fixed",inset:0,zIndex:100,
+        background:"rgba(0,0,0,0.85)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",
+        display:"flex",alignItems:"center",justifyContent:"center",padding:32,
+      }}>
+        <div className="pop" onClick={e=>e.stopPropagation()} style={{
+          maxWidth:340,width:"100%",padding:"28px 24px",
+          background:C.surface,border:`1px solid ${C.border}`,borderRadius:R,
+          borderLeft:`3px solid ${C.white}`,
+        }}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+            <div style={{fontFamily:BB,fontSize:18,letterSpacing:5,color:C.white}}>{info.title}</div>
+            <button onClick={()=>setShowInfo(false)} style={{
+              background:"transparent",border:"none",color:C.muted,fontFamily:BB,fontSize:16,
+              cursor:"pointer",padding:0,lineHeight:1,
+            }}>✕</button>
+          </div>
+          {info.lines.map((line,i)=>(
+            <div key={i} style={{
+              fontFamily:BC,fontSize:13,color:C.sub,fontWeight:600,lineHeight:1.6,
+              letterSpacing:1,marginBottom:i<info.lines.length-1?8:0,
+              paddingLeft:12,borderLeft:`2px solid ${C.border}`,
+            }}>{line}</div>
+          ))}
+          <div style={{marginTop:20,textAlign:"center"}}>
+            <div style={{fontFamily:BC,fontSize:10,letterSpacing:3,color:C.muted,fontWeight:600}}>TAP ANYWHERE TO CLOSE</div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Loading
   if (authLoading) return (
     <div style={{...root,alignItems:"center",justifyContent:"center"}} role="status" aria-label="Loading app">
@@ -802,6 +910,8 @@ export default function App() {
 
     return (
       <div style={root}>
+        <InfoOverlay/>
+        <InfoBtn/>
         <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
 
           {/* Drill header */}
@@ -1019,6 +1129,8 @@ export default function App() {
 
     return (
     <div style={root}>
+      <InfoOverlay/>
+      <InfoBtn/>
       {/* Flash overlay for advancing */}
       {isAdvancing && (
         <div style={{position:"fixed",inset:0,background:C.green,opacity:0,animation:"flash 0.8s ease-out",zIndex:3,pointerEvents:"none"}}/>
@@ -1163,7 +1275,7 @@ export default function App() {
             {username} · STATS →
           </button>
           {isGuest ? (
-            <button onClick={goToAuth} style={{background:"transparent",border:"none",color:C.green,fontFamily:BB,fontSize:10,letterSpacing:4,cursor:"pointer",padding:0}}>
+            <button onClick={()=>goToAuth("signup")} style={{background:"transparent",border:"none",color:C.green,fontFamily:BB,fontSize:10,letterSpacing:4,cursor:"pointer",padding:0}}>
               SIGN UP
             </button>
           ) : (
@@ -1225,6 +1337,7 @@ export default function App() {
             <button key={m.key} className="tap fadeUp" onClick={()=>{
               if (!m.available) return;
               setMode(m.key);
+              if (m.key==="drill" && isGuest && drillSource==="weakest") setDrillSource("full");
               setScreen("compPick");
             }} style={{
               padding:"20px 16px",background:m.available?C.surface:"transparent",
@@ -1357,6 +1470,8 @@ export default function App() {
 
     return (
     <div style={root}>
+      <InfoOverlay/>
+      <InfoBtn/>
       <div style={page}>
         <BackBtn onClick={()=>setScreen("compPick")}/>
         <div className="rise" style={{marginBottom:24}}>
@@ -1455,7 +1570,7 @@ export default function App() {
 
           {mode==="drill" && (<>
             <Seg label="Drill Type" val={drillType} onChange={setDrillType} opts={[
-              {key:"consistency",label:"CONSISTENCY",sub:`land ${drillTarget}× in a row`},
+              {key:"consistency",label:"CONSISTENCY",sub:`clear each trick ${drillTarget}× consecutive`},
               {key:"firsttry",   label:"FIRST TRY",  sub:"one shot per trick"},
             ]}/>
             {drillType==="consistency" && (
@@ -1466,7 +1581,7 @@ export default function App() {
               ]}/>
             )}
             <Seg label="Trick Source" val={drillSource} onChange={setDrillSource} opts={[
-              {key:"weakest",label:"WEAKEST",sub:"from stats"},
+              ...(!isGuest ? [{key:"weakest",label:"WEAKEST",sub:"from stats"}] : []),
               {key:"full",   label:"FULL LIST",sub:"shuffled"},
               {key:"pick",   label:"PICK",sub:"choose tricks"},
             ]}/>
@@ -1519,7 +1634,7 @@ export default function App() {
             <BtnPrimary onClick={()=>{haptic(12);setScreen("settings");setGs(null);}}>PLAY AGAIN</BtnPrimary>
             {!is2p && (
               <BtnGhost color={C.sub} onClick={()=>{
-                if (isGuest) { goToAuth(); return; }
+                if (isGuest) { goToAuth("signup"); return; }
                 setScreen("stats");setGs(null);
               }}>VIEW STATS →</BtnGhost>
             )}
@@ -1540,7 +1655,16 @@ export default function App() {
     const youMatchPoint = !is2p && scores.you === race - 1;
     const cpuMatchPoint = !is2p && scores.cpu === race - 1;
     return (
-    <div style={{padding:"calc(20px + env(safe-area-inset-top, 0px)) 24px 0"}}>
+    <div style={{padding:"calc(20px + env(safe-area-inset-top, 0px)) 24px 0",position:"relative"}}>
+      <InfoOverlay/>
+      <button className="tap" onClick={()=>setShowInfo(true)} aria-label="Mode info" style={{
+        position:"absolute",top:"calc(8px + env(safe-area-inset-top, 0px))",right:24,
+        width:24,height:24,borderRadius:"50%",
+        background:`${C.white}08`,border:`1px solid ${C.white}15`,
+        color:C.muted,fontFamily:BB,fontSize:11,letterSpacing:0,
+        cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+        zIndex:5,
+      }}>?</button>
       <div style={{display:"flex",alignItems:"flex-start",justifyContent:"center",gap:16}}>
         {is2p
           ? <>
