@@ -1262,10 +1262,10 @@ export default function App() {
   // ── HOME SCREEN — MODE SELECTOR ─────────────────────────────────────────────
   if (screen==="home") {
     const modeCards = [
-      {key:"cpu",   label:"BATTLE",     desc:"1v1 vs CPU",          color:C.blue,       available:true},
+      {key:"cpu",   label:"BATTLE",     desc:"1v1 vs CPU",          color:C.teal,       available:true},
       {key:"drill", label:"DRILL",      desc:"Train your tricks",   color:C.violet,    available:true},
       {key:"tournament", label:"TOURNEY", desc:"Bracket competition", color:C.amber, available:true},
-      {key:"2p",    label:"2 PLAYER",   desc:"Local head to head",  color:C.teal,    available:true},
+      {key:"2p",    label:"2 PLAYER",   desc:"Local head to head",  color:C.blue,    available:true},
     ];
 
     return (
