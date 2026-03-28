@@ -638,7 +638,7 @@ export default function App() {
           borderLeft:`3px solid ${C.white}`,
         }}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-            <div style={{fontFamily:BB,fontSize:18,letterSpacing:5,color:C.white}}>{info.title}</div>
+            <div style={{fontFamily:BB,fontSize:22,letterSpacing:5,color:C.white}}>{info.title}</div>
             <button onClick={()=>setShowInfo(false)} style={{
               background:"transparent",border:"none",color:C.muted,fontFamily:BB,fontSize:16,
               cursor:"pointer",padding:0,lineHeight:1,
@@ -646,13 +646,13 @@ export default function App() {
           </div>
           {info.lines.map((line,i)=>(
             <div key={i} style={{
-              fontFamily:BC,fontSize:13,color:C.sub,fontWeight:600,lineHeight:1.6,
+              fontFamily:BC,fontSize:15,color:C.sub,fontWeight:600,lineHeight:1.6,
               letterSpacing:1,marginBottom:i<info.lines.length-1?8:0,
               paddingLeft:12,borderLeft:`2px solid ${C.border}`,
             }}>{line}</div>
           ))}
           <div style={{marginTop:20,textAlign:"center"}}>
-            <div style={{fontFamily:BC,fontSize:10,letterSpacing:3,color:C.muted,fontWeight:600}}>TAP ANYWHERE TO CLOSE</div>
+            <div style={{fontFamily:BC,fontSize:12,letterSpacing:3,color:C.muted,fontWeight:600}}>TAP ANYWHERE TO CLOSE</div>
           </div>
         </div>
       </div>
@@ -663,7 +663,7 @@ export default function App() {
   if (authLoading) return (
     <div style={{...root,alignItems:"center",justifyContent:"center"}} role="status" aria-label="Loading app">
       <img src={LOGO} alt="KOMP" className="glow" style={{width:100,height:100,objectFit:"contain"}}/>
-      <div className="fadeUp" style={{fontFamily:BB,fontSize:10,letterSpacing:6,color:C.muted,marginTop:16,animationDelay:"0.3s",animationFillMode:"both"}}>LOADING</div>
+      <div className="fadeUp" style={{fontFamily:BB,fontSize:12,letterSpacing:6,color:C.muted,marginTop:16,animationDelay:"0.3s",animationFillMode:"both"}}>LOADING</div>
     </div>
   );
 
@@ -700,10 +700,10 @@ export default function App() {
         <div style={{...page,paddingBottom:0}}>
           <BackBtn onClick={()=>setScreen("settings")}/>
           <div className="rise" style={{marginBottom:16}}>
-            <div style={{fontFamily:BB,fontSize:28,letterSpacing:4,lineHeight:1,color:C.white}}>
+            <div style={{fontFamily:BB,fontSize:34,letterSpacing:4,lineHeight:1,color:C.white}}>
               {drillType==="consistency"?"PICK TRICKS":"FIRST TRY"}
             </div>
-            <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:3,marginTop:6,fontWeight:600}}>
+            <div style={{fontFamily:BC,fontSize:14,color:C.muted,letterSpacing:3,marginTop:6,fontWeight:600}}>
               {drillType==="consistency"
                 ?`Select tricks · land ${drillTarget}× in a row each`
                 :"Select tricks · one attempt each"}
@@ -713,7 +713,7 @@ export default function App() {
           {/* Select all / count */}
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
             <button className="tap" onClick={toggleAll} style={{
-              background:"transparent",border:"none",fontFamily:BB,fontSize:10,letterSpacing:4,
+              background:"transparent",border:"none",fontFamily:BB,fontSize:12,letterSpacing:4,
               color:allSelected?C.white:C.muted,cursor:"pointer",padding:0,
             }}>{allSelected?"DESELECT ALL":"SELECT ALL"}</button>
             <div style={{fontFamily:BB,fontSize:12,letterSpacing:2,color:pickedTricks.length>0?C.white:C.muted}}>
@@ -744,9 +744,9 @@ export default function App() {
                   }}>
                     {selected && <span style={{color:C.bg,fontSize:11,fontWeight:700,lineHeight:1}}>✓</span>}
                   </div>
-                  <span style={{fontFamily:BC,fontSize:13,color:done?C.muted:selected?C.white:C.sub,fontWeight:600,
+                  <span style={{fontFamily:BC,fontSize:15,color:done?C.muted:selected?C.white:C.sub,fontWeight:600,
                     textAlign:"left",lineHeight:1.3,flex:1,paddingRight:12,transition:"color 0.1s"}}>{t}</span>
-                  {done && <span style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:C.green}}>CLEARED</span>}
+                  {done && <span style={{fontFamily:BB,fontSize:12,letterSpacing:3,color:C.green}}>CLEARED</span>}
                 </button>
               );
             })}
@@ -783,7 +783,7 @@ export default function App() {
               <img src={LOGO} alt="NXS" style={{width:48,height:48,objectFit:"contain",margin:"0 auto 16px",display:"block",opacity:0.3}}/>
             </div>
             <div className="pop" style={{animationDelay:"0.1s",animationFillMode:"both"}}>
-              <div style={{fontFamily:BB,fontSize:48,letterSpacing:2,lineHeight:0.9,color:C.white}}>
+              <div style={{fontFamily:BB,fontSize:56,letterSpacing:2,lineHeight:0.9,color:C.white}}>
                 {isCons?"DRILL DONE":"FIRST TRY"}
               </div>
             </div>
@@ -794,16 +794,16 @@ export default function App() {
                 <>
                   <div style={{display:"flex",justifyContent:"center",gap:32,marginBottom:24}}>
                     <div style={{textAlign:"center"}}>
-                      <div style={{fontFamily:BB,fontSize:48,lineHeight:0.9,color:C.green}}>{cleared.length}</div>
-                      <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:8}}>CLEARED</div>
+                      <div style={{fontFamily:BB,fontSize:56,lineHeight:0.9,color:C.green}}>{cleared.length}</div>
+                      <div style={{fontFamily:BB,fontSize:12,letterSpacing:4,color:C.muted,marginTop:8}}>CLEARED</div>
                     </div>
                     <div style={{textAlign:"center"}}>
-                      <div style={{fontFamily:BB,fontSize:48,lineHeight:0.9,color:C.white}}>{drill.totalAttempts}</div>
-                      <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:8}}>ATTEMPTS</div>
+                      <div style={{fontFamily:BB,fontSize:56,lineHeight:0.9,color:C.white}}>{drill.totalAttempts}</div>
+                      <div style={{fontFamily:BB,fontSize:12,letterSpacing:4,color:C.muted,marginTop:8}}>ATTEMPTS</div>
                     </div>
                     <div style={{textAlign:"center"}}>
-                      <div style={{fontFamily:BB,fontSize:48,lineHeight:0.9,color:C.yellow}}>{drill.bestStreak}</div>
-                      <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:8}}>BEST RUN</div>
+                      <div style={{fontFamily:BB,fontSize:56,lineHeight:0.9,color:C.yellow}}>{drill.bestStreak}</div>
+                      <div style={{fontFamily:BB,fontSize:12,letterSpacing:4,color:C.muted,marginTop:8}}>BEST RUN</div>
                     </div>
                   </div>
                   {cleared.length>0 && (
@@ -812,8 +812,8 @@ export default function App() {
                       {cleared.map((c,i)=>(
                         <div key={i} style={{borderLeft:`3px solid ${C.green}`,paddingLeft:12,paddingTop:6,paddingBottom:6,
                           marginBottom:4,textAlign:"left",background:`${C.green}06`}}>
-                          <span style={{fontFamily:BC,fontSize:12,color:C.sub,fontWeight:600}}>{c.trick}</span>
-                          <span style={{fontFamily:BC,fontSize:10,color:C.muted,marginLeft:8}}>{c.attempts} att</span>
+                          <span style={{fontFamily:BC,fontSize:14,color:C.sub,fontWeight:600}}>{c.trick}</span>
+                          <span style={{fontFamily:BC,fontSize:12,color:C.muted,marginLeft:8}}>{c.attempts} att</span>
                         </div>
                       ))}
                     </>
@@ -823,12 +823,12 @@ export default function App() {
                 <>
                   <div style={{display:"flex",justifyContent:"center",gap:32,marginBottom:24}}>
                     <div style={{textAlign:"center"}}>
-                      <div style={{fontFamily:BB,fontSize:56,lineHeight:0.9,color:ftRate>=50?C.green:C.red}}>{ftRate}%</div>
-                      <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:8}}>FIRST TRY RATE</div>
+                      <div style={{fontFamily:BB,fontSize:66,lineHeight:0.9,color:ftRate>=50?C.green:C.red}}>{ftRate}%</div>
+                      <div style={{fontFamily:BB,fontSize:12,letterSpacing:4,color:C.muted,marginTop:8}}>FIRST TRY RATE</div>
                     </div>
                     <div style={{textAlign:"center"}}>
-                      <div style={{fontFamily:BB,fontSize:56,lineHeight:0.9,color:C.white}}>{ftLanded}/{ftResults.length}</div>
-                      <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:8}}>LANDED</div>
+                      <div style={{fontFamily:BB,fontSize:66,lineHeight:0.9,color:C.white}}>{ftLanded}/{ftResults.length}</div>
+                      <div style={{fontFamily:BB,fontSize:12,letterSpacing:4,color:C.muted,marginTop:8}}>LANDED</div>
                     </div>
                   </div>
                   {ftResults.length>0 && (
@@ -838,7 +838,7 @@ export default function App() {
                         {ftResults.map((r,i)=>(
                           <div key={i} style={{borderLeft:`3px solid ${r.landed?C.green:C.red}`,paddingLeft:12,
                             paddingTop:5,paddingBottom:5,marginBottom:3,background:`${r.landed?C.green:C.red}06`}}>
-                            <span style={{fontFamily:BC,fontSize:12,color:C.sub,fontWeight:600}}>{r.trick}</span>
+                            <span style={{fontFamily:BC,fontSize:14,color:C.sub,fontWeight:600}}>{r.trick}</span>
                           </div>
                         ))}
                       </div>
@@ -877,8 +877,8 @@ export default function App() {
         <div style={root}>
           <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
             <div className="pop" style={{textAlign:"center"}}>
-              <div style={{fontFamily:BB,fontSize:48,letterSpacing:3,color:C.green,textShadow:`0 0 30px ${C.green}30`}}>CLEARED</div>
-              <div style={{fontFamily:BC,fontSize:13,color:C.muted,letterSpacing:3,fontWeight:600,marginTop:8}}>Next trick loading...</div>
+              <div style={{fontFamily:BB,fontSize:56,letterSpacing:3,color:C.green,textShadow:`0 0 30px ${C.green}30`}}>CLEARED</div>
+              <div style={{fontFamily:BC,fontSize:15,color:C.muted,letterSpacing:3,fontWeight:600,marginTop:8}}>Next trick loading...</div>
             </div>
           </div>
         </div>
@@ -893,7 +893,7 @@ export default function App() {
         <div style={root}>
           <div style={{position:"fixed",inset:0,background:col,opacity:0,animation:"flash 0.6s ease-out",zIndex:3,pointerEvents:"none"}}/>
           <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
-            <div className="pop" style={{fontFamily:BB,fontSize:56,letterSpacing:3,color:col}}>
+            <div className="pop" style={{fontFamily:BB,fontSize:66,letterSpacing:3,color:col}}>
               {last?.landed?"LANDED":"MISSED"}
             </div>
           </div>
@@ -917,10 +917,10 @@ export default function App() {
           {/* Drill header */}
           <div style={{padding:"calc(20px + env(safe-area-inset-top, 0px)) 24px 0"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-              <div style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.muted}}>
+              <div style={{fontFamily:BB,fontSize:12,letterSpacing:5,color:C.muted}}>
                 {isCons?"CONSISTENCY":"FIRST TRY"}
               </div>
-              <div style={{fontFamily:BB,fontSize:14,letterSpacing:2,color:C.white}}>{progressLabel}</div>
+              <div style={{fontFamily:BB,fontSize:16,letterSpacing:2,color:C.white}}>{progressLabel}</div>
             </div>
             {/* Progress bar */}
             <div style={{height:2,background:C.border,marginBottom:6}}>
@@ -928,7 +928,7 @@ export default function App() {
                 transition:"width 0.3s cubic-bezier(0.34,1.56,0.64,1)"}}/>
             </div>
             {isCons && drill.cleared.length>0 && (
-              <div style={{fontFamily:BC,fontSize:10,color:C.muted,letterSpacing:2,fontWeight:600,textAlign:"right"}}>
+              <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:2,fontWeight:600,textAlign:"right"}}>
                 {drill.cleared.length} cleared · {drill.totalAttempts} total
               </div>
             )}
@@ -938,7 +938,7 @@ export default function App() {
           {/* Trick display */}
           <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 28px",gap:16}}>
             <div className="slideIn" key={drill.trick} style={{borderLeft:`3px solid ${C.white}`,paddingLeft:20}}>
-              <div style={{fontFamily:BB,fontSize:drill.trick.length>40?28:36,letterSpacing:2,lineHeight:1.1,color:C.white}}>
+              <div style={{fontFamily:BB,fontSize:drill.trick.length>40?34:42,letterSpacing:2,lineHeight:1.1,color:C.white}}>
                 {drill.trick}
               </div>
             </div>
@@ -961,12 +961,12 @@ export default function App() {
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
               <button className="tap" onClick={()=>onDrillAttempt(true)} aria-label="Land trick" style={{
                 padding:"0",height:isCons?120:140,background:C.green,border:"none",borderRadius:2,
-                color:C.bg,fontFamily:BB,fontSize:32,letterSpacing:4,cursor:"pointer",
+                color:C.bg,fontFamily:BB,fontSize:38,letterSpacing:4,cursor:"pointer",
                 transition:"all 0.1s",boxShadow:`0 0 24px ${C.green}25`}}>LAND</button>
               <button className="tap" onClick={()=>onDrillAttempt(false)} aria-label="Miss trick" style={{
                 padding:"0",height:isCons?120:140,background:`${C.red}08`,
                 border:`1px solid ${C.red}30`,borderRadius:2,color:`${C.red}cc`,
-                fontFamily:BB,fontSize:32,letterSpacing:4,cursor:"pointer",
+                fontFamily:BB,fontSize:38,letterSpacing:4,cursor:"pointer",
                 transition:"all 0.1s"}}>MISS</button>
             </div>
           </div>
@@ -975,10 +975,10 @@ export default function App() {
           <div style={{padding:"0 24px calc(16px + env(safe-area-inset-bottom, 0px))",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <button onClick={()=>{
               setPickedTricks([]);setDrill(null);setScreen("settings");
-            }} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:11,letterSpacing:5,cursor:"pointer",padding:0}}>
+            }} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:13,letterSpacing:5,cursor:"pointer",padding:0}}>
               ← QUIT
             </button>
-            <div style={{fontFamily:BB,fontSize:9,letterSpacing:4,color:C.muted}}>KOMP</div>
+            <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted}}>KOMP</div>
           </div>
         </div>
       </div>
@@ -1007,8 +1007,8 @@ export default function App() {
 
           {feedbackSent ? (
             <div className="fadeUp" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",gap:16}}>
-              <div style={{fontFamily:BB,fontSize:42,letterSpacing:3,color:C.green}}>THANKS</div>
-              <div style={{fontFamily:BC,fontSize:14,color:C.sub,lineHeight:1.6,letterSpacing:1,maxWidth:300}}>
+              <div style={{fontFamily:BB,fontSize:50,letterSpacing:3,color:C.green}}>THANKS</div>
+              <div style={{fontFamily:BC,fontSize:16,color:C.sub,lineHeight:1.6,letterSpacing:1,maxWidth:300}}>
                 Your feedback helps us make KOMP better for everyone.
               </div>
               <BtnGhost color={C.sub} onClick={()=>{setScreen("home");setFeedbackText("");setFeedbackSent(false);}} style={{marginTop:16,maxWidth:280}}>← BACK</BtnGhost>
@@ -1016,10 +1016,10 @@ export default function App() {
           ) : (
             <>
               <div className="rise" style={{marginBottom:24}}>
-                <div style={{fontFamily:BB,fontSize:32,letterSpacing:4,lineHeight:1,color:C.white}}>
+                <div style={{fontFamily:BB,fontSize:38,letterSpacing:4,lineHeight:1,color:C.white}}>
                   FEEDBACK
                 </div>
-                <div style={{fontFamily:BC,fontSize:13,color:C.muted,letterSpacing:2,marginTop:8,fontWeight:600,lineHeight:1.5}}>
+                <div style={{fontFamily:BC,fontSize:15,color:C.muted,letterSpacing:2,marginTop:8,fontWeight:600,lineHeight:1.5}}>
                   Found a bug? Want a feature? Have a trick list to add? Tell us.
                 </div>
               </div>
@@ -1033,12 +1033,12 @@ export default function App() {
                 style={{
                   width:"100%",padding:"14px 16px",background:C.surface,
                   border:`1px solid ${C.border}`,borderRadius:R,color:C.white,
-                  fontFamily:BC,fontSize:15,letterSpacing:2,lineHeight:1.5,
+                  fontFamily:BC,fontSize:18,letterSpacing:2,lineHeight:1.5,
                   outline:"none",resize:"vertical",minHeight:140,
                   transition:"border-color 0.15s",
                 }}
               />
-              <div style={{fontFamily:BC,fontSize:10,color:C.muted,marginTop:6,letterSpacing:1}}>
+              <div style={{fontFamily:BC,fontSize:12,color:C.muted,marginTop:6,letterSpacing:1}}>
                 {feedbackText.length > 0 ? `${feedbackText.length} characters` : ""}
               </div>
               <div style={{flex:1}}/>
@@ -1047,7 +1047,7 @@ export default function App() {
               </BtnPrimary>
               <div style={{marginTop:12,textAlign:"center"}}>
                 <a href="https://github.com/Guikos-The-Eleven/ekc-battle/issues" target="_blank" rel="noopener noreferrer" style={{
-                  fontFamily:BC,fontSize:10,letterSpacing:2,color:C.muted,textDecoration:"none",opacity:0.5,
+                  fontFamily:BC,fontSize:12,letterSpacing:2,color:C.muted,textDecoration:"none",opacity:0.5,
                 }}>or open an issue on GitHub</a>
               </div>
             </>
@@ -1148,36 +1148,36 @@ export default function App() {
 
           {isChampion && (
             <div className="pop" style={{textAlign:"center"}}>
-              <div style={{fontFamily:BB,fontSize:42,letterSpacing:3,color:C.yellow,textShadow:`0 0 30px ${C.yellow}30`}}>CHAMPION</div>
-              <div style={{fontFamily:BC,fontSize:11,color:C.sub,letterSpacing:2,fontWeight:600,marginTop:4}}>
+              <div style={{fontFamily:BB,fontSize:50,letterSpacing:3,color:C.yellow,textShadow:`0 0 30px ${C.yellow}30`}}>CHAMPION</div>
+              <div style={{fontFamily:BC,fontSize:13,color:C.sub,letterSpacing:2,fontWeight:600,marginTop:4}}>
                 {selectedDiv?.name} · {selectedComp?.name}
               </div>
             </div>
           )}
           {isEliminated && (
             <div className="pop" style={{textAlign:"center"}}>
-              <div style={{fontFamily:BB,fontSize:36,letterSpacing:3,color:C.red}}>ELIMINATED</div>
-              <div style={{fontFamily:BC,fontSize:11,color:C.sub,letterSpacing:2,fontWeight:600,marginTop:4}}>
+              <div style={{fontFamily:BB,fontSize:42,letterSpacing:3,color:C.red}}>ELIMINATED</div>
+              <div style={{fontFamily:BC,fontSize:13,color:C.sub,letterSpacing:2,fontWeight:600,marginTop:4}}>
                 Round {t.currentRound+1} of {totalRounds} · {selectedDiv?.name}
               </div>
             </div>
           )}
           {isAdvancing && (
             <div className="pop" style={{textAlign:"center"}}>
-              <div style={{fontFamily:BB,fontSize:28,letterSpacing:6,color:C.green,textShadow:`0 0 20px ${C.green}30`}}>
+              <div style={{fontFamily:BB,fontSize:34,letterSpacing:6,color:C.green,textShadow:`0 0 20px ${C.green}30`}}>
                 ADVANCING
               </div>
-              <div style={{fontFamily:BC,fontSize:11,color:C.sub,letterSpacing:2,fontWeight:600,marginTop:4}}>
+              <div style={{fontFamily:BC,fontSize:13,color:C.sub,letterSpacing:2,fontWeight:600,marginTop:4}}>
                 {t.lastWonScores?`${t.lastWonScores.you}–${t.lastWonScores.cpu}`:""} · Next: {roundNames[t.currentRound+1]||"FINAL"}
               </div>
             </div>
           )}
           {!isAdvancing && !isChampion && !isEliminated && isActive && (
             <div className="rise" style={{textAlign:"center"}}>
-              <div style={{fontFamily:BB,fontSize:24,letterSpacing:4,color:C.white}}>
+              <div style={{fontFamily:BB,fontSize:28,letterSpacing:4,color:C.white}}>
                 {roundNames[t.currentRound]||`ROUND ${t.currentRound+1}`}
               </div>
-              <div style={{fontFamily:BC,fontSize:10,color:C.muted,letterSpacing:2,fontWeight:600,marginTop:4}}>
+              <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:2,fontWeight:600,marginTop:4}}>
                 {selectedDiv?.name} · {selectedComp?.name}
               </div>
             </div>
@@ -1200,10 +1200,10 @@ export default function App() {
                 <div key={ri} style={{flex:1,display:"flex",flexDirection:"column",minWidth:0}}>
                   {/* Round header */}
                   <div style={{textAlign:"center",marginBottom:6,flexShrink:0}}>
-                    <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:isCurrent?C.white:C.muted}}>
+                    <div style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:isCurrent?C.white:C.muted}}>
                       {roundNames[ri]||`R${ri+1}`}
                     </div>
-                    <div style={{fontFamily:BC,fontSize:7,letterSpacing:1,color:diffCol,fontWeight:600,marginTop:1}}>
+                    <div style={{fontFamily:BC,fontSize:8,letterSpacing:1,color:diffCol,fontWeight:600,marginTop:1}}>
                       {CPU_CFG[diffForRound]?.label}{ri>0?` +${ri*2}%`:""}{tlForRound?" · "+tlForRound.toUpperCase():""}
                     </div>
                   </div>
@@ -1218,14 +1218,14 @@ export default function App() {
 
             {/* Champion slot */}
             <div style={{width:60,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",flexShrink:0}}>
-              <div style={{fontFamily:BB,fontSize:8,letterSpacing:3,color:C.yellow,marginBottom:6}}>WINNER</div>
+              <div style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:C.yellow,marginBottom:6}}>WINNER</div>
               <div style={{border:`1px solid ${champion?C.yellow+"40":C.border}`,borderRadius:R,
                 padding:"8px 6px",background:champion?`${C.yellow}08`:"transparent",textAlign:"center",width:"100%"}}>
                 {champion ? (
-                  <span style={{fontFamily:BC,fontSize:9,fontWeight:600,letterSpacing:1,
+                  <span style={{fontFamily:BC,fontSize:11,fontWeight:600,letterSpacing:1,
                     color:champion.seed===t.playerSeed?C.yellow:C.sub}}>{champion.name}</span>
                 ) : (
-                  <span style={{fontFamily:BC,fontSize:10,color:C.border,fontWeight:600}}>?</span>
+                  <span style={{fontFamily:BC,fontSize:12,color:C.border,fontWeight:600}}>?</span>
                 )}
               </div>
             </div>
@@ -1260,8 +1260,8 @@ export default function App() {
   if (screen==="home") {
     const modeCards = [
       {key:"cpu",   label:"BATTLE",     desc:"1v1 vs CPU",          color:C.blue,       available:true},
-      {key:"drill", label:"DRILL",      desc:"Train your tricks",   color:C.amber,    available:true},
-      {key:"tournament", label:"TOURNAMENT", desc:"Bracket competition", color:C.violet, available:true},
+      {key:"drill", label:"DRILL",      desc:"Train your tricks",   color:C.violet,    available:true},
+      {key:"tournament", label:"TOURNEY", desc:"Bracket competition", color:C.amber, available:true},
       {key:"2p",    label:"2 PLAYER",   desc:"Local head to head",  color:C.teal,    available:true},
     ];
 
@@ -1271,15 +1271,15 @@ export default function App() {
 
         {/* User bar */}
         <div style={{width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:0}}>
-          <button onClick={()=>setScreen("stats")} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:11,letterSpacing:4,cursor:"pointer",padding:0}}>
+          <button onClick={()=>setScreen("stats")} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:13,letterSpacing:4,cursor:"pointer",padding:0}}>
             {username} · STATS →
           </button>
           {isGuest ? (
-            <button onClick={()=>goToAuth("signup")} style={{background:"transparent",border:"none",color:C.green,fontFamily:BB,fontSize:10,letterSpacing:4,cursor:"pointer",padding:0}}>
+            <button onClick={()=>goToAuth("signup")} style={{background:"transparent",border:"none",color:C.green,fontFamily:BB,fontSize:12,letterSpacing:4,cursor:"pointer",padding:0}}>
               SIGN UP
             </button>
           ) : (
-            <button onClick={handleSignOut} style={{background:"transparent",border:"none",color:C.muted,fontFamily:BB,fontSize:10,letterSpacing:4,cursor:"pointer",padding:0}}>
+            <button onClick={handleSignOut} style={{background:"transparent",border:"none",color:C.muted,fontFamily:BB,fontSize:12,letterSpacing:4,cursor:"pointer",padding:0}}>
               LOG OUT
             </button>
           )}
@@ -1291,8 +1291,8 @@ export default function App() {
             <img src={LOGO} alt="NXS" style={{width:140,height:140,objectFit:"contain",display:"block",margin:"0 auto"}}/>
           </div>
           <div className="rise" style={{animationDelay:"0.05s",animationFillMode:"both",textAlign:"center"}}>
-            <div style={{fontFamily:BB,fontSize:46,letterSpacing:12,color:C.white,marginTop:-2}}>KOMP</div>
-            <div style={{fontFamily:BC,fontSize:9,letterSpacing:4,color:C.muted,fontWeight:600,marginTop:4}}>KENDAMA COMPETITION TRAINER</div>
+            <div style={{fontFamily:BB,fontSize:54,letterSpacing:12,color:C.white,marginTop:-2}}>KOMP</div>
+            <div style={{fontFamily:BC,fontSize:11,letterSpacing:4,color:C.muted,fontWeight:600,marginTop:4}}>KENDAMA COMPETITION TRAINER</div>
           </div>
         </div>
 
@@ -1301,28 +1301,28 @@ export default function App() {
           <div className="fadeUp" style={{width:"100%",marginTop:20,marginBottom:20,animationDelay:"0.1s",animationFillMode:"both"}}>
             <div style={{display:"flex",alignItems:"center",gap:0,width:"100%"}}>
               <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
-                <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:C.green}}>{homeStats.wins}</div>
-                <div style={{fontFamily:BB,fontSize:8,letterSpacing:4,color:C.muted,marginTop:4}}>WINS</div>
+                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.green}}>{homeStats.wins}</div>
+                <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:4}}>WINS</div>
               </div>
               <div style={{width:1,height:28,background:C.divider}}/>
               <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
-                <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:C.red}}>{homeStats.losses}</div>
-                <div style={{fontFamily:BB,fontSize:8,letterSpacing:4,color:C.muted,marginTop:4}}>LOSSES</div>
+                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.red}}>{homeStats.losses}</div>
+                <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:4}}>LOSSES</div>
               </div>
               <div style={{width:1,height:28,background:C.divider}}/>
               <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
-                <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:C.white}}>
+                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.white}}>
                   {Math.round(homeStats.wins/homeStats.total*100)}%
                 </div>
-                <div style={{fontFamily:BB,fontSize:8,letterSpacing:4,color:C.muted,marginTop:4}}>WIN RATE</div>
+                <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:4}}>WIN RATE</div>
               </div>
               {homeStats.trickTotal>0 && <>
                 <div style={{width:1,height:28,background:C.divider}}/>
                 <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
-                  <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:C.yellow}}>
+                  <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.yellow}}>
                     {Math.round(homeStats.trickLands/homeStats.trickTotal*100)}%
                   </div>
-                  <div style={{fontFamily:BB,fontSize:8,letterSpacing:4,color:C.muted,marginTop:4}}>TRICK RATE</div>
+                  <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:4}}>TRICK RATE</div>
                 </div>
               </>}
             </div>
@@ -1350,7 +1350,7 @@ export default function App() {
               overflow:"hidden", minWidth:0,
               animationDelay:`${0.12+i*0.06}s`,animationFillMode:"both",
             }}>
-              {!m.available && <span style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,
+              {!m.available && <span style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:C.muted,
                 border:`1px solid ${C.muted}50`,padding:"3px 8px",borderRadius:R,
                 position:"absolute",top:10,right:10}}>SOON</span>}
               <div style={{fontFamily:BB,fontSize:26,letterSpacing:m.label.length>8?3:5,color:m.available?C.white:C.muted,lineHeight:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
@@ -1365,10 +1365,10 @@ export default function App() {
 
         {/* Footer */}
         <div style={{marginTop:16,display:"flex",justifyContent:"center",alignItems:"center",gap:20}}>
-          <IgLink size={13} fontSize={11}/>
+          <IgLink size={15} fontSize={13}/>
           <span style={{color:C.border,fontSize:10}}>·</span>
           <button className="tap" onClick={()=>{setFeedbackText("");setFeedbackSent(false);setScreen("feedback");}} style={{
-            background:"transparent",border:"none",fontFamily:BC,fontSize:11,letterSpacing:3,
+            background:"transparent",border:"none",fontFamily:BC,fontSize:13,letterSpacing:3,
             color:C.muted,fontWeight:600,cursor:"pointer",padding:0,
             display:"inline-flex",alignItems:"center",gap:6,opacity:0.7,
           }}>
@@ -1383,16 +1383,16 @@ export default function App() {
 
   // ── COMP/DIVISION PICKER ─────────────────────────────────────────────────────
   if (screen==="compPick") {
-    const modeLabel = {cpu:"BATTLE",drill:"DRILL","2p":"2 PLAYER",tournament:"TOURNAMENT"}[mode]||"";
+    const modeLabel = {cpu:"BATTLE",drill:"DRILL","2p":"2 PLAYER",tournament:"TOURNEY"}[mode]||"";
     return (
     <div style={root}>
       <div style={page}>
         <BackBtn onClick={()=>{setScreen("home");setSelectedComp(null);setSelectedDiv(null);setExpandedComp(null);}}/>
         <div className="rise" style={{marginBottom:24}}>
-          <div style={{fontFamily:BB,fontSize:32,letterSpacing:5,lineHeight:1,color:C.white}}>
+          <div style={{fontFamily:BB,fontSize:38,letterSpacing:5,lineHeight:1,color:C.white}}>
             {modeLabel}
           </div>
-          <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:2,marginTop:6,fontWeight:600}}>
+          <div style={{fontFamily:BC,fontSize:14,color:C.muted,letterSpacing:2,marginTop:6,fontWeight:600}}>
             Pick a competition
           </div>
         </div>
@@ -1412,15 +1412,15 @@ export default function App() {
                 }}>
                   <div style={{textAlign:"left"}}>
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
-                      <span style={{fontFamily:BB,fontSize:24,letterSpacing:4,color:isOpen?C.white:C.sub}}>{comp.name}</span>
-                      {isSoon && <span style={{fontFamily:BC,fontSize:9,letterSpacing:2,color:C.muted,fontWeight:600,
+                      <span style={{fontFamily:BB,fontSize:28,letterSpacing:4,color:isOpen?C.white:C.sub}}>{comp.name}</span>
+                      {isSoon && <span style={{fontFamily:BC,fontSize:11,letterSpacing:2,color:C.muted,fontWeight:600,
                         border:`1px solid ${C.border}`,padding:"2px 8px",borderRadius:R}}>SOON</span>}
                     </div>
-                    <div style={{fontFamily:BC,fontSize:10,letterSpacing:2,color:C.muted,fontWeight:600,marginTop:2}}>
+                    <div style={{fontFamily:BC,fontSize:12,letterSpacing:2,color:C.muted,fontWeight:600,marginTop:2}}>
                       {comp.full} · {comp.location}
                     </div>
                   </div>
-                  {!isSoon && <span style={{fontFamily:BB,fontSize:14,color:C.muted,transition:"transform 0.2s",
+                  {!isSoon && <span style={{fontFamily:BB,fontSize:16,color:C.muted,transition:"transform 0.2s",
                     transform:isOpen?"rotate(90deg)":"rotate(0deg)"}}>→</span>}
                 </button>
 
@@ -1441,16 +1441,16 @@ export default function App() {
                         transition:"opacity 0.1s",
                       }}>
                         <div style={{textAlign:"left"}}>
-                          <span style={{fontFamily:BB,fontSize:20,letterSpacing:4,color:C.white}}>{div.name}</span>
-                          {div.badge && <span style={{fontFamily:BC,fontSize:9,letterSpacing:2,color:C.muted,fontWeight:600,marginLeft:10}}>{div.badge}</span>}
+                          <span style={{fontFamily:BB,fontSize:24,letterSpacing:4,color:C.white}}>{div.name}</span>
+                          {div.badge && <span style={{fontFamily:BC,fontSize:11,letterSpacing:2,color:C.muted,fontWeight:600,marginLeft:10}}>{div.badge}</span>}
                         </div>
-                        <span style={{fontFamily:BB,fontSize:12,letterSpacing:3,color:C.muted}}>→</span>
+                        <span style={{fontFamily:BB,fontSize:14,letterSpacing:3,color:C.muted}}>→</span>
                       </button>
                     ))}
                     {/* Comp IG */}
                     {comp.ig && (
                       <div style={{padding:"10px 12px"}}>
-                        <IgLink size={11} fontSize={9} href={comp.ig.href} label={comp.ig.label} style={{opacity:0.5}}/>
+                        <IgLink size={13} fontSize={11} href={comp.ig.href} label={comp.ig.label} style={{opacity:0.5}}/>
                       </div>
                     )}
                   </div>
@@ -1466,7 +1466,7 @@ export default function App() {
 
   // ── SETTINGS ─────────────────────────────────────────────────────────────────
   if (screen==="settings" && selectedDiv) {
-    const modeLabel = {cpu:"BATTLE",drill:"DRILL","2p":"2 PLAYER",tournament:"TOURNAMENT"}[mode]||"";
+    const modeLabel = {cpu:"BATTLE",drill:"DRILL","2p":"2 PLAYER",tournament:"TOURNEY"}[mode]||"";
     const startLabel = mode==="drill"?"START DRILL":"START "+modeLabel;
 
     return (
@@ -1476,10 +1476,10 @@ export default function App() {
       <div style={page}>
         <BackBtn onClick={()=>setScreen("compPick")}/>
         <div className="rise" style={{marginBottom:24}}>
-          <div style={{fontFamily:BB,fontSize:34,letterSpacing:5,lineHeight:1,color:C.white}}>
+          <div style={{fontFamily:BB,fontSize:40,letterSpacing:5,lineHeight:1,color:C.white}}>
             {selectedDiv.name}
           </div>
-          <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:3,marginTop:6,fontWeight:600}}>
+          <div style={{fontFamily:BC,fontSize:14,color:C.muted,letterSpacing:3,marginTop:6,fontWeight:600}}>
             {selectedComp?.name} · {modeLabel}
           </div>
         </div>
@@ -1520,7 +1520,7 @@ export default function App() {
                   placeholder="P1" maxLength={12} aria-label="Player 1 name"
                   style={{width:"100%",padding:"12px 10px",background:C.surface,
                     border:`1px solid ${P1_COL}40`,borderLeft:`3px solid ${P1_COL}`,borderRadius:R,
-                    color:C.white,fontFamily:BB,fontSize:18,letterSpacing:3,textAlign:"center",
+                    color:C.white,fontFamily:BB,fontSize:22,letterSpacing:3,textAlign:"center",
                     outline:"none",transition:"border-color 0.15s"}}/>
               </div>
               <div>
@@ -1529,7 +1529,7 @@ export default function App() {
                   placeholder="P2" maxLength={12} aria-label="Player 2 name"
                   style={{width:"100%",padding:"12px 10px",background:C.surface,
                     border:`1px solid ${P2_COL}40`,borderLeft:`3px solid ${P2_COL}`,borderRadius:R,
-                    color:C.white,fontFamily:BB,fontSize:18,letterSpacing:3,textAlign:"center",
+                    color:C.white,fontFamily:BB,fontSize:22,letterSpacing:3,textAlign:"center",
                     outline:"none",transition:"border-color 0.15s"}}/>
               </div>
             </div>
@@ -1556,14 +1556,14 @@ export default function App() {
             {selectedDiv.trickSets && (
               <div style={{borderLeft:`3px solid ${C.orange}`,paddingLeft:14,marginBottom:20}}>
                 <Label style={{letterSpacing:3,color:C.orange,marginBottom:4}}>Trick List Progression</Label>
-                <div style={{fontFamily:BC,fontSize:12,color:C.sub,fontWeight:600,lineHeight:1.5}}>
+                <div style={{fontFamily:BC,fontSize:14,color:C.sub,fontWeight:600,lineHeight:1.5}}>
                   Earlier rounds use REGULAR tricks. The final switches to TOP 16 — just like a real comp.
                 </div>
               </div>
             )}
             <div style={{borderLeft:`3px solid ${C.muted}`,paddingLeft:14,marginBottom:20}}>
               <Label style={{letterSpacing:3,marginBottom:4}}>Difficulty Scaling</Label>
-              <div style={{fontFamily:BC,fontSize:12,color:C.sub,fontWeight:600,lineHeight:1.5}}>
+              <div style={{fontFamily:BC,fontSize:14,color:C.sub,fontWeight:600,lineHeight:1.5}}>
                 CPU gets slightly harder each round (+2%) on top of your chosen base difficulty.
               </div>
             </div>
@@ -1617,7 +1617,7 @@ export default function App() {
             <Label style={{marginBottom:12,letterSpacing:5}}>{subLabel}</Label>
           </div>
           <div className="pop" style={{animationDelay:"0.15s",animationFillMode:"both"}}>
-            <div style={{fontFamily:BB,fontSize:is2p?48:62,letterSpacing:2,lineHeight:0.88,color:resultColor,textShadow:`0 0 40px ${resultColor}30`}}>{winLabel}</div>
+            <div style={{fontFamily:BB,fontSize:is2p?56:72,letterSpacing:2,lineHeight:0.88,color:resultColor,textShadow:`0 0 40px ${resultColor}30`}}>{winLabel}</div>
           </div>
           <div className="fadeUp" style={{animationDelay:"0.35s",animationFillMode:"both"}}>
             <Div mt={28} mb={28}/>
@@ -1626,7 +1626,7 @@ export default function App() {
               {(is2p?[[p1Name||"P1",scores.p1,P1_COL],[p2Name||"P2",scores.p2,P2_COL]]:[["YOU",scores.you,C.green],["CPU",scores.cpu,C.red]]).map(([l,v,col],i)=>(
                 <div key={l} className="fadeUp" style={{textAlign:"center",animationDelay:`${0.45+i*0.1}s`,animationFillMode:"both"}}>
                   <Label style={{marginBottom:8,color:is2p?col:C.sub}}>{l}</Label>
-                  <div style={{fontFamily:BB,fontSize:76,lineHeight:0.9,color:C.white}}>{v}</div>
+                  <div style={{fontFamily:BB,fontSize:88,lineHeight:0.9,color:C.white}}>{v}</div>
                 </div>
               ))}
             </div>
@@ -1671,10 +1671,10 @@ export default function App() {
           ? <>
               {[[p1Name||"P1",scores.p1,P1_COL],[p2Name||"P2",scores.p2,P2_COL]].map(([l,v,col],idx)=>(
                 <React.Fragment key={l}>
-                  {idx===1 && <div style={{fontFamily:BB,fontSize:18,color:C.border,paddingTop:24}}>vs</div>}
+                  {idx===1 && <div style={{fontFamily:BB,fontSize:22,color:C.border,paddingTop:24}}>vs</div>}
                   <div style={{flex:1,textAlign:"center"}}>
                     <Label style={{marginBottom:6,letterSpacing:4,color:col}}>{l}</Label>
-                    <div key={`${l}-${v}`} className="scorePulse" style={{fontFamily:BB,fontSize:52,lineHeight:1,color:C.white}}>{v}</div>
+                    <div key={`${l}-${v}`} className="scorePulse" style={{fontFamily:BB,fontSize:62,lineHeight:1,color:C.white}}>{v}</div>
                     <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:10}}>
                       {Array.from({length:race}).map((_,i)=>(
                         <div key={i} style={{width:16,height:2,background:i<v?col:C.border,transition:"background 0.25s",
@@ -1690,19 +1690,19 @@ export default function App() {
                 <Label style={{marginBottom:6,letterSpacing:4,color:youMatchPoint?C.green:C.sub}}>
                   {youMatchPoint?"MATCH PT":"You"}
                 </Label>
-                <div key={`you-${scores.you}-${lastScoreKey}`} className={phase==="point"&&winner==="you"?"scorePulse":""} style={{fontFamily:BB,fontSize:52,lineHeight:1,textShadow:youMatchPoint?`0 0 20px ${C.green}30`:undefined}}>{scores.you}</div>
+                <div key={`you-${scores.you}-${lastScoreKey}`} className={phase==="point"&&winner==="you"?"scorePulse":""} style={{fontFamily:BB,fontSize:62,lineHeight:1,textShadow:youMatchPoint?`0 0 20px ${C.green}30`:undefined}}>{scores.you}</div>
                 <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:10}}>
                   {Array.from({length:race}).map((_,i)=>(
                     <div key={i} style={{width:16,height:2,background:i<scores.you?C.green:C.border,transition:"background 0.25s",boxShadow:i<scores.you?`0 0 4px ${C.green}40`:undefined}}/>
                   ))}
                 </div>
               </div>
-              <div style={{fontFamily:BB,fontSize:20,color:C.border,paddingTop:24}}>:</div>
+              <div style={{fontFamily:BB,fontSize:24,color:C.border,paddingTop:24}}>:</div>
               <div style={{flex:1,textAlign:"center"}}>
                 <Label style={{marginBottom:6,letterSpacing:4,color:cpuMatchPoint?C.red:C.sub}}>
                   {cpuMatchPoint?"MATCH PT":"CPU"}
                 </Label>
-                <div key={`cpu-${scores.cpu}-${lastScoreKey}`} className={phase==="point"&&winner==="cpu"?"scorePulse":""} style={{fontFamily:BB,fontSize:52,lineHeight:1,textShadow:cpuMatchPoint?`0 0 20px ${C.red}30`:undefined}}>{scores.cpu}</div>
+                <div key={`cpu-${scores.cpu}-${lastScoreKey}`} className={phase==="point"&&winner==="cpu"?"scorePulse":""} style={{fontFamily:BB,fontSize:62,lineHeight:1,textShadow:cpuMatchPoint?`0 0 20px ${C.red}30`:undefined}}>{scores.cpu}</div>
                 <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:10}}>
                   {Array.from({length:race}).map((_,i)=>(
                     <div key={i} style={{width:16,height:2,background:i<scores.cpu?C.red:C.border,transition:"background 0.25s",boxShadow:i<scores.cpu?`0 0 4px ${C.red}40`:undefined}}/>
@@ -1720,8 +1720,8 @@ export default function App() {
 
   const MenuBack = () => (
     <div style={{padding:"12px 24px calc(22px + env(safe-area-inset-bottom, 0px))",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-      <button onClick={()=>setScreen("settings")} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:11,letterSpacing:5,cursor:"pointer",padding:0}}>← QUIT</button>
-      <div style={{fontFamily:BB,fontSize:9,letterSpacing:4,color:C.muted}}>
+      <button onClick={()=>setScreen("settings")} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:13,letterSpacing:5,cursor:"pointer",padding:0}}>← QUIT</button>
+      <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted}}>
         KOMP
       </div>
     </div>
@@ -1732,13 +1732,13 @@ export default function App() {
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar/>
         <div key={pk} style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 28px",gap:22}}>
-          <div className="slideIn" style={{fontFamily:BB,fontSize:10,letterSpacing:8,color:C.muted,animationDelay:"0s"}}>NEXT TRICK</div>
+          <div className="slideIn" style={{fontFamily:BB,fontSize:12,letterSpacing:8,color:C.muted,animationDelay:"0s"}}>NEXT TRICK</div>
           <div className="slideIn" style={{borderLeft:`3px solid ${C.white}`,paddingLeft:20,animationDelay:"0.08s",animationFillMode:"both"}}>
-            <div style={{fontFamily:BB,fontSize:trick.length>40?32:40,letterSpacing:2,lineHeight:1.1,color:C.white}}>{trick}</div>
+            <div style={{fontFamily:BB,fontSize:trick.length>40?38:48,letterSpacing:2,lineHeight:1.1,color:C.white}}>{trick}</div>
           </div>
           <div className="fadeUp" style={{display:"flex",alignItems:"center",gap:10,animationDelay:"0.2s",animationFillMode:"both"}}>
             <div style={{width:20,height:1,background:C.border}}/>
-            <div style={{fontFamily:BB,fontSize:10,letterSpacing:6,color:is2p?(playerFirst?P1_COL:P2_COL):(playerFirst?C.green:C.red)}}>
+            <div style={{fontFamily:BB,fontSize:12,letterSpacing:6,color:is2p?(playerFirst?P1_COL:P2_COL):(playerFirst?C.green:C.red)}}>
               {is2p?(playerFirst?`${p1Name||"P1"} FIRST`:`${p2Name||"P2"} FIRST`):(playerFirst?"YOU FIRST":"CPU FIRST")}
             </div>
           </div>
@@ -1755,11 +1755,11 @@ export default function App() {
         <div style={{flex:1,display:"flex",flexDirection:"column",padding:"20px 24px 0"}}>
           <div style={{borderLeft:`3px solid ${C.muted}`,paddingLeft:16,marginBottom:16}}>
             <Label style={{marginBottom:6}}>Trick</Label>
-            <div style={{fontFamily:BB,fontSize:24,letterSpacing:2,lineHeight:1.2,color:C.white}}>{trick}</div>
+            <div style={{fontFamily:BB,fontSize:28,letterSpacing:2,lineHeight:1.2,color:C.white}}>{trick}</div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20}}>
             <div style={{width:20,height:1,background:C.border}}/>
-            <div style={{fontFamily:BB,fontSize:10,letterSpacing:6,color:playerFirst?P1_COL:P2_COL}}>{playerFirst?`${p1Name||"P1"} FIRST`:`${p2Name||"P2"} FIRST`}</div>
+            <div style={{fontFamily:BB,fontSize:12,letterSpacing:6,color:playerFirst?P1_COL:P2_COL}}>{playerFirst?`${p1Name||"P1"} FIRST`:`${p2Name||"P2"} FIRST`}</div>
           </div>
           <Div mb={20}/>
           <Label style={{textAlign:"center",marginBottom:16,letterSpacing:5}}>Who scored?</Label>
@@ -1767,12 +1767,12 @@ export default function App() {
             <button className="tap" onClick={()=>on2PScore("p1")} style={{
               width:"100%",padding:"18px 20px",background:`${P1_COL}15`,border:`1px solid ${P1_COL}40`,
               borderLeft:`3px solid ${P1_COL}`,borderRadius:R,color:P1_COL,
-              fontFamily:BB,fontSize:20,letterSpacing:5,cursor:"pointer",transition:"all 0.12s",
+              fontFamily:BB,fontSize:24,letterSpacing:5,cursor:"pointer",transition:"all 0.12s",
             }}>{p1Name||"P1"} SCORED</button>
             <button className="tap" onClick={()=>on2PScore("p2")} style={{
               width:"100%",padding:"18px 20px",background:`${P2_COL}15`,border:`1px solid ${P2_COL}40`,
               borderLeft:`3px solid ${P2_COL}`,borderRadius:R,color:P2_COL,
-              fontFamily:BB,fontSize:20,letterSpacing:5,cursor:"pointer",transition:"all 0.12s",
+              fontFamily:BB,fontSize:24,letterSpacing:5,cursor:"pointer",transition:"all 0.12s",
             }}>{p2Name||"P2"} SCORED</button>
             <BtnGhost onClick={()=>on2PScore("null")}>NULL — NEXT TRICK</BtnGhost>
           </div>
@@ -1787,7 +1787,7 @@ export default function App() {
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar/>
         <div key={pk} className="pop" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center"}}>
-          <div style={{fontFamily:BB,fontSize:48,letterSpacing:2,color:winner==="p1"?P1_COL:P2_COL,
+          <div style={{fontFamily:BB,fontSize:56,letterSpacing:2,color:winner==="p1"?P1_COL:P2_COL,
             textShadow:`0 0 30px ${winner==="p1"?P1_COL:P2_COL}30`}}>{winner==="p1"?(p1Name||"P1"):(p2Name||"P2")} SCORED</div>
         </div>
       </div>
@@ -1800,7 +1800,7 @@ export default function App() {
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar/>
         <div style={{borderLeft:`3px solid ${phase==="p_first"?C.white:C.muted}`,paddingLeft:16,margin:"14px 24px 0",transition:"border-color 0.3s"}}>
-          <div style={{fontFamily:BB,fontSize:20,letterSpacing:1,lineHeight:1.2,color:phase==="p_first"?C.white:C.sub}}>{trick}</div>
+          <div style={{fontFamily:BB,fontSize:24,letterSpacing:1,lineHeight:1.2,color:phase==="p_first"?C.white:C.sub}}>{trick}</div>
         </div>
         <div style={{padding:"12px 24px 0"}}><TryDots current={tryNum}/></div>
 
@@ -1808,40 +1808,40 @@ export default function App() {
           <div key={pk} className="rise" style={{flex:1,display:"flex",flexDirection:"column",padding:"0 24px 28px"}}>
             <div style={{flex:1}}/>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-              <button className="tap" onClick={()=>onAttempt(true)} style={{padding:"0",height:120,background:C.green,border:"none",borderRadius:2,color:C.bg,fontFamily:BB,fontSize:32,letterSpacing:4,cursor:"pointer",transition:"all 0.1s",boxShadow:`0 0 24px ${C.green}25`}}>LAND</button>
-              <button className="tap" onClick={()=>onAttempt(false)} style={{padding:"0",height:120,background:`${C.red}08`,border:`1px solid ${C.red}30`,borderRadius:2,color:`${C.red}cc`,fontFamily:BB,fontSize:32,letterSpacing:4,cursor:"pointer",transition:"all 0.1s"}}>MISS</button>
+              <button className="tap" onClick={()=>onAttempt(true)} style={{padding:"0",height:120,background:C.green,border:"none",borderRadius:2,color:C.bg,fontFamily:BB,fontSize:38,letterSpacing:4,cursor:"pointer",transition:"all 0.1s",boxShadow:`0 0 24px ${C.green}25`}}>LAND</button>
+              <button className="tap" onClick={()=>onAttempt(false)} style={{padding:"0",height:120,background:`${C.red}08`,border:`1px solid ${C.red}30`,borderRadius:2,color:`${C.red}cc`,fontFamily:BB,fontSize:38,letterSpacing:4,cursor:"pointer",transition:"all 0.1s"}}>MISS</button>
             </div>
           </div>
         )}
 
         {phase==="cpu_first" && (
           <div key={pk} className="rise" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6}}>
-            <div style={{fontFamily:BB,fontSize:11,letterSpacing:8,color:C.muted}}>CPU</div>
-            <div className="pls" style={{fontFamily:BB,fontSize:52,letterSpacing:6,color:C.white}}><Dots/></div>
+            <div style={{fontFamily:BB,fontSize:13,letterSpacing:8,color:C.muted}}>CPU</div>
+            <div className="pls" style={{fontFamily:BB,fontSize:62,letterSpacing:6,color:C.white}}><Dots/></div>
           </div>
         )}
 
         {phase==="p_second" && (
           <div key={pk} className="rise" style={{flex:1,display:"flex",flexDirection:"column",padding:"0 24px 28px"}}>
             <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4}}>
-              <div style={{fontFamily:BB,fontSize:11,letterSpacing:8,color:C.muted}}>CPU</div>
-              <div style={{fontFamily:BB,fontSize:64,letterSpacing:3,lineHeight:0.9,color:cpuFirst?C.green:C.red,textShadow:`0 0 30px ${cpuFirst?C.green:C.red}25`}}>
+              <div style={{fontFamily:BB,fontSize:13,letterSpacing:8,color:C.muted}}>CPU</div>
+              <div style={{fontFamily:BB,fontSize:88,letterSpacing:3,lineHeight:0.9,color:cpuFirst?C.green:C.red,textShadow:`0 0 30px ${cpuFirst?C.green:C.red}25`}}>
                 {cpuFirst?"LANDED":"MISSED"}
               </div>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-              <button className="tap" onClick={()=>onAttempt(true)} style={{padding:"0",height:100,background:C.green,border:"none",borderRadius:2,color:C.bg,fontFamily:BB,fontSize:28,letterSpacing:4,cursor:"pointer",transition:"all 0.1s",boxShadow:`0 0 20px ${C.green}20`}}>LAND</button>
-              <button className="tap" onClick={()=>onAttempt(false)} style={{padding:"0",height:100,background:`${C.red}08`,border:`1px solid ${C.red}30`,borderRadius:2,color:`${C.red}cc`,fontFamily:BB,fontSize:28,letterSpacing:4,cursor:"pointer",transition:"all 0.1s"}}>MISS</button>
+              <button className="tap" onClick={()=>onAttempt(true)} style={{padding:"0",height:100,background:C.green,border:"none",borderRadius:2,color:C.bg,fontFamily:BB,fontSize:34,letterSpacing:4,cursor:"pointer",transition:"all 0.1s",boxShadow:`0 0 20px ${C.green}20`}}>LAND</button>
+              <button className="tap" onClick={()=>onAttempt(false)} style={{padding:"0",height:100,background:`${C.red}08`,border:`1px solid ${C.red}30`,borderRadius:2,color:`${C.red}cc`,fontFamily:BB,fontSize:34,letterSpacing:4,cursor:"pointer",transition:"all 0.1s"}}>MISS</button>
             </div>
           </div>
         )}
 
         {phase==="cpu_resp" && (
           <div key={pk} className="rise" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6}}>
-            <div style={{fontFamily:BB,fontSize:11,letterSpacing:8,color:C.muted}}>YOU</div>
-            <div style={{fontFamily:BB,fontSize:64,letterSpacing:3,lineHeight:0.9,color:pResult?C.green:C.red,marginBottom:24,textShadow:`0 0 30px ${pResult?C.green:C.red}25`}}>{pResult?"LANDED":"MISSED"}</div>
-            <div style={{fontFamily:BB,fontSize:11,letterSpacing:8,color:C.muted}}>CPU</div>
-            <div className="pls" style={{fontFamily:BB,fontSize:52,letterSpacing:6,color:C.white}}><Dots/></div>
+            <div style={{fontFamily:BB,fontSize:13,letterSpacing:8,color:C.muted}}>YOU</div>
+            <div style={{fontFamily:BB,fontSize:88,letterSpacing:3,lineHeight:0.9,color:pResult?C.green:C.red,marginBottom:24,textShadow:`0 0 30px ${pResult?C.green:C.red}25`}}>{pResult?"LANDED":"MISSED"}</div>
+            <div style={{fontFamily:BB,fontSize:13,letterSpacing:8,color:C.muted}}>CPU</div>
+            <div className="pls" style={{fontFamily:BB,fontSize:62,letterSpacing:6,color:C.white}}><Dots/></div>
           </div>
         )}
 
@@ -1855,8 +1855,8 @@ export default function App() {
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar/>
         <div key={pk} className="pop" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8}}>
-          <div style={{fontFamily:BB,fontSize:56,letterSpacing:2,lineHeight:0.9,color:C.white,textShadow:`0 0 30px ${C.white}10`}}>{msg}</div>
-          <div style={{fontFamily:BB,fontSize:11,letterSpacing:8,color:C.yellow,marginTop:8}}>TRY {Math.min(tryNum+1,3)} OF 3</div>
+          <div style={{fontFamily:BB,fontSize:66,letterSpacing:2,lineHeight:0.9,color:C.white,textShadow:`0 0 30px ${C.white}10`}}>{msg}</div>
+          <div style={{fontFamily:BB,fontSize:13,letterSpacing:8,color:C.yellow,marginTop:8}}>TRY {Math.min(tryNum+1,3)} OF 3</div>
         </div>
       </div>
     </div>
@@ -1870,7 +1870,7 @@ export default function App() {
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar/>
         <div key={pk} className="pop" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center"}}>
-          <div style={{fontFamily:BB,fontSize:52,letterSpacing:2,color:pointColor,textShadow:`0 0 40px ${pointColor}30`}}>
+          <div style={{fontFamily:BB,fontSize:62,letterSpacing:2,color:pointColor,textShadow:`0 0 40px ${pointColor}30`}}>
             {winner==="you"?"YOU SCORED":"CPU SCORED"}
           </div>
         </div>
@@ -1884,8 +1884,8 @@ export default function App() {
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar/>
         <div key={pk} className="rise" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10}}>
-          <div style={{fontFamily:BB,fontSize:42,letterSpacing:2,color:C.sub,textShadow:`0 0 20px ${C.sub}10`}}>TRICK NULLED</div>
-          <div style={{fontFamily:BC,fontSize:13,color:C.muted,letterSpacing:3,fontWeight:600}}>Next trick loading...</div>
+          <div style={{fontFamily:BB,fontSize:50,letterSpacing:2,color:C.sub,textShadow:`0 0 20px ${C.sub}10`}}>TRICK NULLED</div>
+          <div style={{fontFamily:BC,fontSize:15,color:C.muted,letterSpacing:3,fontWeight:600}}>Next trick loading...</div>
         </div>
       </div>
     </div>
