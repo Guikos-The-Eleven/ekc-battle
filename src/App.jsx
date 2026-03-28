@@ -566,7 +566,8 @@ export default function App() {
         "Land it and the other misses → you score.",
         "Both land or both miss → replay (up to 3×).",
         `First to ${race} wins the match.`,
-        ...(streaks ? ["CPU streaks are ON — it can go hot or cold."] : []),
+        "ROOKIE ~48% · AMATEUR ~68% · PRO ~87% land rate.",
+        ...(streaks ? ["Streaks: CPU can go HOT (+12%) or COLD (−18%) randomly after points."] : ["Streaks are OFF — CPU uses a steady land rate."]),
       ],
     },
     "2p": {
@@ -584,6 +585,7 @@ export default function App() {
         `Land each trick ${drillTarget}× in a row to clear it.`,
         "Miss once and the streak resets to 0.",
         "Clear all tricks to finish the drill.",
+        "WEAKEST pulls your lowest-rate tricks from stats.",
       ],
     },
     drill_firsttry: {
@@ -595,11 +597,12 @@ export default function App() {
       ],
     },
     tournament: {
-      title: "TOURNAMENT",
+      title: "TOURNEY",
       lines: [
         "Single elimination bracket.",
         "Win your match to advance — lose and you're out.",
-        `CPU gets +2% harder each round.`,
+        "ROOKIE ~48% · AMATEUR ~68% · PRO ~87% base rate.",
+        "CPU gets +2% harder each round on top of your chosen base.",
         ...(selectedDiv?.trickSets ? ["Final round switches to TOP 16 trick list."] : []),
         `First to ${race} per match.`,
       ],
@@ -1301,12 +1304,12 @@ export default function App() {
           <div className="fadeUp" style={{width:"100%",marginTop:20,marginBottom:20,animationDelay:"0.1s",animationFillMode:"both"}}>
             <div style={{display:"flex",alignItems:"center",gap:0,width:"100%"}}>
               <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
-                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.green}}>{homeStats.wins}</div>
+                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.blue}}>{homeStats.wins}</div>
                 <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:4}}>WINS</div>
               </div>
               <div style={{width:1,height:28,background:C.divider}}/>
               <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
-                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.red}}>{homeStats.losses}</div>
+                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.muted}}>{homeStats.losses}</div>
                 <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:4}}>LOSSES</div>
               </div>
               <div style={{width:1,height:28,background:C.divider}}/>
@@ -1319,7 +1322,7 @@ export default function App() {
               {homeStats.trickTotal>0 && <>
                 <div style={{width:1,height:28,background:C.divider}}/>
                 <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
-                  <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.yellow}}>
+                  <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.amber}}>
                     {Math.round(homeStats.trickLands/homeStats.trickTotal*100)}%
                   </div>
                   <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:4}}>TRICK RATE</div>
@@ -1497,13 +1500,13 @@ export default function App() {
         <div className="rise" key={mode}>
           {mode==="cpu" && (<>
             <Seg label="CPU Difficulty" val={diff} onChange={setDiff} opts={[
-              {key:"easy",  label:"ROOKIE",  color:C.green, sub:"~48%"},
-              {key:"medium",label:"AMATEUR", color:C.yellow,sub:"~68%"},
-              {key:"hard",  label:"PRO",     color:C.red,   sub:"~87%"},
+              {key:"easy",  label:"ROOKIE",  color:C.green},
+              {key:"medium",label:"AMATEUR", color:C.yellow},
+              {key:"hard",  label:"PRO",     color:C.red},
             ]}/>
             <Seg label="CPU Streaks" val={streaks} onChange={setStreaks} opts={[
-              {key:true, label:"ON", sub:"hot · cold"},
-              {key:false,label:"OFF",sub:"steady rate"},
+              {key:true, label:"ON"},
+              {key:false,label:"OFF"},
             ]}/>
             <Seg label="Race To" val={race} onChange={setRace} opts={[
               {key:3,label:"3"},
@@ -1541,13 +1544,13 @@ export default function App() {
 
           {mode==="tournament" && (<>
             <Seg label="Base Difficulty" val={diff} onChange={setDiff} opts={[
-              {key:"easy",  label:"ROOKIE",  color:C.green, sub:"~48%"},
-              {key:"medium",label:"AMATEUR", color:C.yellow,sub:"~68%"},
-              {key:"hard",  label:"PRO",     color:C.red,   sub:"~87%"},
+              {key:"easy",  label:"ROOKIE",  color:C.green},
+              {key:"medium",label:"AMATEUR", color:C.yellow},
+              {key:"hard",  label:"PRO",     color:C.red},
             ]}/>
             <Seg label="Bracket Size" val={bracketSize} onChange={setBracketSize} opts={[
-              {key:4,label:"4",sub:"2 rounds"},
-              {key:8,label:"8",sub:"3 rounds"},
+              {key:4,label:"4"},
+              {key:8,label:"8"},
             ]}/>
             <Seg label="Race To" val={race} onChange={setRace} opts={[
               {key:3,label:"3"},
@@ -1571,20 +1574,20 @@ export default function App() {
 
           {mode==="drill" && (<>
             <Seg label="Drill Type" val={drillType} onChange={setDrillType} opts={[
-              {key:"consistency",label:"CONSISTENCY",sub:`clear each trick ${drillTarget}× consecutive`},
-              {key:"firsttry",   label:"FIRST TRY",  sub:"one shot per trick"},
+              {key:"consistency",label:"CONSISTENCY"},
+              {key:"firsttry",   label:"FIRST TRY"},
             ]}/>
             {drillType==="consistency" && (
-              <Seg label="Streak Target" val={drillTarget} onChange={setDrillTarget} opts={[
+            <Seg label="Streak Target" val={drillTarget} onChange={setDrillTarget} opts={[
                 {key:3, label:"3×"},
                 {key:5, label:"5×"},
                 {key:10,label:"10×"},
               ]}/>
             )}
             <Seg label="Trick Source" val={drillSource} onChange={setDrillSource} opts={[
-              ...(!isGuest ? [{key:"weakest",label:"WEAKEST",sub:"from stats"}] : []),
-              {key:"full",   label:"FULL LIST",sub:"shuffled"},
-              {key:"pick",   label:"PICK",sub:"choose tricks"},
+              ...(!isGuest ? [{key:"weakest",label:"WEAKEST"}] : []),
+              {key:"full",   label:"FULL LIST"},
+              {key:"pick",   label:"PICK"},
             ]}/>
           </>)}
         </div>
