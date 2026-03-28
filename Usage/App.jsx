@@ -65,7 +65,7 @@ if (typeof document !== "undefined") {
 const AM_TRICKS = [
   "Around USA","Airplane, J Stick, Poop, Inward J Stick","Spike, Double Whirlwind",
   "Inward Lunar, Monkey Tap, Monkey Tap In","One Turn Lighthouse Insta Trade Spike",
-  "Big Cup, Nod On Bird, Over The Valley, Nod Off Mall Cup, Trade Airplane",
+  "Big Cup, Nod On Bird, Over The Valley, Nod Off Small Cup, Trade Airplane",
   "Stuntplane Fasthand Penguin Catch","Pull Up Triple Kenflip Small Cup, Spike",
   "One Turn Lighthouse, 0.5 Stilt, 0.5 Lighthouse, Falling In","Airplane, Double Inward J Stick",
   "Big Cup, Inward Turntable, Spike","Swing Candlestick 0.5 Flip Spike","Spike, Juggle Spike",
