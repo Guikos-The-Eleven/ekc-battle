@@ -6,6 +6,7 @@ const C = {
   bg:"#0b0b0c", surface:"#121214", border:"#1f1f23", divider:"#19191c",
   white:"#fafafa", text:"#f3f3f3", sub:"#b8b8c0", muted:"#888894",
   green:"#3ddc84", red:"#ff4d4f", yellow:"#f4c430", orange:"#ff7a18", blue:"#4da3ff",
+  amber:"#d4a053", copper:"#c47a4e", slate:"#8b9eb0",
 };
 const BB = "'Bebas Neue', sans-serif";
 const BC = "'Barlow Condensed', sans-serif";
