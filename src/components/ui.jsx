@@ -3,7 +3,7 @@ import { C, BB, BC, R } from "../config";
 
 /* ── Label ─────────────────────────────────────────────────────────────────── */
 const Label = ({ children, as: Tag="div", style={} }) => (
-  <Tag style={{fontFamily:BC,fontSize:11,letterSpacing:1.5,color:C.sub,fontWeight:600,...style}}>{children}</Tag>
+  <Tag style={{fontFamily:BC,fontSize:13,letterSpacing:1.5,color:C.sub,fontWeight:600,...style}}>{children}</Tag>
 );
 
 /* ── Divider ───────────────────────────────────────────────────────────────── */
@@ -15,7 +15,7 @@ const BtnPrimary = ({ children, onClick, disabled=false, style={} }) => (
     aria-disabled={disabled}
     style={{
       width:"100%",padding:"18px 20px",background:disabled?"#555":C.white,border:"none",borderRadius:R,
-      color:C.bg,fontFamily:BB,fontSize:20,letterSpacing:5,cursor:disabled?"not-allowed":"pointer",
+      color:C.bg,fontFamily:BB,fontSize:24,letterSpacing:5,cursor:disabled?"not-allowed":"pointer",
       transition:"all 0.15s ease",opacity:disabled?0.35:1,...style,
     }}>{children}</button>
 );
@@ -26,7 +26,7 @@ const BtnGhost = ({ children, onClick, color=C.muted, disabled=false, style={} }
     style={{
       width:"100%",padding:"16px 24px",background:"transparent",
       border:`1px solid ${color}`,borderRadius:R,color,
-      fontFamily:BB,fontSize:16,letterSpacing:5,cursor:disabled?"not-allowed":"pointer",
+      fontFamily:BB,fontSize:20,letterSpacing:5,cursor:disabled?"not-allowed":"pointer",
       transition:"all 0.12s",...style,
     }}>{children}</button>
 );
@@ -34,7 +34,7 @@ const BtnGhost = ({ children, onClick, color=C.muted, disabled=false, style={} }
 /* ── Segmented Control ─────────────────────────────────────────────────────── */
 const Seg = ({ label, opts, val, onChange }) => (
   <fieldset style={{marginBottom:22,border:"none",padding:0}} role="radiogroup" aria-label={label}>
-    {label && <Label as="legend" style={{textAlign:"center",marginBottom:12,width:"100%"}}>{label}</Label>}
+    {label && <Label as="legend" style={{textAlign:"center",marginBottom:12,width:"100%",fontSize:13}}>{label}</Label>}
     <div style={{display:"flex",gap:8}}>
       {opts.map(o=>{
         const sel = val===o.key;
@@ -42,15 +42,15 @@ const Seg = ({ label, opts, val, onChange }) => (
         return (
           <button key={String(o.key)} className="tap" role="radio" aria-checked={sel}
             onClick={()=>onChange(o.key)} style={{
-              flex:1, padding:o.sub?"12px 6px":"16px 6px",
+              flex:1, padding:o.sub?"14px 8px":"20px 8px",
               background:sel?(o.color?o.color+"22":"#ffffff0f"):"transparent",
               border:`1px solid ${sel?selColor:C.border}`,
               color:sel?(o.color||"#d8d8d8"):C.sub,
-              fontFamily:BB,fontSize:14,letterSpacing:3,
+              fontFamily:BB,fontSize:17,letterSpacing:4,
               cursor:"pointer",borderRadius:R,transition:"all 0.12s",
             }}>
             <div>{o.label}</div>
-            {o.sub && <div style={{fontSize:9,letterSpacing:2,opacity:sel?0.7:0.5,marginTop:4}}>{o.sub}</div>}
+            {o.sub && <div style={{fontSize:10,letterSpacing:2,opacity:sel?0.7:0.5,marginTop:4}}>{o.sub}</div>}
           </button>
         );
       })}
@@ -74,7 +74,7 @@ function StreakDot({ streak }) {
     <div className="pls" role="status" aria-label={`CPU is ${hot?"hot":"cold"}`}
       style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:6}}>
       <div style={{width:6,height:6,borderRadius:"50%",background:col,boxShadow:`0 0 8px ${col}80`}}/>
-      <span style={{fontFamily:BC,fontSize:10,letterSpacing:3,color:col,fontWeight:600,opacity:0.9,textShadow:`0 0 12px ${col}40`}}>
+      <span style={{fontFamily:BC,fontSize:12,letterSpacing:3,color:col,fontWeight:600,opacity:0.9,textShadow:`0 0 12px ${col}40`}}>
         {hot?"HOT":"COLD"}
       </span>
     </div>
@@ -94,7 +94,7 @@ const TryDots = ({ current }) => (
 const BackBtn = ({ onClick, label="← BACK" }) => (
   <nav>
     <button onClick={onClick} aria-label="Go back"
-      style={{background:"transparent",border:"none",color:C.muted,fontFamily:BB,fontSize:11,letterSpacing:5,cursor:"pointer",textAlign:"left",marginBottom:24,padding:0,display:"block"}}>{label}</button>
+      style={{background:"transparent",border:"none",color:C.muted,fontFamily:BB,fontSize:13,letterSpacing:5,cursor:"pointer",textAlign:"left",marginBottom:24,padding:0,display:"block"}}>{label}</button>
   </nav>
 );
 

@@ -816,7 +816,7 @@ export default function App() {
                         <div key={i} style={{borderLeft:`3px solid ${C.green}`,paddingLeft:12,paddingTop:6,paddingBottom:6,
                           marginBottom:4,textAlign:"left",background:`${C.green}06`}}>
                           <span style={{fontFamily:BC,fontSize:14,color:C.sub,fontWeight:600}}>{c.trick}</span>
-                          <span style={{fontFamily:BC,fontSize:12,color:C.muted,marginLeft:8}}>{c.attempts} att</span>
+                          <span style={{fontFamily:BC,fontSize:14,color:C.muted,marginLeft:8}}>{c.attempts} att</span>
                         </div>
                       ))}
                     </>
@@ -1304,7 +1304,7 @@ export default function App() {
           <div className="fadeUp" style={{width:"100%",marginTop:20,marginBottom:20,animationDelay:"0.1s",animationFillMode:"both"}}>
             <div style={{display:"flex",alignItems:"center",gap:0,width:"100%"}}>
               <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
-                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.blue}}>{homeStats.wins}</div>
+                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.white}}>{homeStats.wins}</div>
                 <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:4}}>WINS</div>
               </div>
               <div style={{width:1,height:28,background:C.divider}}/>
@@ -1415,7 +1415,7 @@ export default function App() {
                 }}>
                   <div style={{textAlign:"left"}}>
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
-                      <span style={{fontFamily:BB,fontSize:28,letterSpacing:4,color:isOpen?C.white:C.sub}}>{comp.name}</span>
+                      <span style={{fontFamily:BB,fontSize:34,letterSpacing:4,color:isOpen?C.white:C.sub}}>{comp.name}</span>
                       {isSoon && <span style={{fontFamily:BC,fontSize:11,letterSpacing:2,color:C.muted,fontWeight:600,
                         border:`1px solid ${C.border}`,padding:"2px 8px",borderRadius:R}}>SOON</span>}
                     </div>
@@ -1500,9 +1500,9 @@ export default function App() {
         <div className="rise" key={mode}>
           {mode==="cpu" && (<>
             <Seg label="CPU Difficulty" val={diff} onChange={setDiff} opts={[
-              {key:"easy",  label:"ROOKIE",  color:C.green},
-              {key:"medium",label:"AMATEUR", color:C.yellow},
-              {key:"hard",  label:"PRO",     color:C.red},
+              {key:"easy",  label:"ROOKIE"},
+              {key:"medium",label:"AMATEUR"},
+              {key:"hard",  label:"PRO"},
             ]}/>
             <Seg label="CPU Streaks" val={streaks} onChange={setStreaks} opts={[
               {key:true, label:"ON"},
@@ -1544,9 +1544,9 @@ export default function App() {
 
           {mode==="tournament" && (<>
             <Seg label="Base Difficulty" val={diff} onChange={setDiff} opts={[
-              {key:"easy",  label:"ROOKIE",  color:C.green},
-              {key:"medium",label:"AMATEUR", color:C.yellow},
-              {key:"hard",  label:"PRO",     color:C.red},
+              {key:"easy",  label:"ROOKIE"},
+              {key:"medium",label:"AMATEUR"},
+              {key:"hard",  label:"PRO"},
             ]}/>
             <Seg label="Bracket Size" val={bracketSize} onChange={setBracketSize} opts={[
               {key:4,label:"4"},
@@ -1557,8 +1557,8 @@ export default function App() {
               {key:5,label:"5"},
             ]}/>
             {selectedDiv.trickSets && (
-              <div style={{borderLeft:`3px solid ${C.orange}`,paddingLeft:14,marginBottom:20}}>
-                <Label style={{letterSpacing:3,color:C.orange,marginBottom:4}}>Trick List Progression</Label>
+              <div style={{borderLeft:`3px solid ${C.amber}`,paddingLeft:14,marginBottom:20}}>
+                <Label style={{letterSpacing:3,color:C.amber,marginBottom:4}}>Trick List Progression</Label>
                 <div style={{fontFamily:BC,fontSize:14,color:C.sub,fontWeight:600,lineHeight:1.5}}>
                   Earlier rounds use REGULAR tricks. The final switches to TOP 16 — just like a real comp.
                 </div>
@@ -1578,7 +1578,7 @@ export default function App() {
               {key:"firsttry",   label:"FIRST TRY"},
             ]}/>
             {drillType==="consistency" && (
-            <Seg label="Streak Target" val={drillTarget} onChange={setDrillTarget} opts={[
+              <Seg label="Streak Target" val={drillTarget} onChange={setDrillTarget} opts={[
                 {key:3, label:"3×"},
                 {key:5, label:"5×"},
                 {key:10,label:"10×"},
@@ -1724,7 +1724,7 @@ export default function App() {
   const MenuBack = () => (
     <div style={{padding:"12px 24px calc(22px + env(safe-area-inset-bottom, 0px))",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
       <button onClick={()=>setScreen("settings")} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:13,letterSpacing:5,cursor:"pointer",padding:0}}>← QUIT</button>
-      <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted}}>
+      <div style={{fontFamily:BB,fontSize:9,letterSpacing:4,color:C.muted}}>
         KOMP
       </div>
     </div>
@@ -1803,7 +1803,7 @@ export default function App() {
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar/>
         <div style={{borderLeft:`3px solid ${phase==="p_first"?C.white:C.muted}`,paddingLeft:16,margin:"14px 24px 0",transition:"border-color 0.3s"}}>
-          <div style={{fontFamily:BB,fontSize:24,letterSpacing:1,lineHeight:1.2,color:phase==="p_first"?C.white:C.sub}}>{trick}</div>
+          <div style={{fontFamily:BB,fontSize:28,letterSpacing:1,lineHeight:1.2,color:phase==="p_first"?C.white:C.sub}}>{trick}</div>
         </div>
         <div style={{padding:"12px 24px 0"}}><TryDots current={tryNum}/></div>
 
@@ -1828,7 +1828,7 @@ export default function App() {
           <div key={pk} className="rise" style={{flex:1,display:"flex",flexDirection:"column",padding:"0 24px 28px"}}>
             <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4}}>
               <div style={{fontFamily:BB,fontSize:13,letterSpacing:8,color:C.muted}}>CPU</div>
-              <div style={{fontFamily:BB,fontSize:88,letterSpacing:3,lineHeight:0.9,color:cpuFirst?C.green:C.red,textShadow:`0 0 30px ${cpuFirst?C.green:C.red}25`}}>
+              <div style={{fontFamily:BB,fontSize:76,letterSpacing:3,lineHeight:0.9,color:cpuFirst?C.green:C.red,textShadow:`0 0 30px ${cpuFirst?C.green:C.red}25`}}>
                 {cpuFirst?"LANDED":"MISSED"}
               </div>
             </div>
@@ -1842,7 +1842,7 @@ export default function App() {
         {phase==="cpu_resp" && (
           <div key={pk} className="rise" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6}}>
             <div style={{fontFamily:BB,fontSize:13,letterSpacing:8,color:C.muted}}>YOU</div>
-            <div style={{fontFamily:BB,fontSize:88,letterSpacing:3,lineHeight:0.9,color:pResult?C.green:C.red,marginBottom:24,textShadow:`0 0 30px ${pResult?C.green:C.red}25`}}>{pResult?"LANDED":"MISSED"}</div>
+            <div style={{fontFamily:BB,fontSize:76,letterSpacing:3,lineHeight:0.9,color:pResult?C.green:C.red,marginBottom:24,textShadow:`0 0 30px ${pResult?C.green:C.red}25`}}>{pResult?"LANDED":"MISSED"}</div>
             <div style={{fontFamily:BB,fontSize:13,letterSpacing:8,color:C.muted}}>CPU</div>
             <div className="pls" style={{fontFamily:BB,fontSize:62,letterSpacing:6,color:C.white}}><Dots/></div>
           </div>
