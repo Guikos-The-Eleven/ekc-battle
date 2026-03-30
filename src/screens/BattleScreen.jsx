@@ -132,7 +132,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
         <div key={pk} style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 28px",gap:22}}>
           <div className="slideIn" style={{fontFamily:BB,fontSize:12,letterSpacing:8,color:C.muted,animationDelay:"0s"}}>NEXT TRICK</div>
           <div className="slideIn" style={{borderLeft:`3px solid ${C.white}`,paddingLeft:20,animationDelay:"0.08s",animationFillMode:"both"}}>
-            <div style={{fontFamily:BB,fontSize:trick.length>40?38:48,letterSpacing:2,lineHeight:1.1,color:C.white}}>{trick}</div>
+            <div style={{fontFamily:BC,fontSize:trick.length>40?38:48,letterSpacing:2,lineHeight:1.1,color:C.white}}>{trick}</div>
           </div>
           <div className="fadeUp" style={{display:"flex",alignItems:"center",gap:10,animationDelay:"0.2s",animationFillMode:"both"}}>
             <div style={{width:20,height:1,background:C.border}}/>
@@ -212,7 +212,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
           <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={info} modeColor={modeColor}/>
           <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo}/>
           <div style={{borderLeft:`3px solid ${phase==="p_first"?C.white:C.muted}`,paddingLeft:16,margin:"14px 24px 0",transition:"border-color 0.3s"}}>
-            <div style={{fontFamily:BB,fontSize:28,letterSpacing:1,lineHeight:1.2,color:phase==="p_first"?C.white:C.sub}}>{trick}</div>
+            <div style={{fontFamily:BC,fontSize:28,letterSpacing:1,lineHeight:1.2,color:phase==="p_first"?C.white:C.sub}}>{trick}</div>
           </div>
           <div style={{padding:"12px 24px 0"}}><TryDots current={tryNum}/></div>
 

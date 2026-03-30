@@ -210,56 +210,61 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                 No trick data yet for {currentDivLabel}.<br/>Attempt rates are tracked when you play vs CPU.
               </div>
             );
-            const weak = list.filter(t=>t.rate<50);
-            const strong = list.filter(t=>t.rate>=50).reverse();
+            const weak   = list.filter(t=>t.rate<40);
+            const mid    = list.filter(t=>t.rate>=40&&t.rate<70);
+            const strong = list.filter(t=>t.rate>=70).reverse();
             const PREVIEW = 5;
-            const showWeak = showAllTricks ? weak : weak.slice(0,PREVIEW);
-            const showStrong = showAllTricks ? strong : strong.slice(0,PREVIEW);
-            const hasMore = (weak.length > PREVIEW || strong.length > PREVIEW) && !showAllTricks;
 
             const TrickRow = ({trick,rate,att}) => {
               const col = rate>=70?C.green:rate>=40?C.yellow:C.red;
               return (
-                <div style={{marginBottom:16}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:5}}>
-                    <div style={{fontFamily:BC,fontSize:13,color:C.sub,fontWeight:600,flex:1,paddingRight:16,lineHeight:1.35}}>{trick}</div>
-                    <div style={{display:"flex",alignItems:"baseline",gap:8,flexShrink:0}}>
-                      <span style={{fontFamily:BC,fontSize:11,color:C.muted}}>{att}×</span>
-                      <span style={{fontFamily:BB,fontSize:17,letterSpacing:1,color:col}}>{rate}%</span>
+                <div style={{display:"flex",alignItems:"center",gap:10,padding:"7px 0",
+                  borderBottom:`1px solid ${C.divider}`}}>
+                  <div style={{width:3,height:20,background:col,borderRadius:1,flexShrink:0}}/>
+                  <div style={{fontFamily:BC,fontSize:14,color:C.sub,fontWeight:600,flex:1,lineHeight:1.3,
+                    overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{trick}</div>
+                  <span style={{fontFamily:BC,fontSize:11,color:C.muted,flexShrink:0}}>{att}×</span>
+                  <span style={{fontFamily:BB,fontSize:16,letterSpacing:1,color:col,flexShrink:0,
+                    minWidth:38,textAlign:"right"}}>{rate}%</span>
+                </div>
+              );
+            };
+
+            const Section = ({label,color,items,total}) => {
+              const show = showAllTricks ? items : items.slice(0,PREVIEW);
+              if (items.length===0) return null;
+              return (
+                <div style={{marginBottom:20}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                    <Label style={{letterSpacing:4,color}}>{label}</Label>
+                    <span style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600}}>{items.length}</span>
+                  </div>
+                  {show.map(t=><TrickRow key={t.trick} {...t}/>)}
+                  {!showAllTricks && items.length>PREVIEW && (
+                    <div style={{fontFamily:BC,fontSize:11,color:C.muted,textAlign:"center",marginTop:6}}>
+                      +{items.length-PREVIEW} more
                     </div>
-                  </div>
-                  <div style={{height:2,background:C.border}}>
-                    <div style={{height:2,background:col,width:`${rate}%`,transition:"width 0.4s"}}/>
-                  </div>
+                  )}
                 </div>
               );
             };
 
             const totalAtt = list.reduce((a,t)=>a+t.att,0);
             const avgRate = Math.round(list.reduce((a,t)=>a+t.rate*t.att,0)/totalAtt);
+            const hasMore = !showAllTricks && (weak.length>PREVIEW||mid.length>PREVIEW||strong.length>PREVIEW);
 
             return (
               <>
                 <div style={{marginBottom:28,textAlign:"center"}}>
-                  <div style={{fontFamily:BB,fontSize:52,lineHeight:0.9,color:avgRate>=50?C.green:C.red}}>{avgRate}%</div>
+                  <div style={{fontFamily:BB,fontSize:52,lineHeight:0.9,color:avgRate>=70?C.green:avgRate>=40?C.yellow:C.red}}>{avgRate}%</div>
                   <div style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.muted,marginTop:8}}>AVG LAND RATE · {list.length} TRICKS · {totalAtt} ATTEMPTS</div>
                 </div>
-                {weak.length>0 && (
-                  <>
-                    <Label style={{marginBottom:16,letterSpacing:4,color:C.red}}>Needs Work{!showAllTricks && weak.length>PREVIEW ? ` · Top ${PREVIEW}` : ""}</Label>
-                    {showWeak.map(t=><TrickRow key={t.trick} {...t}/>)}
-                  </>
-                )}
-                {strong.length>0 && (
-                  <>
-                    {weak.length>0 && <Div mt={8} mb={24}/>}
-                    <Label style={{marginBottom:16,letterSpacing:4,color:C.green}}>Solid{!showAllTricks && strong.length>PREVIEW ? ` · Top ${PREVIEW}` : ""}</Label>
-                    {showStrong.map(t=><TrickRow key={t.trick} {...t}/>)}
-                  </>
-                )}
+                <Section label="Needs Work" color={C.red} items={weak}/>
+                <Section label="Getting There" color={C.yellow} items={mid}/>
+                <Section label="Solid" color={C.green} items={strong}/>
                 {hasMore && (
                   <button className="tap" onClick={()=>setShowAllTricks(true)} style={{
-                    width:"100%",padding:"14px 0",marginTop:8,background:"transparent",border:`1px solid ${C.border}`,
+                    width:"100%",padding:"14px 0",marginTop:4,background:"transparent",border:`1px solid ${C.border}`,
                     borderRadius:R,fontFamily:BB,fontSize:12,letterSpacing:4,color:C.sub,cursor:"pointer",
                   }}>SHOW ALL {list.length} TRICKS</button>
                 )}

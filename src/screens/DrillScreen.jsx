@@ -198,7 +198,7 @@ export default function DrillScreen({ drill, setDrill, saveTrickAttempt, drillTy
         </div>
         <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 28px",gap:16}}>
           <div className="slideIn" key={drill.trick} style={{borderLeft:`3px solid ${C.white}`,paddingLeft:20}}>
-            <div style={{fontFamily:BB,fontSize:drill.trick.length>40?34:42,letterSpacing:2,lineHeight:1.1,color:C.white}}>
+            <div style={{fontFamily:BC,fontSize:drill.trick.length>40?34:42,letterSpacing:2,lineHeight:1.1,color:C.white}}>
               {drill.trick}
             </div>
           </div>
