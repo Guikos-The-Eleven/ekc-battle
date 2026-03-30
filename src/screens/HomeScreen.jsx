@@ -46,7 +46,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
           <div className="fadeUp" style={{width:"100%",marginTop:20,marginBottom:20,animationDelay:"0.1s",animationFillMode:"both"}}>
             <div style={{display:"flex",alignItems:"center",gap:0,width:"100%"}}>
               <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
-                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.teal}}>{homeStats.wins}</div>
+                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.sub}}>{homeStats.wins}</div>
                 <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:4}}>WINS</div>
               </div>
               <div style={{width:1,height:28,background:C.divider}}/>
@@ -56,7 +56,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
               </div>
               <div style={{width:1,height:28,background:C.divider}}/>
               <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
-                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.amber}}>
+                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.sub}}>
                   {Math.round(homeStats.wins/homeStats.total*100)}%
                 </div>
                 <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:4}}>WIN RATE</div>
