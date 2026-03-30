@@ -3,6 +3,22 @@ import { SB } from "../supabase";
 import { C, BB, BC, R, LOGO } from "../config";
 import { BtnPrimary, IgLink } from "./ui";
 
+// ── Validation helpers ──────────────────────────────────────────────────────
+const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+const validateSignup = (name, email, pw) => {
+  if (!name.trim() || name.trim().length < 2) return "Username must be at least 2 characters";
+  if (name.trim().length > 20) return "Username must be 20 characters or fewer";
+  if (/[^a-zA-Z0-9_\-]/.test(name.trim())) return "Username: letters, numbers, _ and - only";
+  if (!isValidEmail(email)) return "Enter a valid email address";
+  if (pw.length < 6) return "Password must be at least 6 characters";
+  return null;
+};
+const validateLogin = (email, pw) => {
+  if (!isValidEmail(email)) return "Enter a valid email address";
+  if (pw.length < 1) return "Enter your password";
+  return null;
+};
+
 function AuthScreen({ onAuth, onGuest, startTab="login" }) {
   const [tab, setTab] = useState(startTab);
   const [email,  setEmail]  = useState("");
@@ -21,25 +37,33 @@ function AuthScreen({ onAuth, onGuest, startTab="login" }) {
 
   async function handleSubmit() {
     setErr(""); setLoading(true);
-    if (tab==="signup") {
-      const { data, error } = await SB.auth.signUp({
-        email, password:pw,
-        options: { data: { username: name } },
-      });
-      if (error) { setErr(error.message); setLoading(false); return; }
-      setConfirmed(true);
-      setLoading(false);
-      return;
-    } else {
-      const { data, error } = await SB.auth.signInWithPassword({ email, password:pw });
-      if (error) { setErr(error.message); setLoading(false); return; }
-      let { data:prof } = await SB.from("profiles").select("username").eq("id",data.user.id).single();
-      if (!prof) {
-        const uname = data.user.user_metadata?.username || email.split("@")[0];
-        await SB.from("profiles").insert({ id:data.user.id, username:uname });
-        prof = { username:uname };
+    try {
+      if (tab==="signup") {
+        const valErr = validateSignup(name, email, pw);
+        if (valErr) { setErr(valErr); setLoading(false); return; }
+        const { error } = await SB.auth.signUp({
+          email, password:pw,
+          options: { data: { username: name.trim() } },
+        });
+        if (error) { setErr(error.message); setLoading(false); return; }
+        setConfirmed(true);
+        setLoading(false);
+        return;
+      } else {
+        const valErr = validateLogin(email, pw);
+        if (valErr) { setErr(valErr); setLoading(false); return; }
+        const { data, error } = await SB.auth.signInWithPassword({ email, password:pw });
+        if (error) { setErr(error.message); setLoading(false); return; }
+        let { data:prof } = await SB.from("profiles").select("username").eq("id",data.user.id).single();
+        if (!prof) {
+          const uname = data.user.user_metadata?.username || email.split("@")[0];
+          await SB.from("profiles").insert({ id:data.user.id, username:uname });
+          prof = { username:uname };
+        }
+        onAuth(data.user, prof.username);
       }
-      onAuth(data.user, prof.username);
+    } catch (e) {
+      setErr("Connection error — check your internet and try again");
     }
     setLoading(false);
   }
@@ -87,7 +111,7 @@ function AuthScreen({ onAuth, onGuest, startTab="login" }) {
 
             {tab==="signup" && (
               <input placeholder="Username" aria-label="Username" value={name} onChange={e=>setName(e.target.value)}
-                style={inputStyle}/>
+                maxLength={20} style={inputStyle}/>
             )}
             <input placeholder="Email" aria-label="Email" type="email" value={email} onChange={e=>setEmail(e.target.value)}
               style={inputStyle}/>
@@ -100,7 +124,6 @@ function AuthScreen({ onAuth, onGuest, startTab="login" }) {
               {loading ? "···" : tab==="login"?"LOG IN":"CREATE ACCOUNT"}
             </BtnPrimary>
 
-            {/* Guest mode */}
             <button className="tap" onClick={onGuest} style={{
               width:"100%",padding:"16px 0",marginTop:16,background:"transparent",border:"none",
               color:C.muted,fontFamily:BB,fontSize:13,letterSpacing:5,cursor:"pointer",
@@ -114,6 +137,5 @@ function AuthScreen({ onAuth, onGuest, startTab="login" }) {
     </div>
   );
 }
-
 
 export default AuthScreen;
