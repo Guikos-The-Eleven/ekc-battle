@@ -4,10 +4,10 @@ import { Div, IgLink, ChatIcon } from "../components/ui";
 
 export default function HomeScreen({ user, username, isGuest, homeStats, setMode, setScreen, setDrillSource, goToAuth, handleSignOut, setFeedbackText, setFeedbackSent }) {
   const modeCards = [
-    {key:"cpu",   label:"BATTLE",     desc:"1v1 vs CPU",          color:C.cyan,    available:true},
-    {key:"drill", label:"DRILL",      desc:"Train your tricks",   color:C.molten,  available:true},
-    {key:"tournament", label:"TOURNEY", desc:"Bracket competition", color:C.lime,    available:true},
-    {key:"2p",    label:"2 PLAYER",   desc:"Local head to head",  color:C.magenta, available:true},
+    {key:"cpu",   label:"BATTLE",     desc:"1v1 vs CPU",          color:C.blue,    available:true},
+    {key:"drill", label:"DRILL",      desc:"Train your tricks",   color:C.amber,  available:true},
+    {key:"tournament", label:"TOURNEY", desc:"Bracket competition", color:C.copper,    available:true},
+    {key:"2p",    label:"2 PLAYER",   desc:"Local head to head",  color:C.slate, available:true},
   ];
 
   return (
