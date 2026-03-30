@@ -7,7 +7,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
     {key:"cpu",   label:"BATTLE",     desc:"1v1 vs CPU",          color:C.tile2,   available:true},
     {key:"drill", label:"DRILL",      desc:"Train your tricks",   color:C.yellow2, available:true},
     {key:"tournament", label:"TOURNEY", desc:"Bracket competition", color:C.orange2, available:true},
-    {key:"2p",    label:"2 PLAYER",   desc:"Local head to head",  color:C.sea_blue,   available:true},
+    {key:"2p",    label:"2 PLAYER",   desc:"Local head to head",  color:C.dark_blue2,   available:true},
   ];
 
   return (
