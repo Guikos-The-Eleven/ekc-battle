@@ -94,7 +94,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
         )}
 
         {/* Mode cards */}
-        <div style={{width:"100%",display:"grid",gridTemplateColumns:"1fr 1fr",gridTemplateRows:"1fr 1fr",gap:12,flex:1}}>
+        <div style={{width:"100%",display:"grid",gridTemplateColumns:"1fr 1fr",gridTemplateRows:"1fr 1fr",gap:8,flex:1}}>
           {modeCards.map((m,i)=>(
             <button key={m.key} className="tap fadeUp" onClick={()=>{
               if (!m.available) return;
@@ -102,24 +102,43 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
               if (m.key==="drill" && isGuest) setDrillSource("full");
               setScreen("compPick");
             }} style={{
-              padding:"20px 16px",
-              // 2. Fundo semi-transparente (14 = ~8% opacidade) e glow no box-shadow (40 = ~25% opacidade)
-              background: m.available ? `${m.color}14` : "transparent",
-              border: `1px solid ${m.available ? m.color : `${C.border}50`}`,
-              boxShadow: m.available ? `0 0 15px ${m.color}40` : "none",
+              // 2. Voltar à estrutura anterior (fundo superfície padrão, sem brilho)
+              padding:"20px 16px 20px 24px", // Padding esquerdo aumentado para a barra
+              background: C.surface,
+              border: `1px solid ${C.border}`,
               borderRadius:R,
               cursor:m.available?"pointer":"default",textAlign:"left",
               transition:"all 0.12s",opacity:m.available?1:0.45,
               display:"flex",flexDirection:"column",justifyContent:"center",gap:4,
               position:"relative",overflow:"hidden",minWidth:0,
               animationDelay:`${0.12+i*0.06}s`,animationFillMode:"both",
+              // REMOVIDO: boxShadow de glow agressivo
             }}>
+
+              {/* 3. A NOVA BARRA À ESQUERDA */}
+              <div style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                bottom: 0,
+                width: 4, // Espessura da barra
+                background: m.available ? m.color : `${C.border}A0`, // Cor ou borda/mute
+                borderTopLeftRadius: R,
+                borderBottomLeftRadius: R
+              }} />
+
               {!m.available && <span style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:C.muted,
                 border:`1px solid ${C.muted}50`,padding:"3px 8px",borderRadius:R,
                 position:"absolute",top:10,right:10}}>SOON</span>}
               
-              {/* 3. Título com a cor neon a brilhar em vez de branco */}
-              <div style={{fontFamily:BB,fontSize:26,letterSpacing:m.label.length>8?3:5,color:m.available?m.color:C.muted,lineHeight:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis", textShadow: m.available ? `0 0 8px ${m.color}80` : "none"}}>
+              {/* 4. Título com a cor neon (mantida) e BRILHO REDUZIDO */}
+              <div style={{
+                fontFamily:BB,fontSize:26,letterSpacing:m.label.length>8?3:5,
+                color:m.available?m.color:C.muted, // Mantém a cor aqui
+                lineHeight:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+                // textShadow subtil para dar 'pop' sem agressividade
+                textShadow: m.available ? `0 0 2px ${m.color}60` : "none" // Reduzido drasticamente
+              }}>
                 {m.label}
               </div>
               <div style={{fontFamily:BC,fontSize:13,letterSpacing:1,color:m.available?C.white:C.muted,fontWeight:600}}>
