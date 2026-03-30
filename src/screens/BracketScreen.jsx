@@ -87,7 +87,7 @@ export default function BracketScreen({ tourney, selectedComp, selectedDiv, race
   return (
     <div style={root}>
       <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={info} modeColor={MODE_COLORS.tournament}/>
-      <InfoBtn onClick={()=>setShowInfo(true)}/>
+      <InfoBtn onClick={()=>setShowInfo(true)} modeColor={MODE_COLORS.tournament}/>
       {isAdvancing && <div style={{position:"fixed",inset:0,background:C.green,opacity:0,animation:"flash 0.8s ease-out",zIndex:3,pointerEvents:"none"}}/>}
       {isEliminated && <div style={{position:"fixed",inset:0,background:C.red,opacity:0,animation:"flash 0.8s ease-out",zIndex:3,pointerEvents:"none"}}/>}
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",

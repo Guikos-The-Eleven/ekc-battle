@@ -34,13 +34,14 @@ export default function InfoOverlay({ showInfo, setShowInfo, info, modeColor }) 
   );
 }
 
-export function InfoBtn({ onClick, style }) {
+export function InfoBtn({ onClick, style, modeColor }) {
+  const col = modeColor || C.white;
   return (
     <button className="tap" onClick={onClick} aria-label="Mode info" style={{
       position:"absolute",top:"calc(20px + env(safe-area-inset-top, 0px))",right:24,
       width:36,height:36,borderRadius:"50%",
-      background:`${C.white}12`,border:`1.5px solid ${C.white}25`,
-      color:C.sub,fontFamily:BB,fontSize:16,letterSpacing:0,
+      background:`${col}18`,border:`1.5px solid ${col}40`,
+      color:col,fontFamily:BB,fontSize:16,letterSpacing:0,
       cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
       zIndex:5,transition:"all 0.12s",...style,
     }}>?</button>

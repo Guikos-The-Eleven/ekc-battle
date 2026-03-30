@@ -2,10 +2,11 @@ import React from "react";
 import { C, BB, BC } from "../config";
 import { Label, Div, StreakDot } from "./ui";
 
-export default function ScoreBar({ gs, race, mode, p1Name, p2Name, P1_COL, P2_COL, showInfo, setShowInfo }) {
+export default function ScoreBar({ gs, race, mode, p1Name, p2Name, P1_COL, P2_COL, showInfo, setShowInfo, modeColor }) {
   if (!gs) return null;
   const { scores, phase, winner, cpuStreak, lastScoreKey } = gs;
   const is2p = mode === "2p";
+  const col = modeColor || C.white;
 
   const youMatchPoint = !is2p && scores.you === race - 1;
   const cpuMatchPoint = !is2p && scores.cpu === race - 1;
@@ -15,8 +16,8 @@ export default function ScoreBar({ gs, race, mode, p1Name, p2Name, P1_COL, P2_CO
       <button className="tap" onClick={()=>setShowInfo(true)} aria-label="Mode info" style={{
         position:"absolute",top:"calc(8px + env(safe-area-inset-top, 0px))",right:24,
         width:36,height:36,borderRadius:"50%",
-        background:`${C.white}12`,border:`1.5px solid ${C.white}25`,
-        color:C.sub,fontFamily:BB,fontSize:16,letterSpacing:0,
+        background:`${col}18`,border:`1.5px solid ${col}40`,
+        color:col,fontFamily:BB,fontSize:16,letterSpacing:0,
         cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
         zIndex:5,
       }}>?</button>

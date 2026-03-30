@@ -1,14 +1,43 @@
-import React from "react";
-import { C, BB, BC, R, COMPS } from "../config";
+import React, { useState } from "react";
+import { C, BB, BC, R, COMPS, MODE_COLORS } from "../config";
 import { BackBtn, IgLink } from "../components/ui";
+import InfoOverlay, { InfoBtn } from "../components/InfoOverlay";
 
 export default function CompPickScreen({ mode, expandedComp, setExpandedComp, setSelectedComp, setSelectedDiv, setOpenList, setScreen }) {
   const modeLabel = {cpu:"BATTLE",drill:"DRILL","2p":"2 PLAYER",tournament:"TOURNEY"}[mode]||"";
+  const modeColor = MODE_COLORS[mode] || C.white;
+  const [showInfo, setShowInfo] = useState(false);
   const root = {fontFamily:BC,background:C.bg,color:C.text,height:"100dvh",maxWidth:440,margin:"0 auto",display:"flex",flexDirection:"column",position:"relative",overscrollBehavior:"none",overflow:"hidden"};
   const page = {position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",padding:"calc(28px + env(safe-area-inset-top, 0px)) 24px calc(28px + env(safe-area-inset-bottom, 0px)) 24px",overflowY:"auto",WebkitOverflowScrolling:"touch"};
 
+  const INFO_TEXT = {
+    cpu:{ title:"BATTLE", lines:[
+      "Choose a competition and division to battle against.",
+      "Each division has its own official trick list from the real comp.",
+      "Your CPU opponent will attempt the same tricks as you.",
+      "Win by scoring more points than the CPU.",
+    ]},
+    drill:{ title:"DRILL", lines:[
+      "Choose a competition and division to drill.",
+      "Your drill will use the official tricks from that event.",
+      "Track your landing rates and target your weakest tricks.",
+    ]},
+    "2p":{ title:"2 PLAYER", lines:[
+      "Choose a competition and division for a local head-to-head.",
+      "Both players attempt each called trick in real life.",
+      "Tap who landed it — first to the target wins.",
+    ]},
+    tournament:{ title:"TOURNEY", lines:[
+      "Choose a competition and division to run a tournament.",
+      "You'll face CPU opponents in a single-elimination bracket.",
+      "Each round gets slightly harder — win them all to become champion.",
+    ]},
+  };
+
   return (
     <div style={root}>
+      <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={INFO_TEXT[mode]} modeColor={modeColor}/>
+      <InfoBtn onClick={()=>setShowInfo(true)} modeColor={modeColor}/>
       <div style={page}>
         <BackBtn onClick={()=>{setScreen("home");setSelectedComp(null);setSelectedDiv(null);setExpandedComp(null);}}/>
         <div className="rise" style={{marginBottom:24}}>

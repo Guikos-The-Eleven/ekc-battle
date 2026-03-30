@@ -52,7 +52,7 @@ export default function SettingsScreen(props) {
   return (
     <div style={root}>
       <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={INFO_TEXT[infoKey]} modeColor={MODE_COLORS[mode]||C.white}/>
-      <InfoBtn onClick={()=>setShowInfo(true)}/>
+      <InfoBtn onClick={()=>setShowInfo(true)} modeColor={MODE_COLORS[mode]||C.white}/>
       <div style={page}>
         <BackBtn onClick={()=>setScreen("compPick")}/>
         <div className="rise" style={{marginBottom:24}}>
@@ -74,8 +74,8 @@ export default function SettingsScreen(props) {
             <Seg label="CPU Difficulty" val={diff} onChange={setDiff} opts={[
               {key:"easy",label:"ROOKIE",color:C.green},{key:"medium",label:"AMATEUR",color:C.yellow},{key:"hard",label:"PRO",color:C.red},
             ]}/>
-            <Seg label="CPU Streaks" val={streaks} onChange={setStreaks} opts={[{key:true,label:"ON"},{key:false,label:"OFF"}]}/>
-            <Seg label="Race To" val={race} onChange={setRace} opts={[{key:3,label:"3"},{key:5,label:"5"}]}/>
+            <Seg label="CPU Streaks" val={streaks} onChange={setStreaks} opts={[{key:true,label:"ON",color:C.green},{key:false,label:"OFF",color:C.red}]}/>
+            <Seg label="Race To" val={race} onChange={setRace} opts={[{key:3,label:"3",color:C.blue},{key:5,label:"5",color:C.orange}]}/>
           </>)}
 
           {mode==="2p" && (<>
@@ -91,15 +91,15 @@ export default function SettingsScreen(props) {
                 </div>
               ))}
             </div>
-            <Seg label="Race To" val={race} onChange={setRace} opts={[{key:3,label:"3"},{key:5,label:"5"}]}/>
+            <Seg label="Race To" val={race} onChange={setRace} opts={[{key:3,label:"3",color:C.blue},{key:5,label:"5",color:C.orange}]}/>
           </>)}
 
           {mode==="tournament" && (<>
             <Seg label="Base Difficulty" val={diff} onChange={setDiff} opts={[
               {key:"easy",label:"ROOKIE",color:C.green},{key:"medium",label:"AMATEUR",color:C.yellow},{key:"hard",label:"PRO",color:C.red},
             ]}/>
-            <Seg label="Bracket Size" val={bracketSize} onChange={setBracketSize} opts={[{key:4,label:"4"},{key:8,label:"8"}]}/>
-            <Seg label="Race To" val={race} onChange={setRace} opts={[{key:3,label:"3"},{key:5,label:"5"}]}/>
+            <Seg label="Bracket Size" val={bracketSize} onChange={setBracketSize} opts={[{key:4,label:"4",color:C.blue},{key:8,label:"8",color:C.orange}]}/>
+            <Seg label="Race To" val={race} onChange={setRace} opts={[{key:3,label:"3",color:C.blue},{key:5,label:"5",color:C.orange}]}/>
             {selectedDiv.trickSets && (
               <div style={{borderLeft:`3px solid ${C.amber}`,paddingLeft:14,marginBottom:20}}>
                 <Label style={{letterSpacing:3,color:C.amber,marginBottom:4}}>Trick List Progression</Label>
@@ -118,16 +118,16 @@ export default function SettingsScreen(props) {
 
           {mode==="drill" && (<>
             <Seg label="Drill Type" val={drillType} onChange={setDrillType} opts={[
-              {key:"consistency",label:"CONSISTENCY"},{key:"firsttry",label:"FIRST TRY"},
+              {key:"consistency",label:"CONSISTENCY",color:C.yellow},{key:"firsttry",label:"FIRST TRY",color:C.blue},
             ]}/>
             {drillType==="consistency" && (
               <Seg label="Streak Target" val={drillTarget} onChange={setDrillTarget} opts={[
-                {key:3,label:"3×"},{key:5,label:"5×"},{key:10,label:"10×"},
+                {key:3,label:"3×",color:C.green},{key:5,label:"5×",color:C.yellow},{key:10,label:"10×",color:C.orange},
               ]}/>
             )}
             <Seg label="Trick Source" val={drillSource} onChange={setDrillSource} opts={[
-              ...(!isGuest?[{key:"weakest",label:"WEAKEST"}]:[]),
-              {key:"full",label:"FULL LIST"},{key:"pick",label:"PICK"},
+              ...(!isGuest?[{key:"weakest",label:"WEAKEST",color:C.orange}]:[]),
+              {key:"full",label:"FULL LIST",color:C.white},{key:"pick",label:"PICK",color:C.blue},
             ]}/>
           </>)}
         </div>

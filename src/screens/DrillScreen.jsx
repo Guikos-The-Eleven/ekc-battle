@@ -178,7 +178,6 @@ export default function DrillScreen({ drill, setDrill, saveTrickAttempt, drillTy
   return (
     <div style={root}>
       <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={info} modeColor={MODE_COLORS.drill}/>
-      <InfoBtn onClick={()=>setShowInfo(true)}/>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <div style={{padding:"calc(20px + env(safe-area-inset-top, 0px)) 24px 0"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
