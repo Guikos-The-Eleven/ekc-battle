@@ -1,5 +1,5 @@
 import React from "react";
-import { C, BB, BC, R, CPU_CFG } from "../config";
+import { C, BB, BC, R, CPU_CFG, MODE_COLORS } from "../config";
 import { Label, BtnPrimary, BtnGhost, BackBtn } from "../components/ui";
 import InfoOverlay, { InfoBtn } from "../components/InfoOverlay";
 
@@ -86,7 +86,7 @@ export default function BracketScreen({ tourney, selectedComp, selectedDiv, race
 
   return (
     <div style={root}>
-      <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={info}/>
+      <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={info} modeColor={MODE_COLORS.tournament}/>
       <InfoBtn onClick={()=>setShowInfo(true)}/>
       {isAdvancing && <div style={{position:"fixed",inset:0,background:C.green,opacity:0,animation:"flash 0.8s ease-out",zIndex:3,pointerEvents:"none"}}/>}
       {isEliminated && <div style={{position:"fixed",inset:0,background:C.red,opacity:0,animation:"flash 0.8s ease-out",zIndex:3,pointerEvents:"none"}}/>}

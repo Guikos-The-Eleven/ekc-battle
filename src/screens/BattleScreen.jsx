@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { C, BB, BC, R, haptic, CPU_CFG, getTricksForDiv } from "../config";
+import { C, BB, BC, R, haptic, CPU_CFG, getTricksForDiv, MODE_COLORS } from "../config";
 import { Label, Div, Dots, TryDots, BtnGhost } from "../components/ui";
 import { roll, cpuThinkTime, drawTrick } from "../cpu";
 import ScoreBar from "../components/ScoreBar";
@@ -10,6 +10,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
 
   const is2p = mode==="2p";
   const cfg = gs?.config;
+  const modeColor = MODE_COLORS[mode] || C.white;
 
   const allTricks = () => getTricksForDiv(selectedDiv, openList);
 
@@ -126,7 +127,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
   if (phase==="reveal"||phase==="2p_reveal") return (
     <div style={root}>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
-        <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={info}/>
+        <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={info} modeColor={modeColor}/>
         <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo}/>
         <div key={pk} style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 28px",gap:22}}>
           <div className="slideIn" style={{fontFamily:BB,fontSize:12,letterSpacing:8,color:C.muted,animationDelay:"0s"}}>NEXT TRICK</div>
@@ -208,7 +209,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
     return (
       <div style={root}>
         <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
-          <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={info}/>
+          <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={info} modeColor={modeColor}/>
           <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo}/>
           <div style={{borderLeft:`3px solid ${phase==="p_first"?C.white:C.muted}`,paddingLeft:16,margin:"14px 24px 0",transition:"border-color 0.3s"}}>
             <div style={{fontFamily:BB,fontSize:28,letterSpacing:1,lineHeight:1.2,color:phase==="p_first"?C.white:C.sub}}>{trick}</div>

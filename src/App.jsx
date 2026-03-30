@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useReducer, useRef, useMemo } from "react";
 import { SB } from "./supabase";
-import { LOGO, C, BB, BC, R, CPU_CFG, CPU_NAMES, haptic, getTricksForDiv } from "./config";
-import { injectGlobalStyles } from "./styles";
-injectGlobalStyles(); // Run immediately — styles must exist before first render
+import { LOGO, C, BB, BC, R, CPU_CFG, CPU_NAMES, haptic, getTricksForDiv, MODE_COLORS } from "./config";
 import gameReducer from "./gameReducer";
 import { drawTrick } from "./cpu";
 

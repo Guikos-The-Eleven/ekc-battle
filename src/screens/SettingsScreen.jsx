@@ -1,5 +1,5 @@
 import React from "react";
-import { C, BB, BC, R, CPU_CFG } from "../config";
+import { C, BB, BC, R, CPU_CFG, MODE_COLORS } from "../config";
 import { Label, Div, BtnPrimary, Seg, BackBtn } from "../components/ui";
 import InfoOverlay, { InfoBtn } from "../components/InfoOverlay";
 
@@ -51,7 +51,7 @@ export default function SettingsScreen(props) {
 
   return (
     <div style={root}>
-      <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={INFO_TEXT[infoKey]} modeColor={C.white}/>
+      <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={INFO_TEXT[infoKey]} modeColor={MODE_COLORS[mode]||C.white}/>
       <InfoBtn onClick={()=>setShowInfo(true)}/>
       <div style={page}>
         <BackBtn onClick={()=>setScreen("compPick")}/>

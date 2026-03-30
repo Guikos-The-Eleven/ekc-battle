@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { C, BB, BC, R, haptic } from "../config";
+import { C, BB, BC, R, haptic, MODE_COLORS } from "../config";
 import { Label, Div, BtnPrimary, BtnGhost } from "../components/ui";
 import InfoOverlay, { InfoBtn } from "../components/InfoOverlay";
 
@@ -177,7 +177,7 @@ export default function DrillScreen({ drill, setDrill, saveTrickAttempt, drillTy
 
   return (
     <div style={root}>
-      <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={info}/>
+      <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={info} modeColor={MODE_COLORS.drill}/>
       <InfoBtn onClick={()=>setShowInfo(true)}/>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <div style={{padding:"calc(20px + env(safe-area-inset-top, 0px)) 24px 0"}}>
