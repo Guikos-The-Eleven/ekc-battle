@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { C, BB, BC, R, haptic, MODE_COLORS } from "../config";
 import { Label, Div, BtnPrimary, BtnGhost } from "../components/ui";
-import InfoOverlay, { InfoBtn } from "../components/InfoOverlay";
+import InfoOverlay from "../components/InfoOverlay";
 
 export default function DrillScreen({ drill, setDrill, saveTrickAttempt, drillType, drillTarget,
   showInfo, setShowInfo, onQuit, onPickMore, onSettings, onMainMenu }) {
@@ -172,8 +172,9 @@ export default function DrillScreen({ drill, setDrill, saveTrickAttempt, drillTy
 
   // ── Active drill ──
   const isCons = drill.type==="consistency";
-  const progress = isCons ? drill.streak/drill.target : (drill.index+1)/drill.total;
-  const progressLabel = isCons ? `${drill.streak} / ${drill.target}` : `${drill.index+1} / ${drill.total}`;
+  const totalTricks = drill.cleared.length + 1 + drill.queue.length;
+  const progress = isCons ? drill.cleared.length/totalTricks : (drill.index+1)/drill.total;
+  const progressLabel = isCons ? `${drill.cleared.length} / ${totalTricks}` : `${drill.index+1} / ${drill.total}`;
 
   return (
     <div style={root}>
@@ -182,17 +183,15 @@ export default function DrillScreen({ drill, setDrill, saveTrickAttempt, drillTy
         <div style={{padding:"calc(20px + env(safe-area-inset-top, 0px)) 24px 0"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
             <div style={{fontFamily:BB,fontSize:12,letterSpacing:5,color:C.muted}}>{isCons?"CONSISTENCY":"FIRST TRY"}</div>
-            <div style={{fontFamily:BB,fontSize:16,letterSpacing:2,color:C.white}}>{progressLabel}</div>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              {isCons && drill.totalAttempts>0 && <div style={{fontFamily:BC,fontSize:11,color:C.muted,letterSpacing:1,fontWeight:600}}>{drill.totalAttempts} att</div>}
+              <div style={{fontFamily:BB,fontSize:16,letterSpacing:2,color:C.white}}>{progressLabel}</div>
+            </div>
           </div>
           <div style={{height:2,background:C.border,marginBottom:6}}>
             <div style={{height:2,background:isCons?C.green:C.white,width:`${Math.min(progress*100,100)}%`,
               transition:"width 0.3s cubic-bezier(0.34,1.56,0.64,1)"}}/>
           </div>
-          {isCons && drill.cleared.length>0 && (
-            <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:2,fontWeight:600,textAlign:"right"}}>
-              {drill.cleared.length} cleared · {drill.totalAttempts} total
-            </div>
-          )}
           <Div mt={12}/>
         </div>
         <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 28px",gap:16}}>
@@ -201,8 +200,8 @@ export default function DrillScreen({ drill, setDrill, saveTrickAttempt, drillTy
               {drill.trick}
             </div>
           </div>
-          {isCons && drill.streak>0 && (
-            <div className="fadeUp" style={{display:"flex",alignItems:"center",gap:8,paddingLeft:23}}>
+          {isCons && (
+            <div style={{display:"flex",alignItems:"center",gap:8,paddingLeft:23,marginTop:8}}>
               <div style={{display:"flex",gap:3}}>
                 {Array.from({length:drill.target}).map((_,i)=>(
                   <div key={i} style={{width:14,height:3,background:i<drill.streak?C.green:C.border,

@@ -58,8 +58,9 @@ export default function SettingsScreen(props) {
         <BackBtn onClick={()=>setScreen("compPick")}/>
         <div className="rise" style={{marginBottom:24}}>
           <div style={{fontFamily:BB,fontSize:40,letterSpacing:5,lineHeight:1,color:C.white}}>{selectedDiv.name}</div>
-          <div style={{fontFamily:BC,fontSize:14,color:C.muted,letterSpacing:3,marginTop:6,fontWeight:600}}>
-            {selectedComp?.name} · {modeLabel}
+          <div style={{fontFamily:BC,fontSize:14,letterSpacing:3,marginTop:6,fontWeight:600}}>
+            <span style={{color:C.muted}}>{selectedComp?.name} · </span>
+            <span style={{color:mc}}>{modeLabel}</span>
           </div>
         </div>
 
@@ -73,10 +74,10 @@ export default function SettingsScreen(props) {
         <div className="rise" key={mode}>
           {mode==="cpu" && (<>
             <Seg label="CPU Difficulty" val={diff} onChange={setDiff} opts={[
-              {key:"easy",label:"ROOKIE",color:mc},{key:"medium",label:"AMATEUR",color:mc},{key:"hard",label:"PRO",color:mc},
+              {key:"easy",label:"ROOKIE",color:C.green},{key:"medium",label:"AMATEUR",color:C.yellow},{key:"hard",label:"PRO",color:C.red},
             ]}/>
-            <Seg label="CPU Streaks" val={streaks} onChange={setStreaks} opts={[{key:true,label:"ON",color:mc},{key:false,label:"OFF",color:mc}]}/>
-            <Seg label="Race To" val={race} onChange={setRace} opts={[{key:3,label:"3",color:mc},{key:5,label:"5",color:mc}]}/>
+            <Seg label="CPU Streaks" val={streaks} onChange={setStreaks} opts={[{key:true,label:"ON",color:C.green},{key:false,label:"OFF",color:C.red}]}/>
+            <Seg label="Race To" val={race} onChange={setRace} opts={[{key:3,label:"3",color:C.blue},{key:5,label:"5",color:C.orange}]}/>
           </>)}
 
           {mode==="2p" && (<>
@@ -92,18 +93,18 @@ export default function SettingsScreen(props) {
                 </div>
               ))}
             </div>
-            <Seg label="Race To" val={race} onChange={setRace} opts={[{key:3,label:"3",color:mc},{key:5,label:"5",color:mc}]}/>
+            <Seg label="Race To" val={race} onChange={setRace} opts={[{key:3,label:"3",color:C.blue},{key:5,label:"5",color:C.orange}]}/>
           </>)}
 
           {mode==="tournament" && (<>
             <Seg label="Base Difficulty" val={diff} onChange={setDiff} opts={[
-              {key:"easy",label:"ROOKIE",color:mc},{key:"medium",label:"AMATEUR",color:mc},{key:"hard",label:"PRO",color:mc},
+              {key:"easy",label:"ROOKIE",color:C.green},{key:"medium",label:"AMATEUR",color:C.yellow},{key:"hard",label:"PRO",color:C.red},
             ]}/>
-            <Seg label="Bracket Size" val={bracketSize} onChange={setBracketSize} opts={[{key:4,label:"4",color:mc},{key:8,label:"8",color:mc}]}/>
-            <Seg label="Race To" val={race} onChange={setRace} opts={[{key:3,label:"3",color:mc},{key:5,label:"5",color:mc}]}/>
+            <Seg label="Bracket Size" val={bracketSize} onChange={setBracketSize} opts={[{key:4,label:"4",color:C.blue},{key:8,label:"8",color:C.orange}]}/>
+            <Seg label="Race To" val={race} onChange={setRace} opts={[{key:3,label:"3",color:C.blue},{key:5,label:"5",color:C.orange}]}/>
             {selectedDiv.trickSets && (
-              <div style={{borderLeft:`3px solid ${mc}`,paddingLeft:14,marginBottom:20}}>
-                <Label style={{letterSpacing:3,color:mc,marginBottom:4}}>Trick List Progression</Label>
+              <div style={{borderLeft:`3px solid ${C.amber}`,paddingLeft:14,marginBottom:20}}>
+                <Label style={{letterSpacing:3,color:C.amber,marginBottom:4}}>Trick List Progression</Label>
                 <div style={{fontFamily:BC,fontSize:14,color:C.sub,fontWeight:600,lineHeight:1.5}}>
                   Earlier rounds use REGULAR tricks. The final switches to TOP 16 — just like a real comp.
                 </div>
@@ -119,16 +120,16 @@ export default function SettingsScreen(props) {
 
           {mode==="drill" && (<>
             <Seg label="Drill Type" val={drillType} onChange={setDrillType} opts={[
-              {key:"consistency",label:"CONSISTENCY",color:mc},{key:"firsttry",label:"FIRST TRY",color:mc},
+              {key:"consistency",label:"CONSISTENCY",color:C.yellow},{key:"firsttry",label:"FIRST TRY",color:C.blue},
             ]}/>
             {drillType==="consistency" && (
               <Seg label="Streak Target" val={drillTarget} onChange={setDrillTarget} opts={[
-                {key:3,label:"3×",color:mc},{key:5,label:"5×",color:mc},{key:10,label:"10×",color:mc},
+                {key:3,label:"3×",color:C.green},{key:5,label:"5×",color:C.yellow},{key:10,label:"10×",color:C.orange},
               ]}/>
             )}
             <Seg label="Trick Source" val={drillSource} onChange={setDrillSource} opts={[
-              ...(!isGuest?[{key:"weakest",label:"WEAKEST",color:mc}]:[]),
-              {key:"full",label:"FULL LIST",color:mc},{key:"pick",label:"PICK",color:mc},
+              ...(!isGuest?[{key:"weakest",label:"WEAKEST",color:C.orange}]:[]),
+              {key:"full",label:"FULL LIST",color:C.white},{key:"pick",label:"PICK",color:C.blue},
             ]}/>
           </>)}
         </div>
