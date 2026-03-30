@@ -10,14 +10,15 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
   const [tab,      setTab]      = useState("record");
   const [expandedMatch, setExpandedMatch] = useState(null);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [showAllTricks, setShowAllTricks] = useState(false);
 
   const initComp = selectedComp || COMPS[0];
   const initDiv = selectedDiv || initComp?.divisions[0];
   const [statsComp, setStatsComp] = useState(initComp);
   const [statsDiv,  setStatsDiv]  = useState(initDiv);
   const statsDivKey = statsComp && statsDiv ? `${statsComp.key}:${statsDiv.key}` : "ekc_2026:am_open";
+  const currentDivLabel = statsDiv?.name || "AM OPEN";
 
-  // Fix #11: filter server-side by competition key
   useEffect(() => {
     if (!user) return;
     const key = statsDivKey;
@@ -35,7 +36,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
     });
   },[user, statsDivKey]);
 
-  const DIFFICULTIES= ["easy","medium","hard"];
+  const DIFFICULTIES = ["easy","medium","hard"];
   const DIFF_LABELS = {easy:"ROOKIE",medium:"AMATEUR",hard:"PRO"};
   const DIFF_COLORS = {easy:C.green,medium:C.yellow,hard:C.red};
 
@@ -43,36 +44,36 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
     const dm = matches||[];
     return DIFFICULTIES.map(d=>{
       const sub = dm.filter(m=>m.difficulty===d);
-      const w   = sub.filter(m=>m.won).length;
+      const w = sub.filter(m=>m.won).length;
       return {diff:d, wins:w, losses:sub.length-w, total:sub.length};
     }).filter(r=>r.total>0);
   };
-
   const totalRecord = () => {
     const rows = recordForDiv();
     const wins = rows.reduce((a,r)=>a+r.wins,0);
-    const tot  = rows.reduce((a,r)=>a+r.total,0);
+    const tot = rows.reduce((a,r)=>a+r.total,0);
     return {wins, losses:tot-wins, total:tot};
   };
-
   const tricksForDiv = () => {
     const stats = {};
     (attempts||[]).forEach(a=>{
       if (!stats[a.trick]) stats[a.trick]={land:0,miss:0};
-      if (a.landed) stats[a.trick].land++;
-      else stats[a.trick].miss++;
+      if (a.landed) stats[a.trick].land++; else stats[a.trick].miss++;
     });
     return Object.entries(stats)
       .map(([t,s])=>({trick:t, rate:Math.round(s.land/(s.land+s.miss)*100), att:s.land+s.miss}))
       .sort((a,b)=>a.rate-b.rate);
   };
-
   const historyForDiv = () => (history||[]).slice(0,10);
+  const parseLog = (m) => {
+    if (!m.game_log) return null;
+    try { return typeof m.game_log==="string" ? JSON.parse(m.game_log) : m.game_log; }
+    catch { return null; }
+  };
 
   const loading = !isGuest && (matches===null || attempts===null);
   const root = {fontFamily:BC,background:C.bg,color:C.white,height:"100dvh",maxWidth:440,margin:"0 auto",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"};
 
-  // Guest prompt
   if (isGuest) return (
     <div style={root}>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",padding:"calc(28px + env(safe-area-inset-top, 0px)) 24px calc(28px + env(safe-area-inset-bottom, 0px))"}}>
@@ -90,7 +91,6 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
     </div>
   );
 
-  // Loading
   if (loading) return (
     <div style={root}>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -99,211 +99,317 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
     </div>
   );
 
-  const record = recordForDiv();
-  const tot = totalRecord();
-  const tricks = tricksForDiv();
-  const hist = historyForDiv();
-
-  // Reset functions
-  const resetDivision = async () => {
-    await SB.from("match_results").delete().eq("user_id",user.id).eq("competition",statsDivKey);
-    await SB.from("trick_attempts").delete().eq("user_id",user.id).eq("competition",statsDivKey);
-    setMatches([]); setAttempts([]); setHistory([]); setConfirmReset(false);
-  };
-  const resetAll = async () => {
-    await SB.from("match_results").delete().eq("user_id",user.id);
-    await SB.from("trick_attempts").delete().eq("user_id",user.id);
-    setMatches([]); setAttempts([]); setHistory([]); setConfirmReset(false);
-  };
+  const switchTab = (k) => { setTab(k); setExpandedMatch(null); setConfirmReset(false); setShowAllTricks(false); };
 
   return (
     <div style={root}>
-      <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",
-        padding:"calc(28px + env(safe-area-inset-top, 0px)) 24px 0",overflow:"hidden"}}>
-        <BackBtn onClick={onBack}/>
-        <div className="rise" style={{marginBottom:8}}>
-          <div style={{fontFamily:BB,fontSize:36,letterSpacing:4,lineHeight:1,color:C.white}}>STATS</div>
-          <div style={{fontFamily:BC,fontSize:13,color:C.muted,letterSpacing:2,marginTop:4,fontWeight:600}}>{username}</div>
-        </div>
+      <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+        <div style={{padding:"calc(28px + env(safe-area-inset-top, 0px)) 24px 0"}}>
+          <BackBtn onClick={onBack}/>
+          <div style={{marginBottom:20}}>
+            <div style={{fontFamily:BB,fontSize:34,letterSpacing:4,lineHeight:1,color:C.white}}>{username}</div>
+            <div style={{fontFamily:BC,fontSize:12,color:C.muted,letterSpacing:2,marginTop:6,fontWeight:600}}>Training Stats</div>
+          </div>
 
-        {/* Comp tabs */}
-        <div style={{display:"flex",gap:0,marginBottom:2,borderBottom:`1px solid ${C.border}`}}>
-          {COMPS.filter(c=>!c.soon).map(c=>(
-            <button key={c.key} className="tap" onClick={()=>{setStatsComp(c);setStatsDiv(c.divisions[0]);setTab("record");setExpandedMatch(null);}} style={{
-              flex:1,padding:"10px 0",background:"transparent",border:"none",
-              borderBottom:`2px solid ${statsComp?.key===c.key?C.white:"transparent"}`,
-              color:statsComp?.key===c.key?C.white:C.muted,fontFamily:BB,fontSize:14,letterSpacing:3,
-              cursor:"pointer",transition:"all 0.15s",marginBottom:-1,
-            }}>{c.name}</button>
-          ))}
-        </div>
-
-        {/* Division tabs */}
-        {statsComp && (
-          <div style={{display:"flex",gap:0,marginBottom:8,borderBottom:`1px solid ${C.divider}`}}>
-            {statsComp.divisions.map(d=>(
-              <button key={d.key} className="tap" onClick={()=>{setStatsDiv(d);setTab("record");setExpandedMatch(null);}} style={{
-                flex:1,padding:"8px 0",background:"transparent",border:"none",
-                borderBottom:`2px solid ${statsDiv?.key===d.key?C.sub:"transparent"}`,
-                color:statsDiv?.key===d.key?C.sub:C.muted,fontFamily:BB,fontSize:12,letterSpacing:3,
-                cursor:"pointer",marginBottom:-1,
+          <div style={{display:"flex",gap:0}}>
+            {COMPS.filter(c=>!c.soon).map(c=>(
+              <button key={c.key} onClick={()=>{setStatsComp(c);setStatsDiv(c.divisions[0]);switchTab("record");}} style={{
+                flex:1,padding:"10px 0",background:"transparent",border:"none",
+                borderBottom:`2px solid ${statsComp?.key===c.key?C.white:"transparent"}`,
+                color:statsComp?.key===c.key?C.white:C.muted,
+                fontFamily:BB,fontSize:13,letterSpacing:3,cursor:"pointer",transition:"all 0.15s",
+              }}>{c.name}</button>
+            ))}
+          </div>
+          <Div/>
+          <div style={{display:"flex",gap:0}}>
+            {(statsComp?.divisions||[]).map(d=>(
+              <button key={d.key} onClick={()=>{setStatsDiv(d);switchTab("record");}} style={{
+                flex:1,padding:"10px 0",background:"transparent",border:"none",
+                borderBottom:`2px solid ${statsDiv?.key===d.key?C.white:"transparent"}`,
+                color:statsDiv?.key===d.key?C.white:C.muted,
+                fontFamily:BB,fontSize:14,letterSpacing:3,cursor:"pointer",transition:"all 0.15s",
               }}>{d.name}</button>
             ))}
           </div>
-        )}
-
-        {/* Content tabs */}
-        <div style={{display:"flex",gap:12,marginBottom:14}}>
-          {["record","tricks","history"].map(t=>(
-            <button key={t} className="tap" onClick={()=>{setTab(t);setExpandedMatch(null);}} style={{
-              background:tab===t?`${C.white}08`:"transparent",border:`1px solid ${tab===t?C.border:"transparent"}`,
-              borderRadius:R,padding:"6px 12px",color:tab===t?C.white:C.muted,
-              fontFamily:BB,fontSize:12,letterSpacing:3,cursor:"pointer",
-            }}>{t.toUpperCase()}</button>
-          ))}
+          <Div/>
+          <div style={{display:"flex",gap:0}}>
+            {[["record","RECORD"],["tricks","TRICKS"],["history","HISTORY"]].map(([k,l])=>(
+              <button key={k} onClick={()=>switchTab(k)} style={{
+                flex:1,padding:"12px 0",background:"transparent",border:"none",
+                borderBottom:`2px solid ${tab===k?C.white:"transparent"}`,
+                color:tab===k?C.white:C.muted,
+                fontFamily:BB,fontSize:13,letterSpacing:4,cursor:"pointer",transition:"all 0.15s",
+              }}>{l}</button>
+            ))}
+          </div>
+          <Div/>
         </div>
 
-        {/* Tab content */}
-        <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",paddingBottom:"calc(20px + env(safe-area-inset-bottom, 0px))"}}>
+        <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"24px 24px 32px"}}>
 
-          {tab==="record" && (
-            <div className="rise">
-              {tot.total===0 ? (
-                <div style={{textAlign:"center",padding:"40px 0",color:C.muted}}>
-                  <div style={{fontFamily:BB,fontSize:18,letterSpacing:4,marginBottom:8}}>NO MATCHES YET</div>
-                  <div style={{fontFamily:BC,fontSize:13,letterSpacing:1}}>Play a battle to see your record here.</div>
-                </div>
-              ) : (
-                <>
-                  <div style={{display:"flex",justifyContent:"center",gap:32,marginBottom:24}}>
-                    <div style={{textAlign:"center"}}>
-                      <div style={{fontFamily:BB,fontSize:48,lineHeight:0.9,color:C.green}}>{tot.wins}</div>
-                      <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted,marginTop:6}}>WINS</div>
-                    </div>
-                    <div style={{textAlign:"center"}}>
-                      <div style={{fontFamily:BB,fontSize:48,lineHeight:0.9,color:C.red}}>{tot.losses}</div>
-                      <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted,marginTop:6}}>LOSSES</div>
-                    </div>
-                    {tot.total>0 && <div style={{textAlign:"center"}}>
-                      <div style={{fontFamily:BB,fontSize:48,lineHeight:0.9,color:C.white}}>{Math.round(tot.wins/tot.total*100)}%</div>
-                      <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted,marginTop:6}}>WIN RATE</div>
-                    </div>}
-                  </div>
-                  <Div mb={16}/>
-                  {record.map(r=>(
-                    <div key={r.diff} style={{borderLeft:`3px solid ${DIFF_COLORS[r.diff]}`,paddingLeft:14,marginBottom:12}}>
-                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                        <span style={{fontFamily:BB,fontSize:16,letterSpacing:3,color:DIFF_COLORS[r.diff]}}>{DIFF_LABELS[r.diff]}</span>
-                        <span style={{fontFamily:BC,fontSize:14,color:C.sub,fontWeight:600}}>{r.wins}W – {r.losses}L</span>
-                      </div>
+          {tab==="record" && (()=>{
+            const rows = recordForDiv();
+            const tot = totalRecord();
+            if (rows.length===0) return (
+              <div style={{fontFamily:BC,fontSize:14,color:C.muted,lineHeight:1.6}}>
+                No matches yet for {currentDivLabel}.<br/>Play vs CPU to track your record.
+              </div>
+            );
+            return (
+              <>
+                <div style={{display:"flex",gap:0,marginBottom:28}}>
+                  {[["WINS",tot.wins,C.green],["LOSSES",tot.losses,C.red]].map(([l,v,col])=>(
+                    <div key={l} style={{flex:1,textAlign:"center"}}>
+                      <div style={{fontFamily:BB,fontSize:56,lineHeight:0.9,color:col}}>{v}</div>
+                      <div style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.muted,marginTop:8}}>{l}</div>
                     </div>
                   ))}
-                </>
-              )}
-            </div>
-          )}
-
-          {tab==="tricks" && (
-            <div className="rise">
-              {tricks.length===0 ? (
-                <div style={{textAlign:"center",padding:"40px 0",color:C.muted}}>
-                  <div style={{fontFamily:BB,fontSize:18,letterSpacing:4,marginBottom:8}}>NO TRICK DATA</div>
-                  <div style={{fontFamily:BC,fontSize:13,letterSpacing:1}}>Land or miss some tricks to track your rates.</div>
                 </div>
-              ) : (
-                tricks.map((t,i)=>(
-                  <div key={i} style={{borderLeft:`3px solid ${t.rate>=50?C.green:C.red}`,paddingLeft:12,
-                    paddingTop:8,paddingBottom:8,marginBottom:3,background:`${t.rate>=50?C.green:C.red}06`,
-                    display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <span style={{fontFamily:BC,fontSize:14,color:C.sub,fontWeight:600,flex:1,paddingRight:8}}>{t.trick}</span>
-                    <span style={{fontFamily:BB,fontSize:16,letterSpacing:1,color:t.rate>=50?C.green:C.red,flexShrink:0}}>{t.rate}%</span>
-                    <span style={{fontFamily:BC,fontSize:11,color:C.muted,marginLeft:8,flexShrink:0}}>{t.att} att</span>
+                <div style={{marginBottom:32}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
+                    <Label style={{letterSpacing:4}}>Win Rate</Label>
+                    <Label style={{color:C.white}}>{Math.round(tot.wins/tot.total*100)}%</Label>
                   </div>
-                ))
-              )}
-            </div>
-          )}
-
-          {tab==="history" && (
-            <div className="rise">
-              {hist.length===0 ? (
-                <div style={{textAlign:"center",padding:"40px 0",color:C.muted}}>
-                  <div style={{fontFamily:BB,fontSize:18,letterSpacing:4,marginBottom:8}}>NO HISTORY</div>
-                  <div style={{fontFamily:BC,fontSize:13,letterSpacing:1}}>Your recent matches will appear here.</div>
+                  <div style={{height:2,background:C.border}}>
+                    <div style={{height:2,background:C.green,width:`${tot.wins/tot.total*100}%`,transition:"width 0.5s"}}/>
+                  </div>
                 </div>
-              ) : (
-                hist.map((h,i)=>{
-                  const expanded = expandedMatch===i;
-                  const log = h.game_log ? (typeof h.game_log==="string"?JSON.parse(h.game_log):h.game_log) : null;
+                <Div mb={24}/>
+                <Label style={{marginBottom:16,letterSpacing:4}}>By Difficulty</Label>
+                {rows.map(r=>{
+                  const rate = Math.round(r.wins/r.total*100);
+                  const col = DIFF_COLORS[r.diff];
                   return (
-                    <div key={i} style={{marginBottom:6}}>
-                      <button className="tap" onClick={()=>setExpandedMatch(expanded?null:i)} style={{
-                        width:"100%",padding:"12px 12px",background:C.surface,
-                        border:`1px solid ${C.border}`,borderRadius:R,
-                        borderLeft:`3px solid ${h.won?C.green:C.red}`,
-                        cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
-                      }}>
-                        <div style={{textAlign:"left"}}>
-                          <span style={{fontFamily:BB,fontSize:16,letterSpacing:2,color:h.won?C.green:C.red}}>
-                            {h.won?"WIN":"LOSS"}
-                          </span>
-                          <span style={{fontFamily:BC,fontSize:13,color:C.muted,marginLeft:8}}>
-                            {h.your_score}–{h.cpu_score}
-                          </span>
+                    <div key={r.diff} style={{marginBottom:20}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:8}}>
+                        <div style={{display:"flex",alignItems:"center",gap:8}}>
+                          <div style={{width:6,height:6,borderRadius:"50%",background:col}}/>
+                          <span style={{fontFamily:BB,fontSize:13,letterSpacing:4,color:C.white}}>{DIFF_LABELS[r.diff]}</span>
                         </div>
-                        <div style={{textAlign:"right"}}>
-                          <span style={{fontFamily:BC,fontSize:11,color:DIFF_COLORS[h.difficulty],fontWeight:600,letterSpacing:2}}>
-                            {DIFF_LABELS[h.difficulty]}
-                          </span>
-                          <span style={{fontFamily:BB,fontSize:12,color:C.muted,marginLeft:8,
-                            transform:expanded?"rotate(90deg)":"rotate(0deg)",display:"inline-block",transition:"transform 0.2s"}}>→</span>
+                        <div style={{display:"flex",gap:14,alignItems:"baseline"}}>
+                          <span style={{fontFamily:BC,fontSize:12,color:C.green,fontWeight:600}}>{r.wins}W</span>
+                          <span style={{fontFamily:BC,fontSize:12,color:C.red,fontWeight:600}}>{r.losses}L</span>
+                          <span style={{fontFamily:BB,fontSize:15,letterSpacing:2,color:col}}>{rate}%</span>
                         </div>
-                      </button>
-                      {expanded && log && (
-                        <div className="rise" style={{paddingLeft:16,borderLeft:`2px solid ${C.border}`,marginLeft:12,marginTop:2}}>
-                          {log.map((entry,j)=>(
-                            <div key={j} style={{padding:"4px 0",borderBottom:`1px solid ${C.divider}`,
-                              display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                              <span style={{fontFamily:BC,fontSize:12,color:C.sub,fontWeight:600,flex:1,paddingRight:8}}>{entry.trick}</span>
-                              <span style={{fontFamily:BB,fontSize:12,letterSpacing:1,
-                                color:entry.result==="you"?C.green:entry.result==="cpu"?C.red:C.muted}}>
-                                {entry.result==="you"?"WIN":entry.result==="cpu"?"LOSS":"NULL"}
-                              </span>
+                      </div>
+                      <div style={{height:2,background:C.border}}>
+                        <div style={{height:2,background:col,width:`${rate}%`,transition:"width 0.5s"}}/>
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
+            );
+          })()}
+
+          {tab==="tricks" && (()=>{
+            const list = tricksForDiv();
+            if (list.length===0) return (
+              <div style={{fontFamily:BC,fontSize:14,color:C.muted,lineHeight:1.6}}>
+                No trick data yet for {currentDivLabel}.<br/>Attempt rates are tracked when you play vs CPU.
+              </div>
+            );
+            const weak = list.filter(t=>t.rate<50);
+            const strong = list.filter(t=>t.rate>=50).reverse();
+            const PREVIEW = 5;
+            const showWeak = showAllTricks ? weak : weak.slice(0,PREVIEW);
+            const showStrong = showAllTricks ? strong : strong.slice(0,PREVIEW);
+            const hasMore = (weak.length > PREVIEW || strong.length > PREVIEW) && !showAllTricks;
+
+            const TrickRow = ({trick,rate,att}) => {
+              const col = rate>=70?C.green:rate>=40?C.yellow:C.red;
+              return (
+                <div style={{marginBottom:16}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:5}}>
+                    <div style={{fontFamily:BC,fontSize:13,color:C.sub,fontWeight:600,flex:1,paddingRight:16,lineHeight:1.35}}>{trick}</div>
+                    <div style={{display:"flex",alignItems:"baseline",gap:8,flexShrink:0}}>
+                      <span style={{fontFamily:BC,fontSize:11,color:C.muted}}>{att}×</span>
+                      <span style={{fontFamily:BB,fontSize:17,letterSpacing:1,color:col}}>{rate}%</span>
+                    </div>
+                  </div>
+                  <div style={{height:2,background:C.border}}>
+                    <div style={{height:2,background:col,width:`${rate}%`,transition:"width 0.4s"}}/>
+                  </div>
+                </div>
+              );
+            };
+
+            const totalAtt = list.reduce((a,t)=>a+t.att,0);
+            const avgRate = Math.round(list.reduce((a,t)=>a+t.rate*t.att,0)/totalAtt);
+
+            return (
+              <>
+                <div style={{marginBottom:28,textAlign:"center"}}>
+                  <div style={{fontFamily:BB,fontSize:52,lineHeight:0.9,color:avgRate>=50?C.green:C.red}}>{avgRate}%</div>
+                  <div style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.muted,marginTop:8}}>AVG LAND RATE · {list.length} TRICKS · {totalAtt} ATTEMPTS</div>
+                </div>
+                {weak.length>0 && (
+                  <>
+                    <Label style={{marginBottom:16,letterSpacing:4,color:C.red}}>Needs Work{!showAllTricks && weak.length>PREVIEW ? ` · Top ${PREVIEW}` : ""}</Label>
+                    {showWeak.map(t=><TrickRow key={t.trick} {...t}/>)}
+                  </>
+                )}
+                {strong.length>0 && (
+                  <>
+                    {weak.length>0 && <Div mt={8} mb={24}/>}
+                    <Label style={{marginBottom:16,letterSpacing:4,color:C.green}}>Solid{!showAllTricks && strong.length>PREVIEW ? ` · Top ${PREVIEW}` : ""}</Label>
+                    {showStrong.map(t=><TrickRow key={t.trick} {...t}/>)}
+                  </>
+                )}
+                {hasMore && (
+                  <button className="tap" onClick={()=>setShowAllTricks(true)} style={{
+                    width:"100%",padding:"14px 0",marginTop:8,background:"transparent",border:`1px solid ${C.border}`,
+                    borderRadius:R,fontFamily:BB,fontSize:12,letterSpacing:4,color:C.sub,cursor:"pointer",
+                  }}>SHOW ALL {list.length} TRICKS</button>
+                )}
+              </>
+            );
+          })()}
+
+          {tab==="history" && (()=>{
+            const rows = historyForDiv();
+            if (rows.length===0) return (
+              <div style={{fontFamily:BC,fontSize:14,color:C.muted,lineHeight:1.6}}>
+                No match history yet for {currentDivLabel}.<br/>Play vs CPU to start tracking.
+              </div>
+            );
+            return (
+              <>
+                <Label style={{marginBottom:16,letterSpacing:4}}>Last {rows.length} Matches</Label>
+                {rows.map((m,i)=>{
+                  const col = m.won?C.green:C.red;
+                  const diffCol = DIFF_COLORS[m.difficulty]||C.sub;
+                  const date = new Date(m.created_at);
+                  const dateStr = `${date.getDate()}/${date.getMonth()+1}`;
+                  const isOpen = expandedMatch===(m.id||i);
+                  const log = parseLog(m);
+                  const canExpand = !!log;
+                  const trickCount = log ? log.length : (m.your_score + m.cpu_score);
+
+                  return (
+                    <div key={m.id||i} className="fadeUp" style={{
+                      borderLeft:`3px solid ${col}`,paddingLeft:14,
+                      marginBottom:8,background:`${col}06`,
+                      animationDelay:`${i*0.04}s`,animationFillMode:"both",
+                      cursor:canExpand?"pointer":"default",
+                    }} onClick={()=>canExpand && setExpandedMatch(isOpen?null:(m.id||i))}>
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
+                        paddingTop:12,paddingBottom:isOpen&&log?6:12}}>
+                        <div style={{display:"flex",alignItems:"center",gap:12}}>
+                          <div style={{fontFamily:BB,fontSize:20,letterSpacing:2,color:col,width:24}}>{m.won?"W":"L"}</div>
+                          <div style={{fontFamily:BB,fontSize:22,letterSpacing:1,color:C.white}}>
+                            {m.your_score}–{m.cpu_score}
+                          </div>
+                          <div style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600}}>{trickCount} tricks</div>
+                        </div>
+                        <div style={{display:"flex",alignItems:"center",gap:12}}>
+                          <div style={{
+                            fontFamily:BB,fontSize:10,letterSpacing:3,color:diffCol,
+                            border:`1px solid ${diffCol}30`,padding:"4px 8px",borderRadius:R,
+                          }}>{DIFF_LABELS[m.difficulty]||m.difficulty}</div>
+                          <div style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,minWidth:36,textAlign:"right"}}>{dateStr}</div>
+                          {canExpand && (
+                            <div style={{fontFamily:BB,fontSize:10,color:C.muted,transition:"transform 0.2s",
+                              transform:isOpen?"rotate(180deg)":"rotate(0deg)"}}>▾</div>
+                          )}
+                        </div>
+                      </div>
+                      {isOpen && log && (
+                        <div style={{paddingBottom:14,paddingTop:4,borderTop:`1px solid ${C.divider}`}} onClick={e=>e.stopPropagation()}>
+                          <div style={{display:"flex",gap:16,marginBottom:10,marginTop:6}}>
+                            <div style={{display:"flex",alignItems:"center",gap:4}}>
+                              <div style={{width:6,height:6,borderRadius:"50%",background:C.sub,opacity:0.85}}/>
+                              <span style={{fontFamily:BC,fontSize:9,color:C.muted,letterSpacing:1,fontWeight:600}}>YOU</span>
                             </div>
-                          ))}
+                            <div style={{display:"flex",alignItems:"center",gap:4}}>
+                              <div style={{width:6,height:6,borderRadius:"50%",background:C.sub,opacity:0.4}}/>
+                              <span style={{fontFamily:BC,fontSize:9,color:C.muted,letterSpacing:1,fontWeight:600}}>CPU</span>
+                            </div>
+                            <span style={{color:C.border}}>·</span>
+                            <div style={{display:"flex",alignItems:"center",gap:4}}>
+                              <div style={{width:6,height:6,borderRadius:"50%",background:C.green}}/>
+                              <span style={{fontFamily:BC,fontSize:9,color:C.muted,letterSpacing:1,fontWeight:600}}>LAND</span>
+                            </div>
+                            <div style={{display:"flex",alignItems:"center",gap:4}}>
+                              <div style={{width:6,height:6,borderRadius:"50%",background:C.red}}/>
+                              <span style={{fontFamily:BC,fontSize:9,color:C.muted,letterSpacing:1,fontWeight:600}}>MISS</span>
+                            </div>
+                          </div>
+                          {log.map((t,ti)=>{
+                            const rc = t.result==="you"?C.green:t.result==="cpu"?C.red:C.muted;
+                            const rl = t.result==="you"?"YOU":t.result==="cpu"?"CPU":"NULL";
+                            return (
+                              <div key={ti} style={{borderLeft:`2px solid ${rc}`,paddingLeft:10,marginBottom:ti<log.length-1?10:0,paddingTop:2,paddingBottom:2}}>
+                                <div style={{fontFamily:BC,fontSize:11,color:C.sub,fontWeight:600,lineHeight:1.3,marginBottom:4}}>
+                                  {t.trick}
+                                </div>
+                                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                                  <span style={{fontFamily:BB,fontSize:9,letterSpacing:2,color:C.muted}}>
+                                    {t.playerFirst?"YOU 1ST":"CPU 1ST"}
+                                  </span>
+                                  <span style={{color:C.border}}>·</span>
+                                  {t.tries && t.tries.map((tr,j)=>(
+                                    <div key={j} style={{display:"inline-flex",alignItems:"center",gap:3}}>
+                                      <div title="You" style={{width:6,height:6,borderRadius:"50%",background:tr.you?C.green:C.red,opacity:0.85}}/>
+                                      <div title="CPU" style={{width:6,height:6,borderRadius:"50%",background:tr.cpu?C.green:C.red,opacity:0.45}}/>
+                                      {j<t.tries.length-1 && <span style={{color:C.border,fontSize:8,margin:"0 1px"}}>·</span>}
+                                    </div>
+                                  ))}
+                                  <span style={{fontFamily:BB,fontSize:9,letterSpacing:2,color:rc,marginLeft:"auto"}}>
+                                    {rl}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
                   );
-                })
-              )}
-            </div>
-          )}
+                })}
+              </>
+            );
+          })()}
 
-          {/* Reset section */}
-          <div style={{marginTop:32,paddingTop:16,borderTop:`1px solid ${C.divider}`}}>
+          <div style={{marginTop:40,paddingTop:24,borderTop:`1px solid ${C.divider}`}}>
             {!confirmReset ? (
-              <div style={{display:"flex",gap:8}}>
+              <div style={{display:"flex",gap:10}}>
                 <button className="tap" onClick={()=>setConfirmReset("division")} style={{
-                  flex:1,padding:"10px 8px",background:"transparent",border:`1px solid ${C.red}20`,
-                  borderRadius:R,fontFamily:BB,fontSize:11,letterSpacing:3,color:`${C.red}80`,cursor:"pointer",
-                }}>RESET {statsDiv?.name}</button>
+                  flex:1,padding:"14px 0",background:"transparent",border:"none",
+                  fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,cursor:"pointer",opacity:0.5,
+                }}>RESET {currentDivLabel}</button>
                 <button className="tap" onClick={()=>setConfirmReset("all")} style={{
-                  flex:1,padding:"10px 8px",background:"transparent",border:`1px solid ${C.red}20`,
-                  borderRadius:R,fontFamily:BB,fontSize:11,letterSpacing:3,color:`${C.red}80`,cursor:"pointer",
-                }}>RESET ALL</button>
+                  flex:1,padding:"14px 0",background:"transparent",border:"none",
+                  fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,cursor:"pointer",opacity:0.5,
+                }}>RESET ALL STATS</button>
               </div>
             ) : (
-              <div className="rise" style={{textAlign:"center"}}>
-                <div style={{fontFamily:BC,fontSize:13,color:C.red,letterSpacing:1,marginBottom:12,fontWeight:600}}>
-                  {confirmReset==="all"?"Delete ALL stats permanently?":"Delete stats for this division?"}
+              <div className="fadeUp" style={{textAlign:"center"}}>
+                <div style={{fontFamily:BC,fontSize:13,color:C.red,letterSpacing:2,fontWeight:600,marginBottom:14,lineHeight:1.5}}>
+                  {confirmReset==="division"
+                    ?`Delete all stats for ${currentDivLabel}?`
+                    :"Delete ALL match history and trick data across every competition?"}
                 </div>
-                <div style={{display:"flex",gap:8}}>
-                  <BtnGhost color={C.muted} onClick={()=>setConfirmReset(false)} style={{flex:1}}>CANCEL</BtnGhost>
-                  <button className="tap" onClick={confirmReset==="all"?resetAll:resetDivision} style={{
-                    flex:1,padding:"12px 8px",background:`${C.red}15`,border:`1px solid ${C.red}40`,
-                    borderRadius:R,fontFamily:BB,fontSize:14,letterSpacing:3,color:C.red,cursor:"pointer",
-                  }}>CONFIRM</button>
+                <div style={{display:"flex",gap:10}}>
+                  <button className="tap" onClick={()=>setConfirmReset(false)} style={{
+                    flex:1,padding:"14px 0",background:"transparent",border:`1px solid ${C.border}`,
+                    borderRadius:R,fontFamily:BB,fontSize:13,letterSpacing:4,color:C.sub,cursor:"pointer",
+                  }}>CANCEL</button>
+                  <button className="tap" onClick={async()=>{
+                    if (confirmReset==="division") {
+                      await SB.from("match_results").delete().eq("user_id",user.id).eq("competition",statsDivKey);
+                      await SB.from("trick_attempts").delete().eq("user_id",user.id).eq("competition",statsDivKey);
+                    } else {
+                      await SB.from("match_results").delete().eq("user_id",user.id);
+                      await SB.from("trick_attempts").delete().eq("user_id",user.id);
+                    }
+                    setMatches([]); setAttempts([]); setHistory([]);
+                    setConfirmReset(false);
+                  }} style={{
+                    flex:1,padding:"14px 0",background:`${C.red}15`,border:`1px solid ${C.red}40`,
+                    borderRadius:R,fontFamily:BB,fontSize:13,letterSpacing:4,color:C.red,cursor:"pointer",
+                  }}>DELETE</button>
                 </div>
               </div>
             )}
