@@ -42,38 +42,55 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
         </div>
 
         {/* Stats snapshot */}
-        {homeStats && homeStats.total>0 ? (
-          <div className="fadeUp" style={{width:"100%",marginTop:20,marginBottom:20,animationDelay:"0.1s",animationFillMode:"both"}}>
-            <div style={{display:"flex",alignItems:"center",gap:0,width:"100%"}}>
-              <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
-                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.sub}}>{homeStats.wins}</div>
-                <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:4}}>WINS</div>
-              </div>
-              <div style={{width:1,height:28,background:C.divider}}/>
-              <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
-                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.violet}}>{homeStats.losses}</div>
-                <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:4}}>LOSSES</div>
-              </div>
-              <div style={{width:1,height:28,background:C.divider}}/>
-              <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
-                <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.sub}}>
-                  {Math.round(homeStats.wins/homeStats.total*100)}%
+        {/* Stats snapshot - Estilo Opção B com Glow */}
+        {homeStats && homeStats.total > 0 ? (
+          <div className="fadeUp" style={{ width: "100%", marginTop: 20, marginBottom: 20, animationDelay: "0.1s", animationFillMode: "both" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 0, width: "100%" }}>
+              
+              {/* WINS */}
+              <div style={{ flex: 1, textAlign: "center", padding: "14px 0" }}>
+                <div style={{ 
+                  fontFamily: BB, fontSize: 34, lineHeight: 1, 
+                  color:C.sub, // Cor da Opção B
+                  textShadow: "0px 0px 12px rgba(200, 200, 212, 0.4)" // Efeito Glow
+                }}>
+                  {homeStats.wins}
                 </div>
-                <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:4}}>WIN RATE</div>
+                <div style={{ fontFamily: BB, fontSize: 10, letterSpacing: 4, color: C.muted, marginTop: 4 }}>WINS</div>
               </div>
-              {homeStats.trickTotal>0 && <>
-                <div style={{width:1,height:28,background:C.divider}}/>
-                <div style={{flex:1,textAlign:"center",padding:"14px 0"}}>
-                  <div style={{fontFamily:BB,fontSize:34,lineHeight:1,color:C.blue}}>
-                    {Math.round(homeStats.trickLands/homeStats.trickTotal*100)}%
-                  </div>
-                  <div style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginTop:4}}>TRICK RATE</div>
+
+              <div style={{ width: 1, height: 28, background: C.divider }} />
+
+              {/* LOSSES */}
+              <div style={{ flex: 1, textAlign: "center", padding: "14px 0" }}>
+                <div style={{ 
+                  fontFamily: BB, fontSize: 34, lineHeight: 1, 
+                  color:C.sub, 
+                  textShadow: "0px 0px 12px rgba(200, 200, 212, 0.4)" 
+                }}>
+                  {homeStats.losses}
                 </div>
-              </>}
+                <div style={{ fontFamily: BB, fontSize: 10, letterSpacing: 4, color: C.muted, marginTop: 4 }}>LOSSES</div>
+              </div>
+
+              <div style={{ width: 1, height: 28, background: C.divider }} />
+
+              {/* WIN RATE */}
+              <div style={{ flex: 1, textAlign: "center", padding: "14px 0" }}>
+                <div style={{ 
+                  fontFamily: BB, fontSize: 34, lineHeight: 1, 
+                  color:C.sub, 
+                  textShadow: "0px 0px 12px rgba(200, 200, 212, 0.4)" 
+                }}>
+                  {Math.round((homeStats.wins / homeStats.total) * 100)}%
+                </div>
+                <div style={{ fontFamily: BB, fontSize: 10, letterSpacing: 4, color: C.muted, marginTop: 4 }}>WIN RATE</div>
+              </div>
+
             </div>
           </div>
         ) : (
-          <div style={{marginTop:20,marginBottom:20}}/>
+          <div style={{ marginTop: 20, marginBottom: 20 }} />
         )}
 
         {/* Mode cards */}

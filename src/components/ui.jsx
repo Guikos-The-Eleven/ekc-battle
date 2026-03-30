@@ -108,7 +108,7 @@ const IgIcon = ({ size=14, color=C.muted }) => (
 );
 
 /* ── Instagram Link ────────────────────────────────────────────────────────── */
-const IgLink = ({ size=14, fontSize=12, href="https://instagram.com/kendamanxs", label="kendamanxs", style={} }) => (
+const IgLink = ({ size=14, fontSize=12, href="https://instagram.com/kendamanxs", label="Kendamanxs", style={} }) => (
   <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`Follow ${label} on Instagram`} style={{
     fontFamily:BC,fontSize,letterSpacing:3,color:C.muted,fontWeight:600,
     textDecoration:"none",display:"inline-flex",alignItems:"center",gap:6,
