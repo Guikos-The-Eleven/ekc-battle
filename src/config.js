@@ -11,6 +11,8 @@ const C = {
   shreak_skin:"#d3ff33", traffic_cone:"#ff5b22", bratz_purple:"#dbb8ff", internet_blue:"#3939ff", carebare_fuzz:"#aee6ed",
   blue1:"#5e60ce", blue2:"#4ea8de", blue3:"#48bfe3", blue4:"#64dfdf",
   orange2:"#ea7317", yellow2:"#fec601", tile2:"#73bfb8", sea_blue2:"#3da5d9", dark_blue2:"#086788",
+  // NOVAS CORES NEON PARA OS MODOS DE JOGO
+  cyan: "#00F0FF", lime: "#CCFF00", magenta: "#FF0099", molten: "#FF5F00",
 };
 const BB = "'Bebas Neue', sans-serif";
 const BC = "'Barlow Condensed', sans-serif";
@@ -101,8 +103,7 @@ const CPU_NAMES = [
 ];
 
 // ─── MODE COLORS (for InfoOverlay accents) ──────────────────────────────────
-const MODE_COLORS = { cpu:C.teal, drill:C.violet, tournament:C.amber, "2p":C.blue };
-
+const MODE_COLORS = { cpu:C.cyan, drill:C.molten, tournament:C.lime, "2p":C.magenta };
 // ─── TRICK HELPERS ──────────────────────────────────────────────────────────
 const getTricksForDiv = (div, listKey) => {
   if (!div) return AM_TRICKS;

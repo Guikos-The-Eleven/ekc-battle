@@ -4,10 +4,10 @@ import { Div, IgLink, ChatIcon } from "../components/ui";
 
 export default function HomeScreen({ user, username, isGuest, homeStats, setMode, setScreen, setDrillSource, goToAuth, handleSignOut, setFeedbackText, setFeedbackSent }) {
   const modeCards = [
-    {key:"cpu",   label:"BATTLE",     desc:"1v1 vs CPU",          color:C.tile2,   available:true},
-    {key:"drill", label:"DRILL",      desc:"Train your tricks",   color:C.yellow2, available:true},
-    {key:"tournament", label:"TOURNEY", desc:"Bracket competition", color:C.orange2, available:true},
-    {key:"2p",    label:"2 PLAYER",   desc:"Local head to head",  color:C.dark_blue2,   available:true},
+    {key:"cpu",   label:"BATTLE",     desc:"1v1 vs CPU",          color:C.cyan,    available:true},
+    {key:"drill", label:"DRILL",      desc:"Train your tricks",   color:C.molten,  available:true},
+    {key:"tournament", label:"TOURNEY", desc:"Bracket competition", color:C.lime,    available:true},
+    {key:"2p",    label:"2 PLAYER",   desc:"Local head to head",  color:C.magenta, available:true},
   ];
 
   return (
@@ -94,7 +94,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
         )}
 
         {/* Mode cards */}
-        <div style={{width:"100%",display:"grid",gridTemplateColumns:"1fr 1fr",gridTemplateRows:"1fr 1fr",gap:8,flex:1}}>
+        <div style={{width:"100%",display:"grid",gridTemplateColumns:"1fr 1fr",gridTemplateRows:"1fr 1fr",gap:12,flex:1}}>
           {modeCards.map((m,i)=>(
             <button key={m.key} className="tap fadeUp" onClick={()=>{
               if (!m.available) return;
@@ -102,9 +102,12 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
               if (m.key==="drill" && isGuest) setDrillSource("full");
               setScreen("compPick");
             }} style={{
-              padding:"20px 16px",background:m.available?C.surface:"transparent",
-              border:`1px solid ${m.available?C.border:`${C.border}50`}`,borderRadius:R,
-              borderLeft:`3px solid ${m.available?m.color:`${C.muted}30`}`,
+              padding:"20px 16px",
+              // 2. Fundo semi-transparente (14 = ~8% opacidade) e glow no box-shadow (40 = ~25% opacidade)
+              background: m.available ? `${m.color}14` : "transparent",
+              border: `1px solid ${m.available ? m.color : `${C.border}50`}`,
+              boxShadow: m.available ? `0 0 15px ${m.color}40` : "none",
+              borderRadius:R,
               cursor:m.available?"pointer":"default",textAlign:"left",
               transition:"all 0.12s",opacity:m.available?1:0.45,
               display:"flex",flexDirection:"column",justifyContent:"center",gap:4,
@@ -114,10 +117,12 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
               {!m.available && <span style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:C.muted,
                 border:`1px solid ${C.muted}50`,padding:"3px 8px",borderRadius:R,
                 position:"absolute",top:10,right:10}}>SOON</span>}
-              <div style={{fontFamily:BB,fontSize:26,letterSpacing:m.label.length>8?3:5,color:m.available?C.white:C.muted,lineHeight:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+              
+              {/* 3. Título com a cor neon a brilhar em vez de branco */}
+              <div style={{fontFamily:BB,fontSize:26,letterSpacing:m.label.length>8?3:5,color:m.available?m.color:C.muted,lineHeight:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis", textShadow: m.available ? `0 0 8px ${m.color}80` : "none"}}>
                 {m.label}
               </div>
-              <div style={{fontFamily:BC,fontSize:13,letterSpacing:1,color:m.available?C.sub:C.muted,fontWeight:600}}>
+              <div style={{fontFamily:BC,fontSize:13,letterSpacing:1,color:m.available?C.white:C.muted,fontWeight:600}}>
                 {m.desc}
               </div>
             </button>
