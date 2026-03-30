@@ -51,7 +51,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
               <div style={{ flex: 1, textAlign: "center", padding: "14px 0" }}>
                 <div style={{ 
                   fontFamily: BB, fontSize: 34, lineHeight: 1, 
-                  color:C.sub, // Cor da Opção B
+                  color:C.white, // Cor da Opção B
                   textShadow: "0px 0px 12px rgba(200, 200, 212, 0.4)" // Efeito Glow
                 }}>
                   {homeStats.wins}
@@ -65,7 +65,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
               <div style={{ flex: 1, textAlign: "center", padding: "14px 0" }}>
                 <div style={{ 
                   fontFamily: BB, fontSize: 34, lineHeight: 1, 
-                  color:C.sub, 
+                  color:C.white, 
                   textShadow: "0px 0px 12px rgba(200, 200, 212, 0.4)" 
                 }}>
                   {homeStats.losses}
@@ -79,7 +79,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
               <div style={{ flex: 1, textAlign: "center", padding: "14px 0" }}>
                 <div style={{ 
                   fontFamily: BB, fontSize: 34, lineHeight: 1, 
-                  color:C.sub, 
+                  color:C.white, 
                   textShadow: "0px 0px 12px rgba(200, 200, 212, 0.4)" 
                 }}>
                   {Math.round((homeStats.wins / homeStats.total) * 100)}%
