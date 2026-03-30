@@ -128,7 +128,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
     <div style={root}>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={info} modeColor={modeColor}/>
-        <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo} modeColor={modeColor}/>
+        <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo}/>
         <div key={pk} style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 28px",gap:22}}>
           <div className="slideIn" style={{fontFamily:BB,fontSize:12,letterSpacing:8,color:C.muted,animationDelay:"0s"}}>NEXT TRICK</div>
           <div className="slideIn" style={{borderLeft:`3px solid ${C.white}`,paddingLeft:20,animationDelay:"0.08s",animationFillMode:"both"}}>
@@ -150,7 +150,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
   if (is2p && phase==="2p_score") return (
     <div style={root}>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
-        <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo} modeColor={modeColor}/>
+        <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo}/>
         <div style={{flex:1,display:"flex",flexDirection:"column",padding:"20px 24px 0"}}>
           <div style={{borderLeft:`3px solid ${C.muted}`,paddingLeft:16,marginBottom:16}}>
             <Label style={{marginBottom:6}}>Trick</Label>
@@ -182,7 +182,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
   if (is2p && phase==="2p_point") return (
     <div style={root}>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
-        <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo} modeColor={modeColor}/>
+        <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo}/>
         <div key={pk} className="pop" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center"}}>
           <div style={{fontFamily:BB,fontSize:56,letterSpacing:2,color:winner==="p1"?P1_COL:P2_COL,
             textShadow:`0 0 30px ${winner==="p1"?P1_COL:P2_COL}30`}}>{winner==="p1"?(p1Name||"P1"):(p2Name||"P2")} SCORED</div>
@@ -210,7 +210,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
       <div style={root}>
         <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
           <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={info} modeColor={modeColor}/>
-          <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo} modeColor={modeColor}/>
+          <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo}/>
           <div style={{borderLeft:`3px solid ${phase==="p_first"?C.white:C.muted}`,paddingLeft:16,margin:"14px 24px 0",transition:"border-color 0.3s"}}>
             <div style={{fontFamily:BC,fontSize:28,letterSpacing:1,lineHeight:1.2,color:phase==="p_first"?C.white:C.sub}}>{trick}</div>
           </div>
@@ -256,7 +256,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
   if (phase==="tie") return (
     <div style={root}>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
-        <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo} modeColor={modeColor}/>
+        <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo}/>
         <div key={pk} className="pop" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8}}>
           <div style={{fontFamily:BB,fontSize:66,letterSpacing:2,lineHeight:0.9,color:C.white,textShadow:`0 0 30px ${C.white}10`}}>{msg}</div>
           <div style={{fontFamily:BB,fontSize:13,letterSpacing:8,color:C.yellow,marginTop:8}}>TRY {Math.min(tryNum+1,3)} OF 3</div>
@@ -272,7 +272,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
       <div style={root}>
         <div style={{position:"fixed",inset:0,background:pointColor,opacity:0,animation:"flash 0.6s ease-out",zIndex:3,pointerEvents:"none"}}/>
         <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
-          <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo} modeColor={modeColor}/>
+          <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo}/>
           <div key={pk} className="pop" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center"}}>
             <div style={{fontFamily:BB,fontSize:62,letterSpacing:2,color:pointColor,textShadow:`0 0 40px ${pointColor}30`}}>
               {winner==="you"?"YOU SCORED":"CPU SCORED"}
@@ -287,7 +287,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
   if (phase==="null") return (
     <div style={root}>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
-        <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo} modeColor={modeColor}/>
+        <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo}/>
         <div key={pk} className="rise" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10}}>
           <div style={{fontFamily:BB,fontSize:50,letterSpacing:2,color:C.sub,textShadow:`0 0 20px ${C.sub}10`}}>TRICK NULLED</div>
           <div style={{fontFamily:BC,fontSize:15,color:C.muted,letterSpacing:3,fontWeight:600}}>Next trick loading...</div>

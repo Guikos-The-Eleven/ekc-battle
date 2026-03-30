@@ -37,7 +37,7 @@ export default function CompPickScreen({ mode, expandedComp, setExpandedComp, se
   return (
     <div style={root}>
       <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={INFO_TEXT[mode]} modeColor={modeColor}/>
-      <InfoBtn onClick={()=>setShowInfo(true)} modeColor={modeColor}/>
+      <InfoBtn onClick={()=>setShowInfo(true)}/>
       <div style={page}>
         <BackBtn onClick={()=>{setScreen("home");setSelectedComp(null);setSelectedDiv(null);setExpandedComp(null);}}/>
         <div className="rise" style={{marginBottom:24}}>

@@ -103,7 +103,7 @@ const CPU_NAMES = [
 ];
 
 // ─── MODE COLORS (for InfoOverlay accents) ──────────────────────────────────
-const MODE_COLORS = { cpu:C.cyan, drill:C.molten, tournament:C.lime, "2p":C.magenta };
+const MODE_COLORS = { cpu:C.blue, drill:C.amber, tournament:C.copper, "2p":C.slate };
 // ─── TRICK HELPERS ──────────────────────────────────────────────────────────
 const getTricksForDiv = (div, listKey) => {
   if (!div) return AM_TRICKS;
