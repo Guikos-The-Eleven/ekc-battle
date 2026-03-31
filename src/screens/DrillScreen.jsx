@@ -10,8 +10,8 @@ export default function DrillScreen({ drill, setDrill, drillType, drillTarget,
   const root = {fontFamily:BC,background:C.bg,color:C.text,height:"100dvh",maxWidth:440,margin:"0 auto",display:"flex",flexDirection:"column",position:"relative",overscrollBehavior:"none",overflow:"hidden"};
 
   const info = drillType==="consistency"
-    ? {title:"CONSISTENCY DRILL",lines:[`Practice each trick ${drillTarget}× in a row.`,"Use the dots as your mental target.","Tap NEXT TRICK when you're ready to move on.","SKIP any trick you want to come back to later."]}
-    : {title:"FIRST TRY DRILL",lines:["One trick at a time — attempt it in real life.","Tap NEXT TRICK to advance.","SKIP any trick you don't want to attempt.","No tracking — just pure practice."]};
+    ? {title:"CONSISTENCY DRILL",lines:[`Practice each trick ${drillTarget}× in a row before moving on.`,"Tap NEXT TRICK when you're done with the current one.","SKIP to jump past any trick.","No stats are tracked — pure practice."]}
+    : {title:"FIRST TRY DRILL",lines:["Go through the trick list one by one.","Tap NEXT TRICK to advance.","SKIP to jump past any trick.","No stats are tracked — pure practice."]};
 
   // Auto-advance after "cleared" animation (consistency)
   useEffect(()=>{
@@ -153,7 +153,7 @@ export default function DrillScreen({ drill, setDrill, drillType, drillTarget,
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <div style={{padding:"calc(20px + env(safe-area-inset-top, 0px)) 24px 0"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-            <div style={{fontFamily:BB,fontSize:12,letterSpacing:5,color:C.muted}}>{isCons?"CONSISTENCY":"FIRST TRY"}</div>
+            <div style={{fontFamily:BB,fontSize:12,letterSpacing:5,color:C.muted}}>{isCons?`CONSISTENCY · ${drill.target}× IN A ROW`:"FIRST TRY"}</div>
             <div style={{fontFamily:BB,fontSize:16,letterSpacing:2,color:C.white}}>{progressLabel}</div>
           </div>
           <div style={{height:2,background:C.border,marginBottom:6}}>
@@ -162,26 +162,12 @@ export default function DrillScreen({ drill, setDrill, drillType, drillTarget,
           </div>
           <Div mt={12}/>
         </div>
-        <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 28px",gap:16}}>
+        <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",padding:"0 28px"}}>
           <div className="slideIn" key={drill.trick} style={{borderLeft:`3px solid ${C.white}`,paddingLeft:20}}>
             <div style={{fontFamily:BC,fontSize:drill.trick.length>40?34:42,letterSpacing:2,lineHeight:1.1,color:C.white}}>
               {drill.trick}
             </div>
           </div>
-          {isCons && (
-            <div style={{paddingLeft:23,marginTop:8}}>
-              <div style={{display:"flex",alignItems:"center",gap:8}}>
-                <div style={{display:"flex",gap:3}}>
-                  {Array.from({length:drill.target}).map((_,i)=>(
-                    <div key={i} style={{width:14,height:3,background:C.border,transition:"all 0.2s"}}/>
-                  ))}
-                </div>
-              </div>
-              <div style={{fontFamily:BC,fontSize:12,color:C.muted,fontWeight:600,letterSpacing:2,marginTop:8}}>
-                LAND {drill.target}× IN A ROW
-              </div>
-            </div>
-          )}
         </div>
         <div style={{padding:"0 24px 16px",display:"flex",flexDirection:"column",gap:10}}>
           <button className="tap" onClick={onNext} aria-label="Next trick" style={{
