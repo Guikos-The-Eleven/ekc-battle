@@ -131,7 +131,7 @@ export default function DrillScreen({ drill, setDrill, drillType, drillTarget,
       <div style={root}>
         <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
           <div className="pop" style={{textAlign:"center"}}>
-            <div style={{fontFamily:BB,fontSize:56,letterSpacing:3,color:C.green,textShadow:`0 0 30px ${C.green}30`}}>NEXT</div>
+            <div style={{fontFamily:BB,fontSize:56,letterSpacing:3,color:C.yellow,textShadow:`0 0 30px ${C.yellow}30`}}>NEXT</div>
             <div style={{fontFamily:BC,fontSize:15,color:C.muted,letterSpacing:3,fontWeight:600,marginTop:8}}>Loading trick...</div>
           </div>
         </div>
