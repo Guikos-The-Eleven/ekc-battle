@@ -31,12 +31,12 @@ export default function SettingsScreen(props) {
       "Both land or both miss → null, next trick.",`First to ${race} wins.`,
     ]},
     drill_consistency:{title:"CONSISTENCY DRILL",lines:[
-      `Land each trick ${drillTarget}× in a row to clear it.`,"Miss once and the streak resets to 0.",
-      "Clear all tricks to finish the drill.","WEAKEST pulls your lowest-rate tricks from stats.",
+      `Practice each trick ${drillTarget}× in a row.`,"Use the dots as your target — tap NEXT TRICK when ready.",
+      "SKIP any trick you want to come back to later.","WEAKEST pulls your lowest-rate tricks from battle stats.",
     ]},
     drill_firsttry:{title:"FIRST TRY DRILL",lines:[
-      "One attempt per trick — land or miss.","Tests your first-try rate under pressure.",
-      "Just like a real comp — no second chances.",
+      "One trick at a time — practice it, then move on.","Tap NEXT TRICK to advance through the list.",
+      "SKIP any trick you don't want to attempt.","Pure training — no stats tracked.",
     ]},
     tournament:{title:"TOURNEY",lines:[
       "Single elimination bracket.","Win your match to advance — lose and you're out.",

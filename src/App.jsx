@@ -207,11 +207,11 @@ export default function App() {
     const queue = await buildDrillQueue(drillSource);
     if (queue.length===0) return;
     if (drillType==="consistency") {
-      setDrill({type:"consistency",target:drillTarget,trick:queue[0],streak:0,attempts:0,
-        cleared:[],queue:queue.slice(1),totalAttempts:0,totalLands:0,bestStreak:0});
+      setDrill({type:"consistency",target:drillTarget,trick:queue[0],
+        completed:[],queue:queue.slice(1),phase:"active"});
     } else {
       setDrill({type:"firsttry",trick:queue[0],queue:queue.slice(1),
-        results:[],index:0,total:queue.length,phase:"active"});
+        completed:[],index:0,total:queue.length,phase:"active"});
     }
     setScreen("drill");
   }
@@ -219,11 +219,11 @@ export default function App() {
   function startDrillPick(tricks) {
     const shuffled = [...tricks].sort(()=>Math.random()-0.5);
     if (drillType==="consistency") {
-      setDrill({type:"consistency",target:drillTarget,trick:shuffled[0],streak:0,attempts:0,
-        cleared:[],queue:shuffled.slice(1),totalAttempts:0,totalLands:0,bestStreak:0,pickMode:true});
+      setDrill({type:"consistency",target:drillTarget,trick:shuffled[0],
+        completed:[],queue:shuffled.slice(1),phase:"active",pickMode:true});
     } else {
       setDrill({type:"firsttry",trick:shuffled[0],queue:shuffled.slice(1),
-        results:[],index:0,total:shuffled.length,phase:"active",pickMode:true});
+        completed:[],index:0,total:shuffled.length,phase:"active",pickMode:true});
     }
     setScreen("drill");
   }
@@ -377,10 +377,10 @@ export default function App() {
   );
 
   if (screen==="drill" && drill) return (
-    <DrillScreen drill={drill} setDrill={setDrill} saveTrickAttempt={saveTrickAttempt}
+    <DrillScreen drill={drill} setDrill={setDrill}
       drillType={drillType} drillTarget={drillTarget} showInfo={showInfo} setShowInfo={setShowInfo}
       onQuit={()=>{setPickedTricks([]);setDrill(null);setScreen("settings");}}
-      onPickMore={()=>{setPickedTricks([]);setDrill(p=>({...p,phase:undefined,trick:null,streak:0,attempts:0}));setScreen("drill_pick");}}
+      onPickMore={()=>{setPickedTricks([]);setDrill(p=>({...p,phase:undefined,trick:null,completed:[]}));setScreen("drill_pick");}}
       onSettings={()=>{setDrill(null);setScreen("settings");}}
       onMainMenu={()=>{setDrill(null);setScreen("home");setSelectedComp(null);setSelectedDiv(null);}}/>
   );

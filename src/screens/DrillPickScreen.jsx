@@ -4,8 +4,8 @@ import { Label, Div, BtnPrimary, BackBtn } from "../components/ui";
 
 export default function DrillPickScreen({ allTricks, drill, pickedTricks, setPickedTricks, drillType, drillTarget, startDrillPick, onBack }) {
   const tricks = allTricks();
-  const clearedTricks = drill?.cleared?.map(c=>c.trick) || [];
-  const available = tricks.filter(t=>!clearedTricks.includes(t));
+  const completedTricks = drill?.completed?.filter(c=>!c.skipped).map(c=>c.trick) || [];
+  const available = tricks.filter(t=>!completedTricks.includes(t));
   const allSelected = pickedTricks.length===available.length && available.length>0;
   const toggleTrick = (t) => setPickedTricks(prev=>prev.includes(t)?prev.filter(x=>x!==t):[...prev,t]);
   const toggleAll = () => setPickedTricks(allSelected?[]:available);
@@ -22,7 +22,7 @@ export default function DrillPickScreen({ allTricks, drill, pickedTricks, setPic
             {drillType==="consistency"?"PICK TRICKS":"FIRST TRY"}
           </div>
           <div style={{fontFamily:BC,fontSize:14,color:C.muted,letterSpacing:3,marginTop:6,fontWeight:600}}>
-            {drillType==="consistency"?`Select tricks · land ${drillTarget}× in a row each`:"Select tricks · one attempt each"}
+            {drillType==="consistency"?`Select tricks · practice ${drillTarget}× each`:"Select tricks · one attempt each"}
           </div>
         </div>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
@@ -37,7 +37,7 @@ export default function DrillPickScreen({ allTricks, drill, pickedTricks, setPic
         <Div mb={8}/>
         <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",margin:"0 -24px",padding:"0 24px"}}>
           {tricks.map((t,i)=>{
-            const done = clearedTricks.includes(t);
+            const done = completedTricks.includes(t);
             const selected = pickedTricks.includes(t);
             return (
               <button key={i} className="tap" onClick={()=>!done&&toggleTrick(t)} disabled={done} style={{
@@ -55,7 +55,7 @@ export default function DrillPickScreen({ allTricks, drill, pickedTricks, setPic
                 </div>
                 <span style={{fontFamily:BC,fontSize:15,color:done?C.muted:selected?C.white:C.sub,fontWeight:600,
                   textAlign:"left",lineHeight:1.3,flex:1,paddingRight:12,transition:"color 0.1s"}}>{t}</span>
-                {done && <span style={{fontFamily:BB,fontSize:12,letterSpacing:3,color:C.green}}>CLEARED</span>}
+                {done && <span style={{fontFamily:BB,fontSize:12,letterSpacing:3,color:C.green}}>DONE</span>}
               </button>
             );
           })}
