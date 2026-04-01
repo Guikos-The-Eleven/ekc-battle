@@ -184,8 +184,8 @@ export default function App() {
   // ── Drill start ──
   async function buildDrillQueue(source) {
     const tricks = allTricks();
-    if (source==="full") return [...tricks].sort(()=>Math.random()-0.5);
-    if (source==="weakest" && userRef.current) {
+    if (source==="pick") return [...tricks].sort(()=>Math.random()-0.5);
+    if ((source==="weakest"||source==="full") && userRef.current) {
       const { data } = await SB.from("trick_attempts").select("trick,landed,competition")
         .eq("user_id",userRef.current.id);
       const stats = {};
@@ -195,11 +195,18 @@ export default function App() {
       });
       const rated = tricks.map(t=>{
         const s = stats[t]; if (!s) return null;
-        return {trick:t,rate:s.land/(s.land+s.miss)};
+        return {trick:t,rate:Math.round(s.land/(s.land+s.miss)*100)};
       }).filter(Boolean);
-      const needsWork = rated.filter(r=>r.rate<1).sort((a,b)=>a.rate-b.rate);
-      if (needsWork.length>0) return needsWork.map(r=>r.trick);
-      // No weak tricks found — fall back to full list
+      let filtered;
+      if (source==="weakest") {
+        // "Needs Work" — rate < 40%
+        filtered = rated.filter(r=>r.rate<40).sort((a,b)=>a.rate-b.rate);
+      } else {
+        // "Getting There" — rate 40–69%
+        filtered = rated.filter(r=>r.rate>=40&&r.rate<70).sort((a,b)=>a.rate-b.rate);
+      }
+      if (filtered.length>0) return filtered.map(r=>r.trick);
+      // Nothing in this category — fall back to full shuffled list
       return [...tricks].sort(()=>Math.random()-0.5);
     }
     return [...tricks].sort(()=>Math.random()-0.5);

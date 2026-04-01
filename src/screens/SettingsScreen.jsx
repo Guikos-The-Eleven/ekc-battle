@@ -23,7 +23,7 @@ export default function SettingsScreen(props) {
       "Land it and the other misses → you score.",
       "Both land or both miss → replay (up to 3×).",
       `First to ${race} wins the match.`,
-      "ROOKIE ~35% · AMATEUR ~58% · PRO ~80% land rate.",
+      "ROOKIE ~48% · AMATEUR ~68% · PRO ~87% land rate.",
       ...(streaks?["Streaks: CPU can go HOT (+12%) or COLD (−18%) randomly after points."]:["Streaks are OFF — CPU uses a steady land rate."]),
     ]},
     "2p":{title:"2 PLAYER",lines:[
@@ -32,7 +32,7 @@ export default function SettingsScreen(props) {
     ]},
     drill_consistency:{title:"CONSISTENCY DRILL",lines:[
       `Practice each trick ${drillTarget}× in a row before moving on.`,"Tap NEXT TRICK when you're done with the current one.",
-      "SKIP to jump past any trick.","WEAKEST pulls your lowest-rate tricks from battle stats.",
+      "SKIP to jump past any trick.","NEEDS WORK pulls tricks under 40% land rate.","GETTING THERE pulls tricks between 40–70%.",
     ]},
     drill_firsttry:{title:"FIRST TRY DRILL",lines:[
       "Go through the trick list one by one.","Tap NEXT TRICK to advance.",
@@ -40,7 +40,7 @@ export default function SettingsScreen(props) {
     ]},
     tournament:{title:"TOURNEY",lines:[
       "Single elimination bracket.","Win your match to advance — lose and you're out.",
-      "ROOKIE ~35% · AMATEUR ~58% · PRO ~80% base rate.",
+      "ROOKIE ~48% · AMATEUR ~68% · PRO ~87% base rate.",
       "CPU gets +2% harder each round on top of your chosen base.",
       ...(selectedDiv?.trickSets?["Final round switches to TOP 16 trick list."]:[]),
       `First to ${race} per match.`,
@@ -128,8 +128,8 @@ export default function SettingsScreen(props) {
               ]}/>
             )}
             <Seg label="Trick Source" val={drillSource} onChange={setDrillSource} opts={[
-              ...(!isGuest?[{key:"weakest",label:"WEAKEST",color:C.orange}]:[]),
-              {key:"full",label:"FULL LIST",color:C.white},{key:"pick",label:"PICK",color:C.blue},
+              ...(!isGuest?[{key:"weakest",label:"NEEDS WORK",color:C.red},{key:"full",label:"GETTING THERE",color:C.yellow}]:[]),
+              {key:"pick",label:"PICK",color:C.blue},
             ]}/>
           </>)}
         </div>
