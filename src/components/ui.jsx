@@ -107,7 +107,6 @@ const IgIcon = ({ size=14, color=C.muted }) => (
   </svg>
 );
 
-/* ── Instagram Link ────────────────────────────────────────────────────────── */
 /* ── Chat/Feedback Icon ────────────────────────────────────────────────────── */
 const ChatIcon = ({ size=12, color=C.muted }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}>
