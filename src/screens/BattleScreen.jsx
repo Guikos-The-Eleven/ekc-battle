@@ -161,7 +161,6 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
             <div style={{fontFamily:BB,fontSize:12,letterSpacing:6,color:playerFirst?P1_COL:P2_COL}}>{playerFirst?`${p1Name||"P1"} FIRST`:`${p2Name||"P2"} FIRST`}</div>
           </div>
           <Div mb={20}/>
-          <Label style={{textAlign:"center",marginBottom:16,letterSpacing:5}}>Who scored?</Label>
           <div style={{display:"flex",flexDirection:"column",gap:10,flex:1,justifyContent:"center"}}>
             {[["p1",p1Name||"P1",P1_COL],["p2",p2Name||"P2",P2_COL]].map(([k,n,col])=>(
               <button key={k} className="tap" onClick={()=>on2PScore(k)} style={{

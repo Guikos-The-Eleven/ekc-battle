@@ -163,7 +163,7 @@ export default function App() {
       dispatchGs({type:"INIT_CPU",payload:init});
     } else {
       const init = {scores:{p1:0,p2:0},pool:r.pool,trick:r.trick,
-        playerFirst:true,phase:"2p_reveal",winner:null,matchOver:false,
+        playerFirst:Math.random()<0.5,phase:"2p_reveal",winner:null,matchOver:false,
         config:{race,mode:"2p"}};
       dispatchGs({type:"INIT_2P",payload:init});
     }
