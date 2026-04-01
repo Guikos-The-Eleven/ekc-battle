@@ -108,22 +108,24 @@ const IgIcon = ({ size=14, color=C.muted }) => (
 );
 
 /* ── Instagram Link ────────────────────────────────────────────────────────── */
-const IgLink = ({ size=14, fontSize=12, href="https://instagram.com/kendamanxs", label="Kendamanxs", style={} }) => (
-  <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`Follow ${label} on Instagram`} style={{
-    fontFamily:BC,fontSize,letterSpacing:3,color:C.muted,fontWeight:600,
-    textDecoration:"none",display:"inline-flex",alignItems:"center",gap:6,
-    transition:"opacity 0.15s",...style,
-  }}>
-    <IgIcon size={size} color={C.muted}/>
-    {label}
-  </a>
-);
-
 /* ── Chat/Feedback Icon ────────────────────────────────────────────────────── */
 const ChatIcon = ({ size=12, color=C.muted }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}>
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
   </svg>
+);
+
+/* ── Chat/Feedback Link ────────────────────────────────────────────────────── */
+const FeedbackLink = ({ size=14, fontSize=12, href="mailto:your@email.com", label="Feedback", style={} }) => (
+  <a href={href} aria-label={`Send ${label}`} style={{
+    fontFamily:BC,fontSize,letterSpacing:3,color:C.muted,fontWeight:600,
+    textDecoration:"none",display:"inline-flex",alignItems:"center",gap:6,
+    transition:"opacity 0.15s",...style,
+  }}>
+    {/* Passes the exact same C.muted color as the IgLink */}
+    <ChatIcon size={size} color={C.muted}/>
+    {label}
+  </a>
 );
 
 export { Label, Div, BtnPrimary, BtnGhost, Seg, Dots, StreakDot, TryDots, BackBtn, IgIcon, IgLink, ChatIcon };
