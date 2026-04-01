@@ -93,7 +93,7 @@ export default function SettingsScreen(props) {
                 </div>
               ))}
             </div>
-            <Seg label="Race To" val={race} onChange={setRace} opts={[{key:3,label:"3",color:C.blue},{key:5,label:"5",color:C.orange}]}/>
+            <Seg label="Race To" val={race} onChange={setRace} opts={[{key:3,label:"3",color:C.white},{key:5,label:"5",color:C.white}]}/>
           </>)}
 
           {mode==="tournament" && (<>
