@@ -120,14 +120,14 @@ const IgLink = ({ size=14, fontSize=12, href="https://instagram.com/kendamanxs",
 );
 
 /* ── Chat/Feedback Icon ────────────────────────────────────────────────────── */
-const ChatIcon = ({ size=14, color=C.muted }) => ( // Size bumped to 14 to match IgIcon
+const ChatIcon = ({ size=15, color=C.muted }) => ( // OPTICAL TWEAK: Size bumped to 15
   <svg 
     width={size} 
     height={size} 
     viewBox="0 0 24 24" 
     fill="none" 
     stroke={color} 
-    strokeWidth="2" 
+    strokeWidth="2.4" // OPTICAL TWEAK: Thicker stroke to match Instagram's density
     strokeLinecap="round" 
     strokeLinejoin="round" 
     aria-hidden="true" 
@@ -138,7 +138,7 @@ const ChatIcon = ({ size=14, color=C.muted }) => ( // Size bumped to 14 to match
 );
 
 /* ── Chat/Feedback Link Wrapper ────────────────────────────────────────────── */
-const FeedbackLink = ({ size=14, fontSize=12, href="#", label="Feedback", style={} }) => (
+const FeedbackLink = ({ size=15, fontSize=12, href="#", label="Feedback", style={} }) => (
   <a href={href} aria-label={`Provide ${label}`} style={{
     fontFamily:BC,fontSize,letterSpacing:3,color:C.muted,fontWeight:600,
     textDecoration:"none",display:"inline-flex",alignItems:"center",gap:6,
