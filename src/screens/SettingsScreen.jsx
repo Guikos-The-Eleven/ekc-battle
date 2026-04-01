@@ -77,7 +77,7 @@ export default function SettingsScreen(props) {
               {key:"easy",label:"ROOKIE",color:C.green},{key:"medium",label:"AMATEUR",color:C.yellow},{key:"hard",label:"PRO",color:C.red},
             ]}/>
             <Seg label="CPU Streaks" val={streaks} onChange={setStreaks} opts={[{key:true,label:"ON",color:C.green},{key:false,label:"OFF",color:C.red}]}/>
-            <Seg label="Race To" val={race} onChange={setRace} opts={[{key:3,label:"3",color:C.blue},{key:5,label:"5",color:C.orange}]}/>
+            <Seg label="Race To" val={race} onChange={setRace} opts={[{key:3,label:"3",color:C.white},{key:5,label:"5",color:C.white}]}/>
           </>)}
 
           {mode==="2p" && (<>
@@ -100,8 +100,8 @@ export default function SettingsScreen(props) {
             <Seg label="Base Difficulty" val={diff} onChange={setDiff} opts={[
               {key:"easy",label:"ROOKIE",color:C.green},{key:"medium",label:"AMATEUR",color:C.yellow},{key:"hard",label:"PRO",color:C.red},
             ]}/>
-            <Seg label="Bracket Size" val={bracketSize} onChange={setBracketSize} opts={[{key:4,label:"4",color:C.blue},{key:8,label:"8",color:C.orange}]}/>
-            <Seg label="Race To" val={race} onChange={setRace} opts={[{key:3,label:"3",color:C.blue},{key:5,label:"5",color:C.orange}]}/>
+            <Seg label="Bracket Size" val={bracketSize} onChange={setBracketSize} opts={[{key:4,label:"4",color:C.orange},{key:8,label:"8",color:C.orange}]}/>
+            <Seg label="Race To" val={race} onChange={setRace} opts={[{key:3,label:"3",color:C.white},{key:5,label:"5",color:C.white]}/>
             {selectedDiv.trickSets && (
               <div style={{borderLeft:`3px solid ${C.amber}`,paddingLeft:14,marginBottom:20}}>
                 <Label style={{letterSpacing:3,color:C.amber,marginBottom:4}}>Trick List Progression</Label>
