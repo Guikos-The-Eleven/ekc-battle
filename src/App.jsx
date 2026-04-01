@@ -102,6 +102,7 @@ export default function App() {
   // ── Home stats ──
   useEffect(()=>{
     if (!user) { setHomeStats(null); return; }
+    if (screen !== "home") return;
     Promise.all([
       SB.from("match_results").select("won").eq("user_id",user.id),
       SB.from("trick_attempts").select("landed").eq("user_id",user.id),
@@ -111,7 +112,7 @@ export default function App() {
       setHomeStats({wins, losses:matches.length-wins, total:matches.length,
         trickLands:tricks.filter(t=>t.landed).length, trickTotal:tricks.length});
     }).catch(()=>setHomeStats(null));
-  },[user]);
+  },[user, screen]);
 
   // ── Shared trick helper (fix #5: single source of truth) ──
   const allTricks = useMemo(()=>{
@@ -196,8 +197,9 @@ export default function App() {
         const s = stats[t]; if (!s) return {trick:t,rate:-1};
         return {trick:t,rate:s.land/(s.land+s.miss)};
       });
-      rated.sort((a,b)=>a.rate-b.rate);
-      return rated.map(r=>r.trick);
+      const attempted = rated.filter(r=>r.rate>=0).sort((a,b)=>a.rate-b.rate);
+      const unattempted = rated.filter(r=>r.rate<0).sort(()=>Math.random()-0.5);
+      return [...attempted,...unattempted].map(r=>r.trick);
     }
     return [...tricks].sort(()=>Math.random()-0.5);
   }
