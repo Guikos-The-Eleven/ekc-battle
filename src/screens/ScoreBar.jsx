@@ -27,7 +27,7 @@ export default function ScoreBar({ gs, race, mode, p1Name, p2Name, P1_COL, P2_CO
                 <React.Fragment key={l}>
                   {idx===1 && <div style={{fontFamily:BB,fontSize:22,color:C.border,paddingTop:24}}>vs</div>}
                   <div style={{flex:1,textAlign:"center"}}>
-                    <Label style={{marginBottom:6,letterSpacing:4,color:col}}>{l}</Label>
+                    <Label style={{marginBottom:6,letterSpacing:4,color:col,textTransform:"uppercase"}}>{l}</Label>
                     <div key={`${l}-${v}`} className="scorePulse" style={{fontFamily:BB,fontSize:62,lineHeight:1,color:C.white}}>{v}</div>
                     <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:10}}>
                       {Array.from({length:race}).map((_,i)=>(

@@ -35,7 +35,7 @@ export default function ResultScreen({ result, race, p1Name, p2Name, P1_COL, P2_
               :[["YOU",scores.you,C.green],["CPU",scores.cpu,C.red]]
             ).map(([l,v,col],i)=>(
               <div key={l} className="fadeUp" style={{textAlign:"center",animationDelay:`${0.45+i*0.1}s`,animationFillMode:"both"}}>
-                <Label style={{marginBottom:8,color:is2p?col:C.sub}}>{l}</Label>
+                <Label style={{marginBottom:8,color:is2p?col:C.sub,textTransform:"uppercase"}}>{l}</Label>
                 <div style={{fontFamily:BB,fontSize:88,lineHeight:0.9,color:C.white}}>{v}</div>
               </div>
             ))}
