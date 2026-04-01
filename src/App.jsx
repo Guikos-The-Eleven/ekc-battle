@@ -194,12 +194,13 @@ export default function App() {
         if (a.landed) stats[a.trick].land++; else stats[a.trick].miss++;
       });
       const rated = tricks.map(t=>{
-        const s = stats[t]; if (!s) return {trick:t,rate:-1};
+        const s = stats[t]; if (!s) return null;
         return {trick:t,rate:s.land/(s.land+s.miss)};
-      });
-      const attempted = rated.filter(r=>r.rate>=0).sort((a,b)=>a.rate-b.rate);
-      const unattempted = rated.filter(r=>r.rate<0).sort(()=>Math.random()-0.5);
-      return [...attempted,...unattempted].map(r=>r.trick);
+      }).filter(Boolean);
+      const needsWork = rated.filter(r=>r.rate<1).sort((a,b)=>a.rate-b.rate);
+      if (needsWork.length>0) return needsWork.map(r=>r.trick);
+      // No weak tricks found — fall back to full list
+      return [...tricks].sort(()=>Math.random()-0.5);
     }
     return [...tricks].sort(()=>Math.random()-0.5);
   }
