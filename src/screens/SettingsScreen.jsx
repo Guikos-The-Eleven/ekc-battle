@@ -120,16 +120,16 @@ export default function SettingsScreen(props) {
 
           {mode==="drill" && (<>
             <Seg label="Drill Type" val={drillType} onChange={setDrillType} opts={[
-              {key:"consistency",label:"CONSISTENCY",color:C.yellow},{key:"firsttry",label:"FIRST TRY",color:C.blue},
+              {key:"consistency",label:"CONSISTENCY",color:C.yellow},{key:"firsttry",label:"FIRST TRY",color:C.yellow},
             ]}/>
             {drillType==="consistency" && (
               <Seg label="Streak Target" val={drillTarget} onChange={setDrillTarget} opts={[
-                {key:3,label:"3×",color:C.green},{key:5,label:"5×",color:C.yellow},{key:10,label:"10×",color:C.orange},
+                {key:3,label:"3×",color:C.green},{key:5,label:"5×",color:C.yellow},{key:10,label:"10×",color:C.red},
               ]}/>
             )}
             <Seg label="Trick Source" val={drillSource} onChange={setDrillSource} opts={[
               ...(!isGuest?[{key:"weakest",label:"NEEDS WORK",color:C.red},{key:"full",label:"GETTING THERE",color:C.yellow}]:[]),
-              {key:"pick",label:"PICK",color:C.blue},
+              {key:"pick",label:"PICK",color:C.white},
             ]}/>
           </>)}
         </div>
