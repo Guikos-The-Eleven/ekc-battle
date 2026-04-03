@@ -53,7 +53,7 @@ export default function BracketScreen({ tourney, selectedComp, selectedDiv, race
           <span style={{fontFamily:BC,fontSize:10,fontWeight:600,letterSpacing:1,
             color:(justAdvanced||justAppeared)?C.green:isMe?C.white:isWinner?C.sub:C.muted,
             textShadow:(justAdvanced||justAppeared)?`0 0 12px ${C.green}40`:undefined,
-            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.name}</span>
+            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",textTransform:"uppercase"}}>{p.name}</span>
         </div>
         {m.played && <span style={{fontFamily:BB,fontSize:12,letterSpacing:1,
           color:justAdvanced?C.green:isWinner?C.white:C.muted,marginLeft:6,flexShrink:0}}>{score}</span>}
@@ -146,7 +146,8 @@ export default function BracketScreen({ tourney, selectedComp, selectedDiv, race
                 <div style={{border:`1px solid ${champion?C.yellow+"40":C.border}`,borderRadius:R,
                   padding:"8px 6px",background:champion?`${C.yellow}08`:"transparent",textAlign:"center",width:"100%"}}>
                   {champion ? <span style={{fontFamily:BC,fontSize:11,fontWeight:600,letterSpacing:1,
-                    color:champion.seed===t.playerSeed?C.yellow:C.sub}}>{champion.name}</span>
+                    color:champion.seed===t.playerSeed?C.yellow:C.sub,textTransform:"uppercase",
+                    display:"block",textAlign:"center"}}>{champion.name}</span>
                   : <span style={{fontFamily:BC,fontSize:12,color:C.border,fontWeight:600}}>?</span>}
                 </div>
               </div>
