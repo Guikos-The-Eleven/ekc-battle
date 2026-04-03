@@ -49,6 +49,7 @@ export default function App() {
   const [drillType,   setDrillType]   = useState("consistency");
   const [drillTarget, setDrillTarget] = useState(3);
   const [drillSource, setDrillSource] = useState("weakest");
+  const [drillAlert, setDrillAlert] = useState("");
   const [drill,       setDrill]       = useState(null);
   const [pickedTricks, setPickedTricks] = useState([]);
 
@@ -208,8 +209,7 @@ export default function App() {
         filtered = rated.filter(r=>r.rate>=40&&r.rate<70).sort((a,b)=>a.rate-b.rate);
       }
       if (filtered.length>0) return filtered.map(r=>r.trick);
-      // Nothing in this category — fall back to full shuffled list
-      return [...tricks].sort(()=>Math.random()-0.5);
+      return [];
     }
     return [...tricks].sort(()=>Math.random()-0.5);
   }
@@ -217,7 +217,11 @@ export default function App() {
   async function startDrill() {
     if (drillSource==="pick") { setPickedTricks([]); setScreen("drill_pick"); return; }
     const queue = await buildDrillQueue(drillSource);
-    if (queue.length===0) return;
+    if (queue.length===0) {
+      const label = drillSource==="weakest"?"NEEDS WORK":"GETTING THERE";
+      setDrillAlert(`No ${label} tricks found. Use PICK to choose specific tricks.`);
+      return;
+    }
     if (drillType==="consistency") {
       setDrill({type:"consistency",target:drillTarget,trick:queue[0],
         completed:[],queue:queue.slice(1),phase:"active"});
@@ -417,6 +421,7 @@ export default function App() {
       race={race} setRace={setRace} streaks={streaks} setStreaks={setStreaks}
       drillType={drillType} setDrillType={setDrillType} drillTarget={drillTarget} setDrillTarget={setDrillTarget}
       drillSource={drillSource} setDrillSource={setDrillSource} isGuest={isGuest}
+      drillAlert={drillAlert} setDrillAlert={setDrillAlert}
       bracketSize={bracketSize} setBracketSize={setBracketSize}
       p1Name={p1Name} setP1Name={setP1Name} p2Name={p2Name} setP2Name={setP2Name}
       P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo}

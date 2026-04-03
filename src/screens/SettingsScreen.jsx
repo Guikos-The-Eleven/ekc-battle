@@ -6,7 +6,7 @@ import InfoOverlay, { InfoBtn } from "../components/InfoOverlay";
 export default function SettingsScreen(props) {
   const { selectedComp, selectedDiv, mode, openList, setOpenList, diff, setDiff,
     race, setRace, streaks, setStreaks, drillType, setDrillType, drillTarget, setDrillTarget,
-    drillSource, setDrillSource, isGuest, bracketSize, setBracketSize,
+    drillSource, setDrillSource, isGuest, drillAlert, setDrillAlert, bracketSize, setBracketSize,
     p1Name, setP1Name, p2Name, setP2Name, P1_COL, P2_COL,
     showInfo, setShowInfo, onStart, setScreen } = props;
 
@@ -121,7 +121,7 @@ export default function SettingsScreen(props) {
                 {key:3,label:"3×",color:C.green},{key:5,label:"5×",color:C.yellow},{key:10,label:"10×",color:C.red},
               ]}/>
             )}
-            <Seg label="Trick Source" val={drillSource} onChange={setDrillSource} opts={[
+            <Seg label="Trick Source" val={drillSource} onChange={v=>{setDrillSource(v);if(setDrillAlert)setDrillAlert("");}} opts={[
               ...(!isGuest?[{key:"weakest",label:"NEEDS WORK",color:C.red},{key:"full",label:"GETTING THERE",color:C.yellow}]:[]),
               {key:"pick",label:"PICK",color:C.white},
             ]}/>
@@ -131,6 +131,16 @@ export default function SettingsScreen(props) {
         <div style={{flex:1}}/>
         <BtnPrimary onClick={onStart}>{startLabel}</BtnPrimary>
       </div>
+      {drillAlert && (
+        <div style={{position:"absolute",inset:0,zIndex:50,background:"rgba(0,0,0,0.75)",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}
+          onClick={()=>setDrillAlert("")}>
+          <div style={{background:C.surface,border:`1px solid ${C.border}`,borderLeft:`3px solid ${C.yellow}`,borderRadius:R,padding:"24px 20px",maxWidth:320,textAlign:"left"}}
+            onClick={e=>e.stopPropagation()}>
+            <div style={{fontFamily:BC,fontSize:14,color:C.sub,fontWeight:600,lineHeight:1.5,marginBottom:16}}>{drillAlert}</div>
+            <BtnPrimary onClick={()=>setDrillAlert("")} style={{width:"100%"}}>GOT IT</BtnPrimary>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
