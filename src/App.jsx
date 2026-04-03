@@ -353,16 +353,24 @@ export default function App() {
   }
 
   // Tournament auto-advance
+  const advancingSkipRef = useRef(null);
   useEffect(()=>{
     if (!tourney||tourney.phase!=="advancing") return;
-    const t = setTimeout(()=>{
+    const cb = ()=>{
       setTourney(prev=>{
         if (!prev||prev.phase!=="advancing") return prev;
         return {...prev, currentRound:prev.currentRound+1, phase:"bracket", lastWonScores:undefined};
       });
-    },2400);
-    return ()=>clearTimeout(t);
+    };
+    const t = setTimeout(cb, 2400);
+    advancingSkipRef.current = { tid:t, cb };
+    return ()=>{ clearTimeout(t); advancingSkipRef.current = null; };
   },[tourney?.phase]);
+
+  const skipAdvancing = () => {
+    const s = advancingSkipRef.current;
+    if (s) { clearTimeout(s.tid); advancingSkipRef.current = null; s.cb(); }
+  };
 
   // ── Loading ──
   if (authLoading) return (
@@ -406,6 +414,7 @@ export default function App() {
   if (screen==="bracket" && tourney) return (
     <BracketScreen tourney={tourney} selectedComp={selectedComp} selectedDiv={selectedDiv} race={race}
       showInfo={showInfo} setShowInfo={setShowInfo} startTournamentMatch={startTournamentMatch}
+      onSkipAdvancing={skipAdvancing}
       onQuit={()=>{setTourney(null);setScreen("home");setSelectedComp(null);setSelectedDiv(null);}}
       onNewTournament={()=>{setTourney(null);setScreen("settings");}}/>
   );

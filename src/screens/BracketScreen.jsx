@@ -1,10 +1,10 @@
 import React from "react";
-import { C, BB, BC, R, MODE_COLORS } from "../config";
+import { C, BB, BC, R, CPU_CFG, MODE_COLORS } from "../config";
 import { Label, BtnPrimary, BtnGhost, BackBtn } from "../components/ui";
 import InfoOverlay, { InfoBtn } from "../components/InfoOverlay";
 
 export default function BracketScreen({ tourney, selectedComp, selectedDiv, race,
-  showInfo, setShowInfo, startTournamentMatch, onQuit, onNewTournament }) {
+  showInfo, setShowInfo, startTournamentMatch, onSkipAdvancing, onQuit, onNewTournament }) {
   if (!tourney) return null;
   const t = tourney;
   const totalRounds = t.rounds.length;
@@ -16,7 +16,16 @@ export default function BracketScreen({ tourney, selectedComp, selectedDiv, race
   const isAdvancing = t.phase==="advancing";
   const isActive = t.phase==="bracket"||isAdvancing;
 
+  const getTourneyNudge = (ri) => ri*0.02;
+  const getTourneyDiff = (ri, tr, div, bd) => bd||"medium";
+  const getTourneyTrickList = (ri, tr, div) => {
+    if (div?.trickSets) return ri>=tr-1?"top16":"regular";
+    return null;
+  };
+
   const nextMatch = isActive ? t.rounds[t.currentRound]?.find(m=>(m.p1===t.playerSeed||m.p2===t.playerSeed)&&!m.played) : null;
+  const nextDiff = isActive ? getTourneyDiff(t.currentRound, totalRounds, selectedDiv, t.baseDiff) : null;
+  const nextTrickList = isActive ? getTourneyTrickList(t.currentRound, totalRounds, selectedDiv) : null;
   const nextOpponent = nextMatch ? getPlayer(nextMatch.p1===t.playerSeed?nextMatch.p2:nextMatch.p1) : null;
   const lastRound = t.rounds[totalRounds-1];
   const championSeed = lastRound?.[0]?.played ? lastRound[0].winner : null;
@@ -53,7 +62,7 @@ export default function BracketScreen({ tourney, selectedComp, selectedDiv, race
           <span style={{fontFamily:BC,fontSize:10,fontWeight:600,letterSpacing:1,
             color:(justAdvanced||justAppeared)?C.green:isMe?C.white:isWinner?C.sub:C.muted,
             textShadow:(justAdvanced||justAppeared)?`0 0 12px ${C.green}40`:undefined,
-            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",textTransform:"uppercase"}}>{p.name}</span>
+            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.name}</span>
         </div>
         {m.played && <span style={{fontFamily:BB,fontSize:12,letterSpacing:1,
           color:justAdvanced?C.green:isWinner?C.white:C.muted,marginLeft:6,flexShrink:0}}>{score}</span>}
@@ -80,31 +89,22 @@ export default function BracketScreen({ tourney, selectedComp, selectedDiv, race
       <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={info} modeColor={MODE_COLORS.tournament}/>
       {isActive&&!isAdvancing && <InfoBtn onClick={()=>setShowInfo(true)}/>}
       {isAdvancing && <div style={{position:"fixed",inset:0,background:C.green,opacity:0,animation:"flash 0.8s ease-out",zIndex:3,pointerEvents:"none"}}/>}
+      {isAdvancing && onSkipAdvancing && <>
+        <div onClick={onSkipAdvancing} style={{position:"fixed",inset:0,zIndex:5}} aria-label="Tap to skip"/>
+        <div style={{position:"fixed",bottom:"calc(20px + env(safe-area-inset-bottom, 0px))",left:0,right:0,
+          textAlign:"center",zIndex:6,pointerEvents:"none"}}>
+          <span className="pls" style={{fontFamily:BB,fontSize:9,letterSpacing:6,color:`${C.muted}60`}}>TAP TO SKIP</span>
+        </div>
+      </>}
       {isEliminated && <div style={{position:"fixed",inset:0,background:C.red,opacity:0,animation:"flash 0.8s ease-out",zIndex:3,pointerEvents:"none"}}/>}
-      {isChampion && <div style={{position:"fixed",inset:0,background:C.yellow,opacity:0,animation:"flash 1.2s ease-out",zIndex:3,pointerEvents:"none"}}/>}
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",
         padding:`calc(20px + env(safe-area-inset-top, 0px)) 0 calc(16px + env(safe-area-inset-bottom, 0px)) 0`,overflow:"hidden"}}>
 
         <div style={{padding:"0 24px",marginBottom:12,flexShrink:0}}>
           <BackBtn onClick={onQuit} label="← QUIT"/>
-          {isChampion && <div style={{textAlign:"center"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginBottom:6,
-              animation:"champFade 0.5s ease both",animationDelay:"0.2s",opacity:0}}>
-              <div style={{height:1,width:0,background:`linear-gradient(90deg, transparent, ${C.yellow})`,
-                animation:"champLine 0.6s ease both",animationDelay:"0.5s"}}/>
-              <div style={{fontFamily:BC,fontSize:11,letterSpacing:6,fontWeight:600,color:C.yellow+"90",whiteSpace:"nowrap"}}>★</div>
-              <div style={{height:1,width:0,background:`linear-gradient(270deg, transparent, ${C.yellow})`,
-                animation:"champLine 0.6s ease both",animationDelay:"0.5s"}}/>
-            </div>
-            <div style={{animation:"champScale 0.6s cubic-bezier(0.34,1.56,0.64,1) both",animationDelay:"0.3s",opacity:0}}>
-              <div style={{fontFamily:BB,fontSize:54,letterSpacing:4,color:C.yellow,lineHeight:1,
-                animation:"champGlow 2s ease-in-out infinite",animationDelay:"1s"}}>CHAMPION</div>
-            </div>
-            <div style={{animation:"champFade 0.5s ease both",animationDelay:"0.7s",opacity:0}}>
-              <div style={{fontFamily:BC,fontSize:13,color:C.sub,letterSpacing:2,fontWeight:600,marginTop:8}}>
-                {selectedDiv?.name} · {selectedComp?.name}
-              </div>
-            </div>
+          {isChampion && <div className="pop" style={{textAlign:"center"}}>
+            <div style={{fontFamily:BB,fontSize:50,letterSpacing:3,color:C.yellow,textShadow:`0 0 30px ${C.yellow}30`}}>CHAMPION</div>
+            <div style={{fontFamily:BC,fontSize:13,color:C.sub,letterSpacing:2,fontWeight:600,marginTop:4}}>{selectedDiv?.name} · {selectedComp?.name}</div>
           </div>}
           {isEliminated && <div className="pop" style={{textAlign:"center"}}>
             <div style={{fontFamily:BB,fontSize:42,letterSpacing:3,color:C.red}}>ELIMINATED</div>
@@ -126,11 +126,17 @@ export default function BracketScreen({ tourney, selectedComp, selectedDiv, race
           padding:"8px 12px",display:"flex",alignItems:"stretch"}}>
           <div style={{display:"flex",alignItems:"stretch",gap:6,minWidth:t.bracketSize===8?640:380,width:"100%",height:"100%"}}>
             {t.rounds.map((round,ri)=>{
+              const diffForRound = getTourneyDiff(ri, totalRounds, selectedDiv, t.baseDiff);
+              const tlForRound = getTourneyTrickList(ri, totalRounds, selectedDiv);
+              const diffCol = CPU_CFG[diffForRound]?.color||C.muted;
               const isCurrent = ri===t.currentRound&&isActive;
               return (
                 <div key={ri} style={{flex:1,display:"flex",flexDirection:"column",minWidth:0}}>
-                  <div style={{textAlign:"center",marginBottom:6,flexShrink:0,minHeight:18}}>
+                  <div style={{textAlign:"center",marginBottom:6,flexShrink:0}}>
                     <div style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:isCurrent?C.white:C.muted}}>{roundNames[ri]||`R${ri+1}`}</div>
+                    <div style={{fontFamily:BC,fontSize:8,letterSpacing:1,color:diffCol,fontWeight:600,marginTop:1}}>
+                      {CPU_CFG[diffForRound]?.label}{ri>0?` +${ri*2}%`:""}{tlForRound?" · "+tlForRound.toUpperCase():""}
+                    </div>
                   </div>
                   <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"space-around",gap:4}}>
                     {round.map((m,mi)=><MatchBox key={mi} m={m} ri={ri}/>)}
@@ -138,18 +144,13 @@ export default function BracketScreen({ tourney, selectedComp, selectedDiv, race
                 </div>
               );
             })}
-            <div style={{width:60,display:"flex",flexDirection:"column",flexShrink:0}}>
-              <div style={{textAlign:"center",marginBottom:6,flexShrink:0,minHeight:18}}>
-                <div style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:C.yellow}}>WINNER</div>
-              </div>
-              <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center"}}>
-                <div style={{border:`1px solid ${champion?C.yellow+"40":C.border}`,borderRadius:R,
-                  padding:"8px 6px",background:champion?`${C.yellow}08`:"transparent",textAlign:"center",width:"100%"}}>
-                  {champion ? <span style={{fontFamily:BC,fontSize:11,fontWeight:600,letterSpacing:1,
-                    color:champion.seed===t.playerSeed?C.yellow:C.sub,textTransform:"uppercase",
-                    display:"block",textAlign:"center"}}>{champion.name}</span>
-                  : <span style={{fontFamily:BC,fontSize:12,color:C.border,fontWeight:600}}>?</span>}
-                </div>
+            <div style={{width:60,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",flexShrink:0}}>
+              <div style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:C.yellow,marginBottom:6}}>WINNER</div>
+              <div style={{border:`1px solid ${champion?C.yellow+"40":C.border}`,borderRadius:R,
+                padding:"8px 6px",background:champion?`${C.yellow}08`:"transparent",textAlign:"center",width:"100%"}}>
+                {champion ? <span style={{fontFamily:BC,fontSize:11,fontWeight:600,letterSpacing:1,
+                  color:champion.seed===t.playerSeed?C.yellow:C.sub}}>{champion.name}</span>
+                : <span style={{fontFamily:BC,fontSize:12,color:C.border,fontWeight:600}}>?</span>}
               </div>
             </div>
           </div>
@@ -159,7 +160,8 @@ export default function BracketScreen({ tourney, selectedComp, selectedDiv, race
           {isActive&&!isAdvancing&&nextMatch && (<>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
               <Label style={{letterSpacing:3}}>vs {nextOpponent?.name}</Label>
-              <Label style={{letterSpacing:2,color:C.muted}}>{roundNames[t.currentRound]||`ROUND ${t.currentRound+1}`}</Label>
+              <Label style={{letterSpacing:2,color:CPU_CFG[nextDiff]?.color}}>{CPU_CFG[nextDiff]?.label}{t.currentRound>0?` +${t.currentRound*2}%`:""}
+                {nextTrickList?" · "+nextTrickList.toUpperCase():""}</Label>
             </div>
             <BtnPrimary onClick={startTournamentMatch}>PLAY NEXT MATCH</BtnPrimary>
           </>)}

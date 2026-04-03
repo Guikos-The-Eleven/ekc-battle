@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { C, BB, BC, R, haptic, CPU_CFG, getTricksForDiv, MODE_COLORS } from "../config";
 import { Label, Div, Dots, TryDots, BtnGhost } from "../components/ui";
 import { roll, cpuThinkTime, drawTrick, buildPool } from "../cpu";
@@ -14,6 +14,26 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
 
   const allTricks = () => getTricksForDiv(selectedDiv, openList);
 
+  // ── Tap-to-skip: skip waiting phases by tapping anywhere ──
+  const skipRef = useRef(null); // { tid, cb }
+  const SKIPPABLE = new Set(["reveal","2p_reveal","cpu_first","cpu_resp","tie","null","point","reshuffle","2p_point"]);
+  const canSkip = gs && SKIPPABLE.has(gs.phase);
+
+  const handleSkip = () => {
+    const s = skipRef.current;
+    if (s) { clearTimeout(s.tid); skipRef.current = null; s.cb(); }
+  };
+
+  const SkipLayer = () => canSkip ? (
+    <>
+      <div onClick={handleSkip} style={{position:"fixed",inset:0,zIndex:10}} aria-label="Tap to skip"/>
+      <div style={{position:"fixed",bottom:"calc(20px + env(safe-area-inset-bottom, 0px))",left:0,right:0,
+        textAlign:"center",zIndex:11,pointerEvents:"none"}}>
+        <span className="pls" style={{fontFamily:BB,fontSize:9,letterSpacing:6,color:`${C.muted}60`}}>TAP TO SKIP</span>
+      </div>
+    </>
+  ) : null;
+
   // ── Game Loop (fix #3 + #4: proper useEffect cleanup, no setTimeout in render) ──
   useEffect(()=>{
     if (!gs || (cfg?.mode !== "cpu" && cfg?.mode !== "tournament")) return;
@@ -21,36 +41,46 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
     const { phase } = gs;
 
     if (phase === "reveal") {
-      t = setTimeout(()=>dispatch({type:"ADVANCE_REVEAL"}), 2000);
+      const cb = ()=>dispatch({type:"ADVANCE_REVEAL"});
+      t = setTimeout(cb, 2000);
+      skipRef.current = { tid:t, cb };
     }
     else if (phase === "cpu_first") {
-      t = setTimeout(()=>{
+      const cb = ()=>{
         const landed = roll(cfg.diff, gs.cpuStreak, cfg.streaks, {
           cpuMomentum:gs.cpuMomentum, scores:gs.scores, raceTo:cfg.race, cpuNudge:gs.cpuNudge||0
         });
         dispatch({type:"CPU_FIRST_ROLLED", landed});
-      }, cpuThinkTime(cfg.diff));
+      };
+      t = setTimeout(cb, cpuThinkTime(cfg.diff));
+      skipRef.current = { tid:t, cb };
     }
     else if (phase === "cpu_resp") {
-      t = setTimeout(()=>{
+      const cb = ()=>{
         const landed = roll(cfg.diff, gs.cpuStreak, cfg.streaks, {
           cpuMomentum:gs.cpuMomentum, scores:gs.scores, raceTo:cfg.race, cpuNudge:gs.cpuNudge||0
         });
         dispatch({type:"CPU_RESPONDED", landed});
-      }, cpuThinkTime(cfg.diff));
+      };
+      t = setTimeout(cb, cpuThinkTime(cfg.diff));
+      skipRef.current = { tid:t, cb };
     }
     else if (phase === "tie") {
-      t = setTimeout(()=>dispatch({type:"TIE_ADVANCE"}), 1800);
+      const cb = ()=>dispatch({type:"TIE_ADVANCE"});
+      t = setTimeout(cb, 1800);
+      skipRef.current = { tid:t, cb };
     }
     else if (phase === "null") {
-      t = setTimeout(()=>{
+      const cb = ()=>{
         const r = drawTrick(gs.pool);
         if (!r) { dispatch({type:"RESHUFFLE"}); return; }
         dispatch({type:"NEXT_TRICK", trick:r.trick, pool:r.pool});
-      }, 1800);
+      };
+      t = setTimeout(cb, 1800);
+      skipRef.current = { tid:t, cb };
     }
     else if (phase === "point") {
-      t = setTimeout(()=>{
+      const cb = ()=>{
         if (gs.matchOver) {
           const won = gs.scores.you >= cfg.race;
           dispatch({type:"END_MATCH"});
@@ -60,16 +90,20 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
           if (!r) { dispatch({type:"RESHUFFLE"}); return; }
           dispatch({type:"NEXT_TRICK", trick:r.trick, pool:r.pool});
         }
-      }, 2000);
+      };
+      t = setTimeout(cb, 2000);
+      skipRef.current = { tid:t, cb };
     }
     else if (phase === "reshuffle") {
-      t = setTimeout(()=>{
+      const cb = ()=>{
         const { pool: newPool, reset } = buildPool(allTricks(), gs.scoredTricks||[]);
         const i = Math.floor(Math.random()*newPool.length);
         dispatch({type:"RESHUFFLE_DONE", trick:newPool[i], pool:newPool.filter((_,j)=>j!==i), resetScored:reset});
-      }, 1500);
+      };
+      t = setTimeout(cb, 1500);
+      skipRef.current = { tid:t, cb };
     }
-    return ()=>clearTimeout(t);
+    return ()=>{ clearTimeout(t); skipRef.current = null; };
   },[gs?.phase, gs?.trick, gs?.tryNum]);
 
   // ── 2P Game Loop ──
@@ -77,10 +111,12 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
     if (!gs || cfg?.mode !== "2p") return;
     let t;
     if (gs.phase === "2p_reveal") {
-      t = setTimeout(()=>dispatch({type:"2P_ADVANCE"}), 2200);
+      const cb = ()=>dispatch({type:"2P_ADVANCE"});
+      t = setTimeout(cb, 2200);
+      skipRef.current = { tid:t, cb };
     }
     else if (gs.phase === "2p_point") {
-      t = setTimeout(()=>{
+      const cb = ()=>{
         if (gs.matchOver) {
           dispatch({type:"END_MATCH"});
           onMatchOver({scores:gs.scores, won:gs.scores.p1>=cfg.race, mode:"2p"});
@@ -89,16 +125,20 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
           if (!r) { dispatch({type:"RESHUFFLE"}); return; }
           dispatch({type:"2P_NEXT_TRICK", trick:r.trick, pool:r.pool});
         }
-      }, 1800);
+      };
+      t = setTimeout(cb, 1800);
+      skipRef.current = { tid:t, cb };
     }
     else if (gs.phase === "reshuffle") {
-      t = setTimeout(()=>{
+      const cb = ()=>{
         const { pool: newPool, reset } = buildPool(allTricks(), gs.scoredTricks||[]);
         const i = Math.floor(Math.random()*newPool.length);
         dispatch({type:"RESHUFFLE_DONE", trick:newPool[i], pool:newPool.filter((_,j)=>j!==i), resetScored:reset});
-      }, 1500);
+      };
+      t = setTimeout(cb, 1500);
+      skipRef.current = { tid:t, cb };
     }
-    return ()=>clearTimeout(t);
+    return ()=>{ clearTimeout(t); skipRef.current = null; };
   },[gs?.phase, gs?.trick]);
 
   if (!gs) return null;
@@ -144,6 +184,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
   // ── REVEAL ──
   if (phase==="reveal"||phase==="2p_reveal") return (
     <div style={root}>
+      <SkipLayer/>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={info} modeColor={modeColor}/>
         <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo}/>
@@ -198,6 +239,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
   // ── 2P POINT ──
   if (is2p && phase==="2p_point") return (
     <div style={root}>
+      <SkipLayer/>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo}/>
         <div key={pk} className="pop" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center"}}>
@@ -225,6 +267,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
 
     return (
       <div style={root}>
+        <SkipLayer/>
         <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
           <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={info} modeColor={modeColor}/>
           <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo}/>
@@ -272,6 +315,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
   // ── TIE ──
   if (phase==="tie") return (
     <div style={root}>
+      <SkipLayer/>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo}/>
         <div key={pk} className="pop" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8}}>
@@ -287,6 +331,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
     const pointColor = winner==="you"?C.green:C.red;
     return (
       <div style={root}>
+        <SkipLayer/>
         <div style={{position:"fixed",inset:0,background:pointColor,opacity:0,animation:"flash 0.6s ease-out",zIndex:3,pointerEvents:"none"}}/>
         <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
           <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo}/>
@@ -303,6 +348,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
   // ── NULL ──
   if (phase==="null") return (
     <div style={root}>
+      <SkipLayer/>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo}/>
         <div key={pk} className="rise" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10}}>
@@ -316,6 +362,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
   // ── RESHUFFLE ──
   if (phase==="reshuffle") return (
     <div style={root}>
+      <SkipLayer/>
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
         <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo}/>
         <div className="pop" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12}}>
