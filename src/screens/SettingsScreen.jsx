@@ -136,8 +136,12 @@ export default function SettingsScreen(props) {
           onClick={()=>setDrillAlert("")}>
           <div style={{background:C.surface,border:`1px solid ${C.border}`,borderLeft:`3px solid ${C.yellow}`,borderRadius:R,padding:"24px 20px",maxWidth:320,textAlign:"left"}}
             onClick={e=>e.stopPropagation()}>
-            <div style={{fontFamily:BC,fontSize:14,color:C.sub,fontWeight:600,lineHeight:1.5,marginBottom:16}}>{drillAlert}</div>
-            <BtnPrimary onClick={()=>setDrillAlert("")} style={{width:"100%"}}>GOT IT</BtnPrimary>
+            <div style={{fontFamily:BC,fontSize:14,color:C.text,fontWeight:600,lineHeight:1.5,marginBottom:16}}>{drillAlert}</div>
+            <button className="tap" onClick={()=>setDrillAlert("")} style={{
+              background:"transparent",border:`1px solid ${C.border}`,borderRadius:R,
+              fontFamily:BB,fontSize:13,letterSpacing:4,color:C.muted,
+              padding:"10px 0",width:"100%",cursor:"pointer",
+            }}>GOT IT</button>
           </div>
         </div>
       )}
