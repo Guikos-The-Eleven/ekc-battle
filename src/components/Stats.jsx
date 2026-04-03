@@ -178,13 +178,13 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                 <Div mb={24}/>
 
                 {/* Three-column difficulty breakdown */}
-                <div style={{display:"flex",gap:10}}>
+                <div style={{display:"flex",gap:10,justifyContent:"center"}}>
                   {diffData.map(d=>{
                     const col = DIFF_COLORS[d.diff];
                     const dim = !d.active;
                     return (
                       <div key={d.diff} style={{
-                        flex:1,borderLeft:`3px solid ${dim?C.border:col}`,
+                        minWidth:90,borderLeft:`3px solid ${dim?C.border:col}`,
                         paddingLeft:12,paddingTop:2,opacity:dim?0.4:1,
                         transition:"opacity 0.3s",
                       }}>
