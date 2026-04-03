@@ -1,6 +1,6 @@
 import React from "react";
 import { LOGO, C, BB, BC, R } from "../config";
-import { Div, IgLink, ChatIcon } from "../components/ui";
+import { Div, IgLink, FeedbackLink, DonateLink } from "../components/ui";
 
 export default function HomeScreen({ user, username, isGuest, homeStats, setMode, setScreen, setDrillSource, goToAuth, handleSignOut, setFeedbackText, setFeedbackSent }) {
   const modeCards = [
@@ -150,16 +150,11 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
 
         {/* Footer */}
         <div style={{marginTop:16,display:"flex",justifyContent:"center",alignItems:"center",gap:20}}>
-          <IgLink size={15} fontSize={13}/>
+          <IgLink size={14} fontSize={13}/>
           <span style={{color:C.border,fontSize:10}}>·</span>
-          <button className="tap" onClick={()=>{setFeedbackText("");setFeedbackSent(false);setScreen("feedback");}} style={{
-            background:"transparent",border:"none",fontFamily:BC,fontSize:13,letterSpacing:3,
-            color:C.muted,fontWeight:600,cursor:"pointer",padding:0,
-            display:"inline-flex",alignItems:"center",gap:6,opacity:0.7,
-          }}>
-            <ChatIcon/>
-            Feedback
-          </button>
+          <FeedbackLink size={14} fontSize={13} label="Feedback" onClick={()=>{setFeedbackText("");setFeedbackSent(false);setScreen("feedback");}}/>
+          <span style={{color:C.border,fontSize:10}}>·</span>
+          <DonateLink size={14} fontSize={13} href="#" label="Support"/>
         </div>
       </div>
     </div>

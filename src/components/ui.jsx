@@ -138,15 +138,35 @@ const ChatIcon = ({ size=15, color=C.muted }) => ( // OPTICAL TWEAK: Size bumped
 );
 
 /* ── Chat/Feedback Link Wrapper ────────────────────────────────────────────── */
-const FeedbackLink = ({ size=15, fontSize=12, href="#", label="Feedback", style={} }) => (
-  <a href={href} aria-label={`Provide ${label}`} style={{
+const FeedbackLink = ({ size=15, fontSize=12, href="#", label="Feedback", onClick, style={} }) => (
+  <button onClick={onClick} aria-label={`Provide ${label}`} style={{
+    background:"transparent",border:"none",cursor:"pointer",padding:0,
     fontFamily:BC,fontSize,letterSpacing:3,color:C.muted,fontWeight:600,
     textDecoration:"none",display:"inline-flex",alignItems:"center",gap:6,
     transition:"opacity 0.15s",...style,
   }}>
     <ChatIcon size={size} color={C.muted}/>
     {label}
+  </button>
+);
+
+/* ── Heart/Donate Icon ─────────────────────────────────────────────────────── */
+const HeartIcon = ({ size=14, color=C.muted }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{display:"inline-block",verticalAlign:"middle",flexShrink:0}}>
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+  </svg>
+);
+
+/* ── Donate Link ───────────────────────────────────────────────────────────── */
+const DonateLink = ({ size=14, fontSize=12, href="#", label="Support", style={} }) => (
+  <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`${label} this project`} style={{
+    fontFamily:BC,fontSize,letterSpacing:3,color:C.muted,fontWeight:600,
+    textDecoration:"none",display:"inline-flex",alignItems:"center",gap:6,
+    transition:"opacity 0.15s",...style,
+  }}>
+    <HeartIcon size={size} color={C.muted}/>
+    {label}
   </a>
 );
 
-export { Label, Div, BtnPrimary, BtnGhost, Seg, Dots, StreakDot, TryDots, BackBtn, IgIcon, IgLink, ChatIcon, FeedbackLink};
+export { Label, Div, BtnPrimary, BtnGhost, Seg, Dots, StreakDot, TryDots, BackBtn, IgIcon, IgLink, ChatIcon, FeedbackLink, HeartIcon, DonateLink};
