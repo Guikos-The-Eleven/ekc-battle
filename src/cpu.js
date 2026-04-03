@@ -69,10 +69,18 @@ const applyStreak = (streak, pointWinner, streaksOn) => {
   return streak;
 };
 
-const drawTrick = (pool, all) => {
-  const src = pool.length>0 ? pool : [...all];
-  const i = Math.floor(Math.random()*src.length);
-  return { trick:src[i], pool:src.filter((_,j)=>j!==i) };
+const drawTrick = (pool) => {
+  if (pool.length === 0) return null;
+  const i = Math.floor(Math.random()*pool.length);
+  return { trick:pool[i], pool:pool.filter((_,j)=>j!==i) };
 };
 
-export { applyMomentum, applyComeback, applyClutch, cpuThinkTime, roll, applyStreak, drawTrick };
+const buildPool = (all, scoredTricks = []) => {
+  let available = all.filter(t => !scoredTricks.includes(t));
+  const reset = available.length === 0;
+  if (reset) available = [...all];
+  const pool = [...available].sort(() => Math.random() - 0.5);
+  return { pool, reset };
+};
+
+export { applyMomentum, applyComeback, applyClutch, cpuThinkTime, roll, applyStreak, drawTrick, buildPool };

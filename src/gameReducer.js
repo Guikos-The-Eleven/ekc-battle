@@ -30,6 +30,7 @@ function resolveRound(state, pLanded, cLanded) {
   return {...state, cpuStreak:ns, scores:newScores, winner, phase:"point",
     lastScoreKey:(state.lastScoreKey||0)+1,
     gameLog:[...(state.gameLog||[]), entry], currentTries:[],
+    scoredTricks:[...(state.scoredTricks||[]), state.trick],
     matchOver};
 }
 
@@ -88,13 +89,27 @@ export default function gameReducer(state, action) {
       }
       const scores = {...state.scores, [action.winner]:state.scores[action.winner]+1};
       const matchOver = scores.p1 >= state.config.race || scores.p2 >= state.config.race;
-      return {...state, scores, winner:action.winner, phase:"2p_point", matchOver};
+      return {...state, scores, winner:action.winner, phase:"2p_point", matchOver,
+        scoredTricks:[...(state.scoredTricks||[]), state.trick]};
     }
 
     case "2P_NEXT_TRICK":
       return {...state, trick:action.trick, pool:action.pool,
         playerFirst:!state.playerFirst, phase:"2p_reveal", winner:null,
         matchOver:false};
+
+    // ── Reshuffle: pool exhausted, show interstitial ────────────────────
+    case "RESHUFFLE":
+      return {...state, phase:"reshuffle"};
+
+    case "RESHUFFLE_DONE": {
+      const is2p = state.config.mode === "2p";
+      return {...state, trick:action.trick, pool:action.pool, tryNum:1,
+        playerFirst:!state.playerFirst,
+        phase:is2p ? "2p_reveal" : "reveal",
+        cpuFirst:null, pResult:null, msg:"", winner:null, currentTries:[],
+        scoredTricks:action.resetScored ? [] : state.scoredTricks};
+    }
 
     default:
       return state;

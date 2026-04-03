@@ -2,7 +2,7 @@ import React, { useState, useEffect, useReducer, useRef, useMemo } from "react";
 import { SB } from "./supabase";
 import { LOGO, C, BB, BC, R, CPU_CFG, CPU_NAMES, haptic, getTricksForDiv, MODE_COLORS } from "./config";
 import gameReducer from "./gameReducer";
-import { drawTrick } from "./cpu";
+import { buildPool } from "./cpu";
 
 // Screens
 import HomeScreen from "./screens/HomeScreen";
@@ -154,18 +154,20 @@ export default function App() {
   // ── Game start ──
   function startGame() {
     const tricks = allTricks();
-    const r = drawTrick([], tricks);
+    const { pool } = buildPool(tricks);
+    const trick = pool[0];
+    const restPool = pool.slice(1);
     if (mode==="cpu"||mode==="tournament") {
-      const init = {scores:{you:0,cpu:0},pool:r.pool,trick:r.trick,tryNum:1,
+      const init = {scores:{you:0,cpu:0},pool:restPool,trick,tryNum:1,
         playerFirst:true,phase:"reveal",cpuStreak:{active:false,dir:"hot",left:0},
         cpuFirst:null,pResult:null,msg:"",winner:null,cpuMomentum:[],lastScoreKey:0,
-        gameLog:[],currentTries:[],matchOver:false,
+        gameLog:[],currentTries:[],matchOver:false,scoredTricks:[],
         config:{diff,race,streaks,mode}};
       dispatchGs({type:"INIT_CPU",payload:init});
     } else {
-      const init = {scores:{p1:0,p2:0},pool:r.pool,trick:r.trick,
+      const init = {scores:{p1:0,p2:0},pool:restPool,trick,
         playerFirst:Math.random()<0.5,phase:"2p_reveal",winner:null,matchOver:false,
-        config:{race,mode:"2p"}};
+        scoredTricks:[],config:{race,mode:"2p"}};
       dispatchGs({type:"INIT_2P",payload:init});
     }
     setScreen("battle");
@@ -274,11 +276,13 @@ export default function App() {
     const nudge = getTourneyNudge(t.currentRound);
     // Use unified getTricksForDiv (fix #5)
     const tricks = getTricksForDiv(selectedDiv, tl||openList);
-    const r = drawTrick([], tricks);
-    const init = {scores:{you:0,cpu:0},pool:r.pool,trick:r.trick,tryNum:1,
+    const { pool } = buildPool(tricks);
+    const trick = pool[0];
+    const restPool = pool.slice(1);
+    const init = {scores:{you:0,cpu:0},pool:restPool,trick,tryNum:1,
       playerFirst:true,phase:"reveal",cpuStreak:{active:false,dir:"hot",left:0},
       cpuFirst:null,pResult:null,msg:"",winner:null,cpuMomentum:[],lastScoreKey:0,
-      gameLog:[],currentTries:[],cpuNudge:nudge,matchOver:false,
+      gameLog:[],currentTries:[],cpuNudge:nudge,matchOver:false,scoredTricks:[],
       config:{diff:t.baseDiff,race:t.raceTo,streaks:true,mode:"tournament"}};
     dispatchGs({type:"INIT_CPU",payload:init});
     if (tl) setOpenList(tl);

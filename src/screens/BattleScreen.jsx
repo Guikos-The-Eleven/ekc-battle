@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { C, BB, BC, R, haptic, CPU_CFG, getTricksForDiv, MODE_COLORS } from "../config";
 import { Label, Div, Dots, TryDots, BtnGhost } from "../components/ui";
-import { roll, cpuThinkTime, drawTrick } from "../cpu";
+import { roll, cpuThinkTime, drawTrick, buildPool } from "../cpu";
 import ScoreBar from "../components/ScoreBar";
 import InfoOverlay from "../components/InfoOverlay";
 
@@ -44,7 +44,8 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
     }
     else if (phase === "null") {
       t = setTimeout(()=>{
-        const r = drawTrick(gs.pool, allTricks());
+        const r = drawTrick(gs.pool);
+        if (!r) { dispatch({type:"RESHUFFLE"}); return; }
         dispatch({type:"NEXT_TRICK", trick:r.trick, pool:r.pool});
       }, 1800);
     }
@@ -55,10 +56,18 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
           dispatch({type:"END_MATCH"});
           onMatchOver({scores:gs.scores, won, gameLog:gs.gameLog});
         } else {
-          const r = drawTrick(gs.pool, allTricks());
+          const r = drawTrick(gs.pool);
+          if (!r) { dispatch({type:"RESHUFFLE"}); return; }
           dispatch({type:"NEXT_TRICK", trick:r.trick, pool:r.pool});
         }
       }, 2000);
+    }
+    else if (phase === "reshuffle") {
+      t = setTimeout(()=>{
+        const { pool: newPool, reset } = buildPool(allTricks(), gs.scoredTricks||[]);
+        const i = Math.floor(Math.random()*newPool.length);
+        dispatch({type:"RESHUFFLE_DONE", trick:newPool[i], pool:newPool.filter((_,j)=>j!==i), resetScored:reset});
+      }, 1500);
     }
     return ()=>clearTimeout(t);
   },[gs?.phase, gs?.trick, gs?.tryNum]);
@@ -76,10 +85,18 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
           dispatch({type:"END_MATCH"});
           onMatchOver({scores:gs.scores, won:gs.scores.p1>=cfg.race, mode:"2p"});
         } else {
-          const r = drawTrick(gs.pool, allTricks());
+          const r = drawTrick(gs.pool);
+          if (!r) { dispatch({type:"RESHUFFLE"}); return; }
           dispatch({type:"2P_NEXT_TRICK", trick:r.trick, pool:r.pool});
         }
       }, 1800);
+    }
+    else if (gs.phase === "reshuffle") {
+      t = setTimeout(()=>{
+        const { pool: newPool, reset } = buildPool(allTricks(), gs.scoredTricks||[]);
+        const i = Math.floor(Math.random()*newPool.length);
+        dispatch({type:"RESHUFFLE_DONE", trick:newPool[i], pool:newPool.filter((_,j)=>j!==i), resetScored:reset});
+      }, 1500);
     }
     return ()=>clearTimeout(t);
   },[gs?.phase, gs?.trick]);
@@ -98,7 +115,8 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
 
   const on2PScore = (w) => {
     if (w === "null") {
-      const r = drawTrick(gs.pool, allTricks());
+      const r = drawTrick(gs.pool);
+      if (!r) { dispatch({type:"RESHUFFLE"}); return; }
       dispatch({type:"2P_SCORE", winner:"null", trick:r.trick, pool:r.pool});
     } else {
       haptic(20);
@@ -290,6 +308,19 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
         <div key={pk} className="rise" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10}}>
           <div style={{fontFamily:BB,fontSize:50,letterSpacing:2,color:C.sub,textShadow:`0 0 20px ${C.sub}10`}}>TRICK NULLED</div>
           <div style={{fontFamily:BC,fontSize:15,color:C.muted,letterSpacing:3,fontWeight:600}}>Next trick loading...</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── RESHUFFLE ──
+  if (phase==="reshuffle") return (
+    <div style={root}>
+      <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
+        <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo}/>
+        <div className="pop" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12}}>
+          <div style={{fontFamily:BB,fontSize:46,letterSpacing:3,color:C.yellow,textShadow:`0 0 30px ${C.yellow}30`}}>RESHUFFLING</div>
+          <div style={{fontFamily:BB,fontSize:22,letterSpacing:6,color:C.muted}}>THE DECK</div>
         </div>
       </div>
     </div>
