@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { C, BB, BC, R, haptic, MODE_COLORS } from "../config";
 import { Label, Div, BtnPrimary, BtnGhost } from "../components/ui";
 import InfoOverlay from "../components/InfoOverlay";
@@ -13,18 +13,39 @@ export default function DrillScreen({ drill, setDrill, drillType, drillTarget,
     ? {title:"CONSISTENCY DRILL",lines:[`Practice each trick ${drillTarget}× in a row before moving on.`,"Tap NEXT TRICK when you're done with the current one.","SKIP to jump past any trick.","No stats are tracked — pure practice."]}
     : {title:"FIRST TRY DRILL",lines:["Go through the trick list one by one.","Tap NEXT TRICK to advance.","SKIP to jump past any trick.","No stats are tracked — pure practice."]};
 
+  // ── Tap-to-skip: skip "cleared" interstitial by tapping anywhere ──
+  const skipRef = useRef(null);
+  const canSkip = drill.phase==="cleared" && drill.type==="consistency";
+
+  const handleSkip = () => {
+    const s = skipRef.current;
+    if (s) { clearTimeout(s.tid); skipRef.current = null; s.cb(); }
+  };
+
+  const SkipLayer = () => canSkip ? (
+    <>
+      <div onClick={handleSkip} style={{position:"fixed",inset:0,zIndex:10}} aria-label="Tap to skip"/>
+      <div style={{position:"fixed",bottom:"calc(20px + env(safe-area-inset-bottom, 0px))",left:0,right:0,
+        textAlign:"center",zIndex:11,pointerEvents:"none"}}>
+        <span className="pls" style={{fontFamily:BB,fontSize:9,letterSpacing:6,color:`${C.muted}60`}}>TAP TO SKIP</span>
+      </div>
+    </>
+  ) : null;
+
   // Auto-advance after "cleared" animation (consistency)
   useEffect(()=>{
     if (drill.phase==="cleared" && drill.type==="consistency") {
-      const t = setTimeout(()=>{
+      const cb = ()=>{
         setDrill(p=>{
           if (p.phase!=="cleared") return p;
           const next = p.queue[0];
           if (!next) return {...p, phase:"done"};
           return {...p, trick:next, queue:p.queue.slice(1), phase:"active"};
         });
-      },1200);
-      return ()=>clearTimeout(t);
+      };
+      const t = setTimeout(cb, 1200);
+      skipRef.current = { tid:t, cb };
+      return ()=>{ clearTimeout(t); skipRef.current = null; };
     }
   },[drill.phase, drill.type]);
 
@@ -129,6 +150,7 @@ export default function DrillScreen({ drill, setDrill, drillType, drillTarget,
   if (drill.phase==="cleared" && drill.type==="consistency") {
     return (
       <div style={root}>
+        <SkipLayer/>
         <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
           <div className="pop" style={{textAlign:"center"}}>
             <div style={{fontFamily:BB,fontSize:56,letterSpacing:3,color:C.yellow,textShadow:`0 0 30px ${C.yellow}30`}}>NEXT</div>
