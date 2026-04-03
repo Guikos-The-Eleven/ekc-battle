@@ -110,12 +110,6 @@ export default function SettingsScreen(props) {
                 </div>
               </div>
             )}
-            <div style={{borderLeft:`3px solid ${C.muted}`,paddingLeft:14,marginBottom:20}}>
-              <Label style={{letterSpacing:3,marginBottom:4}}>Difficulty Scaling</Label>
-              <div style={{fontFamily:BC,fontSize:14,color:C.sub,fontWeight:600,lineHeight:1.5}}>
-                CPU gets slightly harder each round (+2%) on top of your chosen base difficulty.
-              </div>
-            </div>
           </>)}
 
           {mode==="drill" && (<>

@@ -135,6 +135,10 @@ if (typeof document !== "undefined") {
       @keyframes flash { 0%{opacity:0.15} 100%{opacity:0} }
       @keyframes slideIn { from{opacity:0;transform:translateX(-12px)} to{opacity:1;transform:translateX(0)} }
       @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+      @keyframes champGlow { 0%,100%{text-shadow:0 0 30px #f4c43030,0 0 60px #f4c43010} 50%{text-shadow:0 0 40px #f4c43050,0 0 80px #f4c43020} }
+      @keyframes champLine { from{width:0} to{width:60px} }
+      @keyframes champScale { from{opacity:0;transform:scale(0.6)} 50%{transform:scale(1.08)} to{opacity:1;transform:scale(1)} }
+      @keyframes champFade { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
       .rise { animation: rise 0.3s ease both }
       .pop  { animation: pop  0.38s cubic-bezier(0.34,1.56,0.64,1) both }
       .pls  { animation: pulse 1.4s ease-in-out infinite }
