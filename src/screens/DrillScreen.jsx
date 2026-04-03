@@ -89,18 +89,18 @@ export default function DrillScreen({ drill, setDrill, drillType, drillTarget,
           </div>
           <div className="fadeUp" style={{animationDelay:"0.25s",animationFillMode:"both"}}>
             <Div mt={24} mb={24}/>
-            <div style={{display:"flex",justifyContent:"center",gap:32,marginBottom:24}}>
-              <div style={{textAlign:"center"}}>
+            <div style={{display:"flex",justifyContent:"center",gap:0,marginBottom:24}}>
+              <div style={{flex:1,textAlign:"center"}}>
                 <div style={{fontFamily:BB,fontSize:56,lineHeight:0.9,color:C.green}}>{practiced.length}</div>
                 <div style={{fontFamily:BB,fontSize:12,letterSpacing:4,color:C.muted,marginTop:8}}>PRACTICED</div>
               </div>
               {skipped.length>0 && (
-                <div style={{textAlign:"center"}}>
+                <div style={{flex:1,textAlign:"center"}}>
                   <div style={{fontFamily:BB,fontSize:56,lineHeight:0.9,color:C.muted}}>{skipped.length}</div>
                   <div style={{fontFamily:BB,fontSize:12,letterSpacing:4,color:C.muted,marginTop:8}}>SKIPPED</div>
                 </div>
               )}
-              <div style={{textAlign:"center"}}>
+              <div style={{flex:1,textAlign:"center"}}>
                 <div style={{fontFamily:BB,fontSize:56,lineHeight:0.9,color:C.white}}>{completed.length}</div>
                 <div style={{fontFamily:BB,fontSize:12,letterSpacing:4,color:C.muted,marginTop:8}}>TOTAL</div>
               </div>
