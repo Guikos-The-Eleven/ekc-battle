@@ -178,17 +178,17 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                 <Div mb={24}/>
 
                 {/* Three-column difficulty breakdown */}
-                <div style={{display:"flex",gap:10}}>
+                <div style={{display:"flex",gap:16,width:"fit-content",margin:"0 auto"}}>
                   {diffData.map(d=>{
                     const col = DIFF_COLORS[d.diff];
                     const dim = !d.active;
                     return (
                       <div key={d.diff} style={{
-                        flex:1,borderLeft:`3px solid ${dim?C.border:col}`,
-                        paddingLeft:12,paddingRight:12,paddingTop:2,opacity:dim?0.4:1,
+                        width:100,borderLeft:`3px solid ${dim?C.border:col}`,
+                        paddingLeft:12,paddingTop:2,opacity:dim?0.4:1,
                         transition:"opacity 0.3s",
                       }}>
-                        <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:dim?C.muted:C.white,marginBottom:14}}>
+                        <div style={{fontFamily:BB,fontSize:15,letterSpacing:4,color:dim?C.muted:C.white,marginBottom:14}}>
                           {DIFF_LABELS[d.diff]}
                         </div>
                         <div style={{marginBottom:10}}>
@@ -200,7 +200,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                           <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:4}}>LOSSES</div>
                         </div>
                         <div>
-                          <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:dim?C.muted:col}}>{d.active?`${d.rate}%`:"—"}</div>
+                          <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:dim?C.muted:C.white}}>{d.active?`${d.rate}%`:"—"}</div>
                           <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:4}}>WIN RATE</div>
                         </div>
                       </div>
