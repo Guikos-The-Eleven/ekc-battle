@@ -156,49 +156,57 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                 No matches yet for {currentDivLabel}.<br/>Play vs CPU to track your record.
               </div>
             );
+            const overallRate = Math.round(tot.wins/tot.total*100);
+            const diffData = DIFFICULTIES.map(d=>{
+              const r = rows.find(x=>x.diff===d);
+              return r ? {diff:d, wins:r.wins, losses:r.losses, total:r.total, rate:Math.round(r.wins/r.total*100), active:true}
+                       : {diff:d, wins:0, losses:0, total:0, rate:0, active:false};
+            });
             return (
               <>
-                <div style={{display:"flex",gap:0,marginBottom:28}}>
-                  {[["WINS",tot.wins,C.green],["LOSSES",tot.losses,C.red]].map(([l,v,col])=>(
-                    <div key={l} style={{flex:1,textAlign:"center"}}>
-                      <div style={{fontFamily:BB,fontSize:56,lineHeight:0.9,color:col}}>{v}</div>
-                      <div style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.muted,marginTop:8}}>{l}</div>
-                    </div>
-                  ))}
+                {/* Overall summary */}
+                <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:20,marginBottom:8}}>
+                  <div style={{fontFamily:BB,fontSize:48,lineHeight:0.9,color:C.green}}>{tot.wins}</div>
+                  <div style={{fontFamily:BB,fontSize:18,color:C.muted,letterSpacing:2}}>–</div>
+                  <div style={{fontFamily:BB,fontSize:48,lineHeight:0.9,color:C.red}}>{tot.losses}</div>
                 </div>
-                <div style={{marginBottom:32}}>
-                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
-                    <Label style={{letterSpacing:4}}>Win Rate</Label>
-                    <Label style={{color:C.white}}>{Math.round(tot.wins/tot.total*100)}%</Label>
-                  </div>
-                  <div style={{height:2,background:C.border}}>
-                    <div style={{height:2,background:C.green,width:`${tot.wins/tot.total*100}%`,transition:"width 0.5s"}}/>
-                  </div>
+                <div style={{textAlign:"center",marginBottom:28}}>
+                  <span style={{fontFamily:BB,fontSize:12,letterSpacing:5,color:overallRate>=60?C.green:overallRate>=40?C.yellow:C.red}}>{overallRate}%</span>
+                  <span style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginLeft:8}}>WIN RATE · {tot.total} MATCHES</span>
                 </div>
+
                 <Div mb={24}/>
-                <Label style={{marginBottom:16,letterSpacing:4}}>By Difficulty</Label>
-                {rows.map(r=>{
-                  const rate = Math.round(r.wins/r.total*100);
-                  const col = DIFF_COLORS[r.diff];
-                  return (
-                    <div key={r.diff} style={{marginBottom:20}}>
-                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:8}}>
-                        <div style={{display:"flex",alignItems:"center",gap:8}}>
-                          <div style={{width:6,height:6,borderRadius:"50%",background:col}}/>
-                          <span style={{fontFamily:BB,fontSize:13,letterSpacing:4,color:C.white}}>{DIFF_LABELS[r.diff]}</span>
+
+                {/* Three-column difficulty breakdown */}
+                <div style={{display:"flex",gap:10}}>
+                  {diffData.map(d=>{
+                    const col = DIFF_COLORS[d.diff];
+                    const dim = !d.active;
+                    return (
+                      <div key={d.diff} style={{
+                        flex:1,borderLeft:`3px solid ${dim?C.border:col}`,
+                        paddingLeft:12,paddingTop:2,opacity:dim?0.4:1,
+                        transition:"opacity 0.3s",
+                      }}>
+                        <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:dim?C.muted:C.white,marginBottom:14}}>
+                          {DIFF_LABELS[d.diff]}
                         </div>
-                        <div style={{display:"flex",gap:14,alignItems:"baseline"}}>
-                          <span style={{fontFamily:BC,fontSize:12,color:C.green,fontWeight:600}}>{r.wins}W</span>
-                          <span style={{fontFamily:BC,fontSize:12,color:C.red,fontWeight:600}}>{r.losses}L</span>
-                          <span style={{fontFamily:BB,fontSize:15,letterSpacing:2,color:col}}>{rate}%</span>
+                        <div style={{marginBottom:10}}>
+                          <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:dim?C.muted:C.green}}>{d.active?d.wins:"—"}</div>
+                          <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:4}}>WINS</div>
+                        </div>
+                        <div style={{marginBottom:10}}>
+                          <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:dim?C.muted:C.red}}>{d.active?d.losses:"—"}</div>
+                          <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:4}}>LOSSES</div>
+                        </div>
+                        <div>
+                          <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:dim?C.muted:col}}>{d.active?`${d.rate}%`:"—"}</div>
+                          <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:4}}>WIN RATE</div>
                         </div>
                       </div>
-                      <div style={{height:2,background:C.border}}>
-                        <div style={{height:2,background:col,width:`${rate}%`,transition:"width 0.5s"}}/>
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </>
             );
           })()}
