@@ -178,15 +178,15 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                 <Div mb={24}/>
 
                 {/* Three-column difficulty breakdown */}
-                <div style={{display:"flex",gap:16,width:"fit-content",margin:"0 auto"}}>
+                <div style={{display:"flex",gap:0}}>
                   {diffData.map(d=>{
                     const col = DIFF_COLORS[d.diff];
                     const dim = !d.active;
                     return (
                       <div key={d.diff} style={{
-                        width:100,borderLeft:`3px solid ${dim?C.border:col}`,
-                        paddingLeft:12,paddingTop:2,opacity:dim?0.4:1,
-                        transition:"opacity 0.3s",
+                        flex:1,borderLeft:`3px solid ${dim?C.border:col}`,
+                        padding:"2px 0",opacity:dim?0.4:1,
+                        transition:"opacity 0.3s",textAlign:"center",
                       }}>
                         <div style={{fontFamily:BB,fontSize:15,letterSpacing:4,color:dim?C.muted:C.white,marginBottom:14}}>
                           {DIFF_LABELS[d.diff]}
