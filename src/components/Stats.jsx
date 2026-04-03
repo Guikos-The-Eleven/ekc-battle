@@ -188,8 +188,11 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                         padding:"2px 0",opacity:dim?0.4:1,
                         transition:"opacity 0.3s",textAlign:"center",
                       }}>
-                        <div style={{fontFamily:BB,fontSize:15,letterSpacing:4,color:dim?C.muted:C.white,marginBottom:14}}>
+                        <div style={{fontFamily:BB,fontSize:15,letterSpacing:4,color:dim?C.muted:C.white,marginBottom:8}}>
                           {DIFF_LABELS[d.diff]}
+                        </div>
+                        <div style={{height:2,background:C.border,marginBottom:14,margin:"0 12px 14px"}}>
+                          <div style={{height:2,background:dim?C.border:col,width:d.active?`${d.rate}%`:"0%",transition:"width 0.5s"}}/>
                         </div>
                         <div style={{marginBottom:10}}>
                           <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:dim?C.muted:C.green}}>{d.active?d.wins:"—"}</div>
