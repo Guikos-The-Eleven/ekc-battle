@@ -144,7 +144,6 @@ export default function DrillScreen({ drill, setDrill, drillType, drillTarget,
   const completed = drill.completed||[];
   const totalTricks = isCons ? completed.length + 1 + drill.queue.length : drill.total;
   const currentIndex = isCons ? completed.length + 1 : (drill.index||0) + 1;
-  const progress = currentIndex / totalTricks;
   const progressLabel = `${currentIndex} / ${totalTricks}`;
 
   return (
@@ -156,9 +155,14 @@ export default function DrillScreen({ drill, setDrill, drillType, drillTarget,
             <div style={{fontFamily:BB,fontSize:12,letterSpacing:5,color:C.muted}}>{isCons?`CONSISTENCY · ${drill.target}× IN A ROW`:"FIRST TRY"}</div>
             <div style={{fontFamily:BB,fontSize:16,letterSpacing:2,color:C.white}}>{progressLabel}</div>
           </div>
-          <div style={{height:2,background:C.border,marginBottom:6}}>
-            <div style={{height:2,background:isCons?C.green:C.white,width:`${Math.min(progress*100,100)}%`,
-              transition:"width 0.3s cubic-bezier(0.34,1.56,0.64,1)"}}/>
+          <div style={{display:"flex",gap:3,marginBottom:6}}>
+            {Array.from({length:totalTricks}).map((_,i)=>{
+              const c = completed[i];
+              const isCurrent = i===completed.length;
+              const bg = c ? (c.skipped ? C.muted : C.green) : isCurrent ? `${C.white}30` : C.border;
+              const glow = c && !c.skipped ? `0 0 4px ${C.green}40` : undefined;
+              return <div key={i} style={{flex:1,height:2,background:bg,borderRadius:1,transition:"background 0.25s",boxShadow:glow}}/>;
+            })}
           </div>
           <Div mt={12}/>
         </div>
