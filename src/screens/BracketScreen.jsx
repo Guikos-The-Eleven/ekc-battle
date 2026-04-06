@@ -62,7 +62,7 @@ export default function BracketScreen({ tourney, selectedComp, selectedDiv, race
           <span style={{fontFamily:BC,fontSize:10,fontWeight:600,letterSpacing:1,
             color:(justAdvanced||justAppeared)?C.green:isMe?C.white:isWinner?C.sub:C.muted,
             textShadow:(justAdvanced||justAppeared)?`0 0 12px ${C.green}40`:undefined,
-            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.name}</span>
+            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",textTransform:"uppercase"}}>{p.name}</span>
         </div>
         {m.played && <span style={{fontFamily:BB,fontSize:12,letterSpacing:1,
           color:justAdvanced?C.green:isWinner?C.white:C.muted,marginLeft:6,flexShrink:0}}>{score}</span>}
@@ -96,15 +96,31 @@ export default function BracketScreen({ tourney, selectedComp, selectedDiv, race
           <span className="pls" style={{fontFamily:BB,fontSize:9,letterSpacing:6,color:`${C.muted}60`}}>TAP TO SKIP</span>
         </div>
       </>}
+      {isChampion && <div style={{position:"fixed",inset:0,background:C.yellow,opacity:0,animation:"flash 1.2s ease-out",zIndex:3,pointerEvents:"none"}}/>}
       {isEliminated && <div style={{position:"fixed",inset:0,background:C.red,opacity:0,animation:"flash 0.8s ease-out",zIndex:3,pointerEvents:"none"}}/>}
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",
         padding:`calc(20px + env(safe-area-inset-top, 0px)) 0 calc(16px + env(safe-area-inset-bottom, 0px)) 0`,overflow:"hidden"}}>
 
         <div style={{padding:"0 24px",marginBottom:12,flexShrink:0}}>
           <BackBtn onClick={onQuit} label="← QUIT"/>
-          {isChampion && <div className="pop" style={{textAlign:"center"}}>
-            <div style={{fontFamily:BB,fontSize:50,letterSpacing:3,color:C.yellow,textShadow:`0 0 30px ${C.yellow}30`}}>CHAMPION</div>
-            <div style={{fontFamily:BC,fontSize:13,color:C.sub,letterSpacing:2,fontWeight:600,marginTop:4}}>{selectedDiv?.name} · {selectedComp?.name}</div>
+          {isChampion && <div style={{textAlign:"center"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginBottom:6,
+              animation:"champFade 0.5s ease both",animationDelay:"0.2s",opacity:0}}>
+              <div style={{height:1,width:0,background:`linear-gradient(90deg, transparent, ${C.yellow})`,
+                animation:"champLine 0.6s ease both",animationDelay:"0.5s"}}/>
+              <div style={{fontFamily:BC,fontSize:11,letterSpacing:6,fontWeight:600,color:C.yellow+"90",whiteSpace:"nowrap"}}>★</div>
+              <div style={{height:1,width:0,background:`linear-gradient(270deg, transparent, ${C.yellow})`,
+                animation:"champLine 0.6s ease both",animationDelay:"0.5s"}}/>
+            </div>
+            <div style={{animation:"champScale 0.6s cubic-bezier(0.34,1.56,0.64,1) both",animationDelay:"0.3s",opacity:0}}>
+              <div style={{fontFamily:BB,fontSize:54,letterSpacing:4,color:C.yellow,lineHeight:1,
+                animation:"champGlow 2s ease-in-out infinite",animationDelay:"1s"}}>CHAMPION</div>
+            </div>
+            <div style={{animation:"champFade 0.5s ease both",animationDelay:"0.7s",opacity:0}}>
+              <div style={{fontFamily:BC,fontSize:13,color:C.sub,letterSpacing:2,fontWeight:600,marginTop:8}}>
+                {selectedDiv?.name} · {selectedComp?.name}
+              </div>
+            </div>
           </div>}
           {isEliminated && <div className="pop" style={{textAlign:"center"}}>
             <div style={{fontFamily:BB,fontSize:42,letterSpacing:3,color:C.red}}>ELIMINATED</div>
