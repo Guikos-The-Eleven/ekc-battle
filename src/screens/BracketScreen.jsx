@@ -1,7 +1,7 @@
 import React from "react";
 import { C, BB, BC, R, MODE_COLORS } from "../config";
 import { Label, BtnPrimary, BtnGhost, BackBtn } from "../components/ui";
-import InfoOverlay, { InfoBtn } from "../components/InfoOverlay";
+import InfoOverlay from "../components/InfoOverlay";
 
 export default function BracketScreen({ tourney, selectedComp, selectedDiv, race,
   showInfo, setShowInfo, startTournamentMatch, onSkipAdvancing, onQuit, onNewTournament }) {
@@ -78,7 +78,6 @@ export default function BracketScreen({ tourney, selectedComp, selectedDiv, race
   return (
     <div style={root}>
       <InfoOverlay showInfo={showInfo} setShowInfo={setShowInfo} info={info} modeColor={MODE_COLORS.tournament}/>
-      {isActive&&!isAdvancing && <InfoBtn onClick={()=>setShowInfo(true)}/>}
       {isAdvancing && <div style={{position:"fixed",inset:0,background:C.green,opacity:0,animation:"flash 0.8s ease-out",zIndex:3,pointerEvents:"none"}}/>}
       {isAdvancing && onSkipAdvancing && <>
         <div onClick={onSkipAdvancing} style={{position:"fixed",inset:0,zIndex:5}} aria-label="Tap to skip"/>

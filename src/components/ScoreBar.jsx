@@ -12,14 +12,6 @@ export default function ScoreBar({ gs, race, mode, p1Name, p2Name, P1_COL, P2_CO
 
   return (
     <div style={{padding:"calc(20px + env(safe-area-inset-top, 0px)) 24px 0",position:"relative"}}>
-      <button className="tap" onClick={()=>setShowInfo(true)} aria-label="Mode info" style={{
-        position:"absolute",top:"calc(8px + env(safe-area-inset-top, 0px))",right:24,
-        width:36,height:36,borderRadius:"50%",
-        background:`${C.white}0a`,border:`1.5px solid ${C.border}`,
-        color:C.sub,fontFamily:BB,fontSize:16,letterSpacing:0,
-        cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
-        zIndex:5,
-      }}>?</button>
       <div style={{display:"flex",alignItems:"flex-start",justifyContent:"center",gap:16}}>
         {is2p
           ? <>
