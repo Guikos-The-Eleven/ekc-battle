@@ -27,16 +27,17 @@ export default function ResultScreen({ result, race, p1Name, p2Name, P1_COL, P2_
         </div>
         <div className="fadeUp" style={{animationDelay:"0.35s",animationFillMode:"both"}}>
           <Div mt={28} mb={28}/>
-          <div style={{display:"flex",justifyContent:"center",alignItems:"baseline",gap:24}}>
+          <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:24}}>
             <div className="fadeUp" style={{animationDelay:"0.45s",animationFillMode:"both",textAlign:"center",minWidth:60}}>
-              {is2p && <Label style={{marginBottom:8,color:P1_COL,textTransform:"uppercase"}}>{p1Name||"P1"}</Label>}
+              <Label style={{marginBottom:8,color:is2p?P1_COL:C.sub,textTransform:"uppercase"}}>{is2p?(p1Name||"P1"):((username||"YOU").toUpperCase())}</Label>
               <div style={{fontFamily:BB,fontSize:88,lineHeight:0.9,color:C.white}}>{leftScore}</div>
             </div>
-            <div className="fadeUp" style={{animationDelay:"0.5s",animationFillMode:"both"}}>
+            <div className="fadeUp" style={{animationDelay:"0.5s",animationFillMode:"both",textAlign:"center"}}>
+              <Label style={{marginBottom:8,opacity:0}}>·</Label>
               <div style={{fontFamily:BB,fontSize:48,lineHeight:0.9,color:C.muted}}>:</div>
             </div>
             <div className="fadeUp" style={{animationDelay:"0.55s",animationFillMode:"both",textAlign:"center",minWidth:60}}>
-              {is2p && <Label style={{marginBottom:8,color:P2_COL,textTransform:"uppercase"}}>{p2Name||"P2"}</Label>}
+              <Label style={{marginBottom:8,color:is2p?P2_COL:C.sub,textTransform:"uppercase"}}>{is2p?(p2Name||"P2"):"CPU"}</Label>
               <div style={{fontFamily:BB,fontSize:88,lineHeight:0.9,color:C.white}}>{rightScore}</div>
             </div>
           </div>
