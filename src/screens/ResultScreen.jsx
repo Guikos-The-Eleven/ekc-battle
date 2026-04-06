@@ -2,12 +2,13 @@ import React from "react";
 import { LOGO, C, BB, BC, R } from "../config";
 import { Label, Div, BtnPrimary, BtnGhost } from "../components/ui";
 
-export default function ResultScreen({ result, race, p1Name, p2Name, P1_COL, P2_COL, isGuest, onPlayAgain, onViewStats, onMainMenu, haptic }) {
+export default function ResultScreen({ result, race, p1Name, p2Name, P1_COL, P2_COL, isGuest, onPlayAgain, onViewStats, onMainMenu, haptic, username }) {
   if (!result) return null;
   const { scores, won, mode:rm } = result;
   const is2p = rm==="2p";
   const p1Won = is2p && scores.p1>=race;
-  const winLabel = is2p?(p1Won?`${p1Name||"P1"} WINS`:`${p2Name||"P2"} WINS`):(won?"YOU WIN":"CPU WINS");
+  const displayName = username||"YOU";
+  const winLabel = is2p?(p1Won?`${p1Name||"P1"} WINS`:`${p2Name||"P2"} WINS`):(won?`${displayName} WIN${username?"S":""}`:"CPU WINS");
   const subLabel = is2p?"Match Over":(won?"Well Done":"Keep Training");
   const resultColor = is2p?(p1Won?P1_COL:P2_COL):(won?C.green:C.red);
 
@@ -32,7 +33,7 @@ export default function ResultScreen({ result, race, p1Name, p2Name, P1_COL, P2_
           <div style={{display:"flex",justifyContent:"center",gap:32}}>
             {(is2p
               ?[[p1Name||"P1",scores.p1,P1_COL],[p2Name||"P2",scores.p2,P2_COL]]
-              :[["YOU",scores.you,C.green],["CPU",scores.cpu,C.red]]
+              :[[displayName,scores.you,C.green],["CPU",scores.cpu,C.red]]
             ).map(([l,v,col],i)=>(
               <div key={l} className="fadeUp" style={{textAlign:"center",animationDelay:`${0.45+i*0.1}s`,animationFillMode:"both"}}>
                 <Label style={{marginBottom:8,color:is2p?col:C.sub,textTransform:"uppercase"}}>{l}</Label>

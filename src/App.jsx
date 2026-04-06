@@ -441,7 +441,7 @@ export default function App() {
 
   if (screen==="result" && result) return (
     <ResultScreen result={result} race={race} p1Name={p1Name} p2Name={p2Name}
-      P1_COL={P1_COL} P2_COL={P2_COL} isGuest={isGuest} haptic={haptic}
+      P1_COL={P1_COL} P2_COL={P2_COL} isGuest={isGuest} haptic={haptic} username={username}
       onPlayAgain={()=>{setScreen("settings");dispatchGs({type:"END_MATCH"});}}
       onViewStats={()=>{if(isGuest){goToAuth("signup");return;}setScreen("stats");dispatchGs({type:"END_MATCH"});}}
       onMainMenu={()=>{setScreen("home");dispatchGs({type:"END_MATCH"});setTourney(null);setSelectedComp(null);setSelectedDiv(null);}}/>
@@ -452,7 +452,7 @@ export default function App() {
       selectedDiv={selectedDiv} openList={openList}
       p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL}
       showInfo={showInfo} setShowInfo={setShowInfo}
-      onMatchOver={handleMatchOver} saveTrickAttempt={saveTrickAttempt} setScreen={setScreen}/>
+      onMatchOver={handleMatchOver} saveTrickAttempt={saveTrickAttempt} setScreen={setScreen} username={username}/>
   );
 
   if (screen==="home") return (
