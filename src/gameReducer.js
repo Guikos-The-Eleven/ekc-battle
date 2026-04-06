@@ -58,15 +58,20 @@ export default function gameReducer(state, action) {
         phase:"p_second"};
 
     case "PLAYER_ATTEMPT_FIRST":
-      return {...state, pResult:action.landed, phase:"cpu_resp"};
+      return {...state, _prev:{...state, _prev:null}, pResult:action.landed, phase:"cpu_resp"};
 
-    case "PLAYER_ATTEMPT_SECOND":
-      return resolveRound(state, action.landed, state.cpuFirst);
+    case "PLAYER_ATTEMPT_SECOND": {
+      const prev = {...state, _prev:null};
+      const res = resolveRound(state, action.landed, state.cpuFirst);
+      return {...res, _prev:prev};
+    }
 
     case "CPU_RESPONDED": {
+      const prev = state._prev;
       const updated = {...state,
         cpuMomentum:[...state.cpuMomentum, action.landed].slice(-6)};
-      return resolveRound(updated, state.pResult, action.landed);
+      const resolved = resolveRound(updated, state.pResult, action.landed);
+      return {...resolved, _prev:prev};
     }
 
     case "TIE_ADVANCE":
@@ -76,7 +81,7 @@ export default function gameReducer(state, action) {
     case "NEXT_TRICK":
       return {...state, trick:action.trick, pool:action.pool, tryNum:1,
         playerFirst:!state.playerFirst, phase:"reveal",
-        cpuFirst:null, pResult:null, msg:"", winner:null, currentTries:[]};
+        cpuFirst:null, pResult:null, msg:"", winner:null, currentTries:[], _prev:null};
 
     // ── 2P: phase transitions ─────────────────────────────────────────────
     case "2P_ADVANCE":
@@ -110,6 +115,10 @@ export default function gameReducer(state, action) {
         cpuFirst:null, pResult:null, msg:"", winner:null, currentTries:[],
         scoredTricks:action.resetScored ? [] : state.scoredTricks};
     }
+
+    // ── Undo: restore previous state before last player action ─────────
+    case "UNDO":
+      return state._prev || state;
 
     default:
       return state;

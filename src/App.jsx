@@ -74,12 +74,15 @@ export default function App() {
   // ── Refs for Supabase saves (only 2 needed now — fix #2) ──
   const userRef = useRef(user);
   const compDbKeyRef = useRef(null);
+  const trickBufferRef = useRef([]);
   useEffect(()=>{ userRef.current = user; },[user]);
   const compDbKey = selectedComp && selectedDiv ? `${selectedComp.key}:${selectedDiv.key}` : null;
   useEffect(()=>{ compDbKeyRef.current = compDbKey; },[compDbKey]);
 
   // Reset info overlay on screen change
   useEffect(()=>{ setShowInfo(false); },[screen]);
+  // Discard buffered trick attempts if player quits mid-match
+  useEffect(()=>{ if (screen !== "battle") trickBufferRef.current = []; },[screen]);
 
   // ── Auth: check session on load (fix #8: .catch for error boundary) ──
   useEffect(()=>{
@@ -130,13 +133,25 @@ export default function App() {
   function goToAuth(tab="login") { setAuthStartTab(tab); setIsGuest(false); setUser(null); setUsername(""); setScreen("home"); }
 
   // ── Supabase save helpers (haptic separated from state — fix #12) ──
-  async function saveTrickAttempt(trick, landed) {
+  function saveTrickAttempt(trick, landed) {
+    if (!trick) return;
+    trickBufferRef.current.push({ trick, landed, competition: compDbKeyRef.current || "unknown" });
+  }
+
+  async function flushTrickBuffer() {
     const u = userRef.current;
-    if (!u || !trick) return;
-    const { error } = await SB.from("trick_attempts").insert({
-      user_id:u.id, trick, landed, competition:compDbKeyRef.current||"unknown",
-    });
-    if (error) console.error("trick_attempts insert:", error.message);
+    const buf = trickBufferRef.current;
+    trickBufferRef.current = [];
+    if (!u || !buf.length) return;
+    const rows = buf.map(b => ({ user_id: u.id, ...b }));
+    const { error } = await SB.from("trick_attempts").insert(rows);
+    if (error) console.error("trick_attempts batch insert:", error.message);
+  }
+
+  function undoLastAttempt() {
+    // Pop the last buffered trick attempt (not yet saved to Supabase)
+    if (trickBufferRef.current.length) trickBufferRef.current.pop();
+    dispatchGs({type:"UNDO"});
   }
 
   async function saveMatchResult(scores, won, gameLog) {
@@ -176,6 +191,7 @@ export default function App() {
 
   // ── Match over handler ──
   function handleMatchOver(res) {
+    flushTrickBuffer();
     if (res.mode !== "2p") saveMatchResult(res.scores, res.won, res.gameLog);
     if (tourneyRef.current && res.mode !== "2p") {
       handleTournamentResult(res.won, res.scores);
@@ -452,7 +468,7 @@ export default function App() {
       selectedDiv={selectedDiv} openList={openList}
       p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL}
       showInfo={showInfo} setShowInfo={setShowInfo}
-      onMatchOver={handleMatchOver} saveTrickAttempt={saveTrickAttempt} setScreen={setScreen} username={username}/>
+      onMatchOver={handleMatchOver} saveTrickAttempt={saveTrickAttempt} onUndo={undoLastAttempt} setScreen={setScreen} username={username}/>
   );
 
   if (screen==="home") return (

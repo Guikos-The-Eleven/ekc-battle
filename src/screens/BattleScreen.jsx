@@ -6,7 +6,7 @@ import ScoreBar from "../components/ScoreBar";
 import InfoOverlay from "../components/InfoOverlay";
 
 export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, openList,
-  p1Name, p2Name, P1_COL, P2_COL, showInfo, setShowInfo, onMatchOver, saveTrickAttempt, setScreen, username }) {
+  p1Name, p2Name, P1_COL, P2_COL, showInfo, setShowInfo, onMatchOver, saveTrickAttempt, onUndo, setScreen, username }) {
 
   const is2p = mode==="2p";
   const cfg = gs?.config;
@@ -152,6 +152,24 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
     if (phase === "p_first")  dispatch({type:"PLAYER_ATTEMPT_FIRST", landed});
     if (phase === "p_second") dispatch({type:"PLAYER_ATTEMPT_SECOND", landed});
   };
+
+  const canUndo = !!gs._prev && !is2p;
+  const handleUndo = () => {
+    // Cancel any running phase timeout so it doesn't fire after undo
+    const s = skipRef.current;
+    if (s) { clearTimeout(s.tid); skipRef.current = null; }
+    onUndo();
+  };
+  const UndoBtn = () => canUndo ? (
+    <button onClick={handleUndo} aria-label="Undo last attempt" style={{
+      position:"absolute",bottom:"calc(56px + env(safe-area-inset-bottom, 0px))",left:"50%",transform:"translateX(-50%)",
+      background:"transparent",border:`1px solid ${C.border}`,borderRadius:R,
+      color:C.muted,fontFamily:BB,fontSize:10,letterSpacing:5,padding:"6px 16px",
+      cursor:"pointer",zIndex:12,opacity:0.55,transition:"opacity 0.15s",
+    }} onMouseEnter={e=>e.currentTarget.style.opacity=1} onMouseLeave={e=>e.currentTarget.style.opacity=0.55}>
+      ↩ UNDO
+    </button>
+  ) : null;
 
   const on2PScore = (w) => {
     if (w === "null") {
@@ -306,6 +324,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
               <div className="pls" style={{fontFamily:BB,fontSize:62,letterSpacing:6,color:C.white}}><Dots/></div>
             </div>
           )}
+          <UndoBtn/>
           <MenuBack/>
         </div>
       </div>
@@ -322,6 +341,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
           <div style={{fontFamily:BB,fontSize:66,letterSpacing:2,lineHeight:0.9,color:C.white,textShadow:`0 0 30px ${C.white}10`}}>{msg}</div>
           <div style={{fontFamily:BB,fontSize:13,letterSpacing:8,color:C.yellow,marginTop:8}}>TRY {Math.min(tryNum+1,3)} OF 3</div>
         </div>
+        <UndoBtn/>
       </div>
     </div>
   );
@@ -340,6 +360,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
               {winner==="you"?"YOU SCORED":"CPU SCORED"}
             </div>
           </div>
+          <UndoBtn/>
         </div>
       </div>
     );
