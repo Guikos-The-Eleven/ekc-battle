@@ -81,7 +81,7 @@ export default function gameReducer(state, action) {
     case "NEXT_TRICK":
       return {...state, trick:action.trick, pool:action.pool, tryNum:1,
         playerFirst:!state.playerFirst, phase:"reveal",
-        cpuFirst:null, pResult:null, msg:"", winner:null, currentTries:[], _prev:null};
+        cpuFirst:null, pResult:null, msg:"", winner:null, currentTries:[]};
 
     // ── 2P: phase transitions ─────────────────────────────────────────────
     case "2P_ADVANCE":
@@ -118,7 +118,7 @@ export default function gameReducer(state, action) {
 
     // ── Undo: restore previous state before last player action ─────────
     case "UNDO":
-      return state._prev || state;
+      return state._prev ? {...state._prev, _prev:null} : state;
 
     default:
       return state;
