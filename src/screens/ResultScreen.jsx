@@ -7,7 +7,7 @@ export default function ResultScreen({ result, race, p1Name, p2Name, P1_COL, P2_
   const { scores, won, mode:rm } = result;
   const is2p = rm==="2p";
   const p1Won = is2p && scores.p1>=race;
-  const displayName = username||"YOU";
+  const displayName = (username||"YOU").toUppersCase();
   const winLabel = is2p?(p1Won?`${p1Name||"P1"} WINS`:`${p2Name||"P2"} WINS`):(won?`${displayName} WIN${username?"S":""}`:"CPU WINS");
   const subLabel = is2p?"Match Over":(won?"Well Done":"Keep Training");
   const resultColor = is2p?(p1Won?P1_COL:P2_COL):(won?C.green:C.red);

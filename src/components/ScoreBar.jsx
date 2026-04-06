@@ -34,7 +34,7 @@ export default function ScoreBar({ gs, race, mode, p1Name, p2Name, P1_COL, P2_CO
           : <>
               <div style={{flex:1,textAlign:"center"}}>
                 <Label style={{marginBottom:6,letterSpacing:4,color:youMatchPoint?C.green:C.sub}}>
-                  {youMatchPoint?"MATCH PT":(username||"You")}
+                  {youMatchPoint?"MATCH PT":(username||"You").toUppersCase()}
                 </Label>
                 <div key={`you-${scores.you}-${lastScoreKey}`} className={phase==="point"&&winner==="you"?"scorePulse":""} style={{fontFamily:BB,fontSize:62,lineHeight:1,textShadow:youMatchPoint?`0 0 20px ${C.green}30`:undefined}}>{scores.you}</div>
                 <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:10}}>
