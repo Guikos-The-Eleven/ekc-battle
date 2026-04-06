@@ -54,7 +54,7 @@ export default function ScoreBar({ gs, race, mode, p1Name, p2Name, P1_COL, P2_CO
               <div style={{fontFamily:BB,fontSize:24,color:C.border,paddingTop:24}}>:</div>
               <div style={{flex:1,textAlign:"center"}}>
                 <Label style={{marginBottom:6,letterSpacing:4,color:cpuMatchPoint?C.red:C.sub}}>
-                  {cpuMatchPoint?"MATCH PT":"CPU"}
+                  {cpuMatchPoint?"MATCH PT":(gs.cpuName||"CPU")}
                 </Label>
                 <div key={`cpu-${scores.cpu}-${lastScoreKey}`} className={phase==="point"&&winner==="cpu"?"scorePulse":""} style={{fontFamily:BB,fontSize:62,lineHeight:1,textShadow:cpuMatchPoint?`0 0 20px ${C.red}30`:undefined}}>{scores.cpu}</div>
                 <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:10}}>

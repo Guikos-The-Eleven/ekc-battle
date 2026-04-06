@@ -275,6 +275,8 @@ export default function App() {
     const round = t.rounds[t.currentRound];
     const myMatch = round.find(m=>m.p1===t.playerSeed||m.p2===t.playerSeed);
     if (!myMatch) return;
+    const oppSeed = myMatch.p1===t.playerSeed?myMatch.p2:myMatch.p1;
+    const oppName = t.players.find(p=>p.seed===oppSeed)?.name||"CPU";
     const totalRounds = t.rounds.length;
     const tl = getTourneyTrickList(t.currentRound, totalRounds, selectedDiv);
     const nudge = getTourneyNudge(t.currentRound);
@@ -286,7 +288,7 @@ export default function App() {
     const init = {scores:{you:0,cpu:0},pool:restPool,trick,tryNum:1,
       playerFirst:true,phase:"reveal",cpuStreak:{active:false,dir:"hot",left:0},
       cpuFirst:null,pResult:null,msg:"",winner:null,cpuMomentum:[],lastScoreKey:0,
-      gameLog:[],currentTries:[],cpuNudge:nudge,matchOver:false,scoredTricks:[],
+      gameLog:[],currentTries:[],cpuNudge:nudge,matchOver:false,scoredTricks:[],cpuName:oppName,
       config:{diff:t.baseDiff,race:t.raceTo,streaks:true,mode:"tournament"}};
     dispatchGs({type:"INIT_CPU",payload:init});
     if (tl) setOpenList(tl);
