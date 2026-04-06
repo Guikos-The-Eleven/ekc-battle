@@ -161,14 +161,13 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
     onUndo();
   };
   const UndoBtn = () => canUndo ? (
-    <button onClick={handleUndo} aria-label="Undo last attempt" style={{
-      position:"absolute",bottom:"calc(56px + env(safe-area-inset-bottom, 0px))",left:"50%",transform:"translateX(-50%)",
-      background:"transparent",border:`1px solid ${C.border}`,borderRadius:R,
-      color:C.muted,fontFamily:BB,fontSize:10,letterSpacing:5,padding:"6px 16px",
-      cursor:"pointer",zIndex:12,opacity:0.55,transition:"opacity 0.15s",
-    }} onMouseEnter={e=>e.currentTarget.style.opacity=1} onMouseLeave={e=>e.currentTarget.style.opacity=0.55}>
-      ↩ UNDO
-    </button>
+    <div style={{padding:"0 24px 8px",display:"flex",justifyContent:"center"}}>
+      <button onClick={handleUndo} aria-label="Undo last attempt" className="tap" style={{
+        background:`${C.white}06`,border:`1px solid ${C.border}`,borderLeft:`3px solid ${C.muted}`,
+        borderRadius:R,color:C.sub,fontFamily:BB,fontSize:12,letterSpacing:6,
+        padding:"10px 24px",cursor:"pointer",zIndex:12,transition:"all 0.15s",width:"100%",
+      }}>↩ UNDO</button>
+    </div>
   ) : null;
 
   const on2PScore = (w) => {
