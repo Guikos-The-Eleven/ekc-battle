@@ -17,6 +17,14 @@ export default function SettingsScreen(props) {
   const root = {fontFamily:BC,background:C.bg,color:C.text,height:"100dvh",maxWidth:440,margin:"0 auto",display:"flex",flexDirection:"column",position:"relative",overscrollBehavior:"none",overflow:"hidden"};
   const page = {position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",padding:"calc(28px + env(safe-area-inset-top, 0px)) 24px calc(28px + env(safe-area-inset-bottom, 0px)) 24px",overflowY:"auto",WebkitOverflowScrolling:"touch"};
 
+  // Tricklist description for tournament mode
+  const tricklistDesc = {
+    regular: "All rounds use the REGULAR trick list (15 tricks).",
+    top16: "All rounds use the TOP 16 trick list (15 tricks).",
+    mix: "All rounds pull from all 30 tricks (REGULAR + TOP 16).",
+    fullcomp: "Earlier rounds use REGULAR tricks. The final switches to TOP 16 — just like a real comp.",
+  };
+
   const INFO_TEXT = {
     cpu:{title:"BATTLE",lines:[
       "A trick is called — you and the CPU both attempt it.",
@@ -42,13 +50,19 @@ export default function SettingsScreen(props) {
       "Single elimination bracket.","Win your match to advance — lose and you're out.",
       "ROOKIE ~48% · AMATEUR ~68% · PRO ~87% base rate.",
       "CPU gets +2% harder each round on top of your chosen base.",
-      ...(selectedDiv?.trickSets?["Final round switches to TOP 16 trick list."]:[]),
-      `First to ${race} per match.`,
+      "All matches are first to 3. The final is first to 5.",
+      ...(selectedDiv?.trickSets?[tricklistDesc[openList]||""]:[]),
     ]},
   };
   const infoKey = mode==="drill"?`drill_${drillType}`:mode;
 
   if (!selectedDiv) return null;
+
+  // Build tournament tricklist options (only for divisions with trickSets)
+  const tourneyTrickOpts = selectedDiv.trickSets ? [
+    ...selectedDiv.trickSets.map(s=>({key:s.key,label:s.label,sub:s.sub,color:mc})),
+    {key:"fullcomp",label:"FULL COMP",sub:"auto-switch",color:mc},
+  ] : null;
 
   return (
     <div style={root}>
@@ -101,15 +115,24 @@ export default function SettingsScreen(props) {
               {key:"easy",label:"ROOKIE",color:C.green},{key:"medium",label:"AMATEUR",color:C.yellow},{key:"hard",label:"PRO",color:C.red},
             ]}/>
             <Seg label="Bracket Size" val={bracketSize} onChange={setBracketSize} opts={[{key:4,label:"4",color:C.orange},{key:8,label:"8",color:C.orange}]}/>
-            <Seg label="Race To" val={race} onChange={setRace} opts={[{key:3,label:"3",color:C.white},{key:5,label:"5",color:C.white}]}/>
-            {selectedDiv.trickSets && (
-              <div style={{borderLeft:`3px solid ${C.amber}`,paddingLeft:14,marginBottom:20}}>
-                <Label style={{letterSpacing:3,color:C.amber,marginBottom:4}}>Trick List Progression</Label>
-                <div style={{fontFamily:BC,fontSize:14,color:C.sub,fontWeight:600,lineHeight:1.5}}>
-                  Earlier rounds use REGULAR tricks. The final switches to TOP 16 — just like a real comp.
-                </div>
-              </div>
+
+            {/* Tricklist selector for PRO OPEN (divisions with trickSets) */}
+            {tourneyTrickOpts && (
+              <Seg label="Trick List" val={openList} onChange={setOpenList} opts={tourneyTrickOpts}/>
             )}
+
+            {/* Race info + tricklist description */}
+            <div style={{borderLeft:`3px solid ${mc}`,paddingLeft:14,marginBottom:20,marginTop:tourneyTrickOpts?0:0}}>
+              <Label style={{letterSpacing:3,color:mc,marginBottom:4}}>Match Format</Label>
+              <div style={{fontFamily:BC,fontSize:14,color:C.sub,fontWeight:600,lineHeight:1.5}}>
+                All matches are first to 3. The final is first to 5.
+              </div>
+              {selectedDiv.trickSets && (
+                <div style={{fontFamily:BC,fontSize:13,color:C.muted,fontWeight:600,lineHeight:1.5,marginTop:6}}>
+                  {tricklistDesc[openList]||""}
+                </div>
+              )}
+            </div>
           </>)}
 
           {mode==="drill" && (<>

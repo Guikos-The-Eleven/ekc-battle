@@ -39,9 +39,16 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
   const DIFFICULTIES = ["easy","medium","hard"];
   const DIFF_LABELS = {easy:"ROOKIE",medium:"AMATEUR",hard:"PRO"};
   const DIFF_COLORS = {easy:C.green,medium:C.yellow,hard:C.red};
+  const ROUND_LABELS = {0:"QF",1:"SF",2:"FINAL"};
+  const ROUND_LABELS_4 = {0:"SF",1:"FINAL"};
+
+  // Filter: non-tournament matches only for RECORD/HISTORY
+  const battleMatches = () => (matches||[]).filter(m=>m.mode!=="tournament");
+  // Filter: tournament matches only
+  const tourneyMatches = () => (matches||[]).filter(m=>m.mode==="tournament");
 
   const recordForDiv = () => {
-    const dm = matches||[];
+    const dm = battleMatches();
     return DIFFICULTIES.map(d=>{
       const sub = dm.filter(m=>m.difficulty===d);
       const w = sub.filter(m=>m.won).length;
@@ -64,11 +71,52 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
       .map(([t,s])=>({trick:t, rate:Math.round(s.land/(s.land+s.miss)*100), att:s.land+s.miss}))
       .sort((a,b)=>a.rate-b.rate);
   };
-  const historyForDiv = () => (history||[]).slice(0,10);
+  const historyForDiv = () => {
+    // Show only non-tournament matches in HISTORY tab
+    return (history||[]).filter(m=>m.mode!=="tournament").slice(0,10);
+  };
   const parseLog = (m) => {
     if (!m.game_log) return null;
     try { return typeof m.game_log==="string" ? JSON.parse(m.game_log) : m.game_log; }
     catch { return null; }
+  };
+
+  // ── Tournament stats ──
+  const tourneyStats = () => {
+    const tm = tourneyMatches();
+    if (tm.length===0) return null;
+
+    const championships = tm.filter(m=>m.tournament_result==="champion").length;
+    const eliminations = tm.filter(m=>m.tournament_result==="eliminated").length;
+    const totalTournaments = championships + eliminations;
+    const totalMatches = tm.length;
+    const totalWins = tm.filter(m=>m.won).length;
+    const totalLosses = totalMatches - totalWins;
+    const matchWinRate = totalMatches > 0 ? Math.round(totalWins/totalMatches*100) : 0;
+
+    // Per difficulty
+    const byDiff = DIFFICULTIES.map(d=>{
+      const sub = tm.filter(m=>m.difficulty===d);
+      const w = sub.filter(m=>m.won).length;
+      const champs = sub.filter(m=>m.tournament_result==="champion").length;
+      return {diff:d, wins:w, losses:sub.length-w, total:sub.length, champs, rate:sub.length>0?Math.round(w/sub.length*100):0};
+    }).filter(r=>r.total>0);
+
+    // Per round
+    const byRound = {};
+    tm.forEach(m=>{
+      const r = m.tournament_round ?? -1;
+      if (r<0) return;
+      if (!byRound[r]) byRound[r]={round:r,wins:0,losses:0,total:0};
+      byRound[r].total++;
+      if (m.won) byRound[r].wins++; else byRound[r].losses++;
+    });
+    const roundStats = Object.values(byRound).sort((a,b)=>a.round-b.round);
+
+    // Best run = highest tournament_round reached (regardless of win/loss there)
+    const bestRound = tm.reduce((max,m)=>Math.max(max, m.tournament_round??0), 0);
+
+    return {championships, eliminations, totalTournaments, totalMatches, totalWins, totalLosses, matchWinRate, byDiff, roundStats, bestRound};
   };
 
   const loading = !isGuest && (matches===null || attempts===null);
@@ -134,12 +182,12 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
           </div>
           <Div/>
           <div style={{display:"flex",gap:0}}>
-            {[["record","RECORD"],["tricks","TRICKS"],["history","HISTORY"]].map(([k,l])=>(
+            {[["record","RECORD"],["tricks","TRICKS"],["history","HISTORY"],["tourney","TOURNEY"]].map(([k,l])=>(
               <button key={k} onClick={()=>switchTab(k)} style={{
                 flex:1,padding:"12px 0",background:"transparent",border:"none",
                 borderBottom:`2px solid ${tab===k?C.white:"transparent"}`,
                 color:tab===k?C.white:C.muted,
-                fontFamily:BB,fontSize:13,letterSpacing:4,cursor:"pointer",transition:"all 0.15s",
+                fontFamily:BB,fontSize:12,letterSpacing:3,cursor:"pointer",transition:"all 0.15s",
               }}>{l}</button>
             ))}
           </div>
@@ -381,6 +429,117 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                     </div>
                   );
                 })}
+              </>
+            );
+          })()}
+
+          {/* ── TOURNEY TAB ── */}
+          {tab==="tourney" && (()=>{
+            const ts = tourneyStats();
+            if (!ts) return (
+              <div style={{fontFamily:BC,fontSize:14,color:C.muted,lineHeight:1.6}}>
+                No tournament data yet for {currentDivLabel}.<br/>Play a tournament to start tracking.
+              </div>
+            );
+
+            const champCol = ts.championships>0?C.yellow:C.muted;
+
+            return (
+              <>
+                {/* Championships */}
+                <div style={{textAlign:"center",marginBottom:24}}>
+                  <div style={{fontFamily:BB,fontSize:56,lineHeight:0.9,color:champCol}}>
+                    {ts.championships}
+                  </div>
+                  <div style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.muted,marginTop:8}}>
+                    {ts.championships===1?"CHAMPIONSHIP":"CHAMPIONSHIPS"} · {ts.totalTournaments} {ts.totalTournaments===1?"TOURNAMENT":"TOURNAMENTS"}
+                  </div>
+                </div>
+
+                {/* Match record summary */}
+                <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:16,marginBottom:6}}>
+                  <div style={{fontFamily:BB,fontSize:36,lineHeight:0.9,color:C.green}}>{ts.totalWins}</div>
+                  <div style={{fontFamily:BB,fontSize:16,color:C.muted,letterSpacing:2}}>–</div>
+                  <div style={{fontFamily:BB,fontSize:36,lineHeight:0.9,color:C.red}}>{ts.totalLosses}</div>
+                </div>
+                <div style={{textAlign:"center",marginBottom:24}}>
+                  <span style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:ts.matchWinRate>=60?C.green:ts.matchWinRate>=40?C.yellow:C.red}}>
+                    {ts.matchWinRate}%
+                  </span>
+                  <span style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginLeft:6}}>
+                    MATCH WIN RATE · {ts.totalMatches} MATCHES
+                  </span>
+                </div>
+
+                <Div mb={20}/>
+
+                {/* Per-difficulty breakdown */}
+                {ts.byDiff.length>0 && (
+                  <>
+                    <Label style={{letterSpacing:4,marginBottom:12}}>By Difficulty</Label>
+                    <div style={{display:"flex",gap:0,marginBottom:24}}>
+                      {ts.byDiff.map(d=>{
+                        const col = DIFF_COLORS[d.diff];
+                        return (
+                          <div key={d.diff} style={{flex:1,textAlign:"center"}}>
+                            <div style={{fontFamily:BB,fontSize:13,letterSpacing:3,color:C.white,marginBottom:6}}>
+                              {DIFF_LABELS[d.diff]}
+                            </div>
+                            <div style={{height:2,background:col,margin:"0 12px 10px"}}/>
+                            <div style={{fontFamily:BB,fontSize:22,lineHeight:1,color:C.green}}>{d.wins}</div>
+                            <div style={{fontFamily:BB,fontSize:8,letterSpacing:2,color:C.muted,marginTop:2}}>W</div>
+                            <div style={{fontFamily:BB,fontSize:22,lineHeight:1,color:C.red,marginTop:6}}>{d.losses}</div>
+                            <div style={{fontFamily:BB,fontSize:8,letterSpacing:2,color:C.muted,marginTop:2}}>L</div>
+                            {d.champs>0 && (
+                              <div style={{marginTop:8}}>
+                                <div style={{fontFamily:BB,fontSize:18,lineHeight:1,color:C.yellow}}>{d.champs}</div>
+                                <div style={{fontFamily:BB,fontSize:8,letterSpacing:2,color:C.muted,marginTop:2}}>🏆</div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+
+                {/* Round-by-round breakdown */}
+                {ts.roundStats.length>0 && (
+                  <>
+                    <Label style={{letterSpacing:4,marginBottom:12}}>By Round</Label>
+                    {ts.roundStats.map(r=>{
+                      const label = ts.totalMatches > 6
+                        ? (ROUND_LABELS[r.round] || `R${r.round+1}`)
+                        : (ROUND_LABELS_4[r.round] || `R${r.round+1}`);
+                      const isFinal = label==="FINAL";
+                      const rate = r.total>0?Math.round(r.wins/r.total*100):0;
+                      const col = rate>=60?C.green:rate>=40?C.yellow:C.red;
+                      return (
+                        <div key={r.round} className="fadeUp" style={{
+                          borderLeft:`3px solid ${isFinal?C.yellow:col}`,paddingLeft:14,
+                          marginBottom:8,background:`${isFinal?C.yellow:col}06`,
+                          animationDelay:`${r.round*0.04}s`,animationFillMode:"both",
+                          padding:"10px 14px",
+                        }}>
+                          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                            <div style={{display:"flex",alignItems:"center",gap:12}}>
+                              <div style={{fontFamily:BB,fontSize:16,letterSpacing:3,color:isFinal?C.yellow:C.white}}>
+                                {label}
+                              </div>
+                              {isFinal && <span style={{fontFamily:BC,fontSize:10,color:C.muted,fontWeight:600}}>FT5</span>}
+                            </div>
+                            <div style={{display:"flex",alignItems:"center",gap:10}}>
+                              <span style={{fontFamily:BB,fontSize:18,color:C.green}}>{r.wins}</span>
+                              <span style={{fontFamily:BB,fontSize:12,color:C.muted}}>–</span>
+                              <span style={{fontFamily:BB,fontSize:18,color:C.red}}>{r.losses}</span>
+                              <span style={{fontFamily:BB,fontSize:12,letterSpacing:1,color:col,marginLeft:4}}>{rate}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </>
+                )}
               </>
             );
           })()}

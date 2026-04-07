@@ -154,11 +154,15 @@ export default function App() {
     dispatchGs({type:"UNDO"});
   }
 
-  async function saveMatchResult(scores, won, gameLog) {
+  async function saveMatchResult(scores, won, gameLog, extra={}) {
     const u = userRef.current;
     if (!u) return;
     const base = {user_id:u.id, competition:compDbKeyRef.current||"unknown",
-      difficulty:diff, race_to:race, won, your_score:scores.you, cpu_score:scores.cpu};
+      difficulty:diff, race_to:extra.race_to||race, won, your_score:scores.you, cpu_score:scores.cpu,
+      ...(extra.mode ? {mode:extra.mode} : {}),
+      ...(extra.tournament_round != null ? {tournament_round:extra.tournament_round} : {}),
+      ...(extra.tournament_result ? {tournament_result:extra.tournament_result} : {}),
+    };
     const payload = gameLog?.length ? {...base, game_log:JSON.stringify(gameLog)} : base;
     const { error } = await SB.from("match_results").insert(payload);
     if (error) {
@@ -192,9 +196,11 @@ export default function App() {
   // ── Match over handler ──
   function handleMatchOver(res) {
     flushTrickBuffer();
-    if (res.mode !== "2p") saveMatchResult(res.scores, res.won, res.gameLog);
     if (tourneyRef.current && res.mode !== "2p") {
-      handleTournamentResult(res.won, res.scores);
+      handleTournamentResult(res.won, res.scores, res.gameLog, res.race);
+    } else if (res.mode !== "2p") {
+      saveMatchResult(res.scores, res.won, res.gameLog);
+      setResult(res); setScreen("result");
     } else {
       setResult(res); setScreen("result");
     }
@@ -262,9 +268,17 @@ export default function App() {
 
   // ── Tournament (fix #7: proper immutability) ──
   function getTourneyNudge(ri) { return ri*0.02; }
-  function getTourneyTrickList(ri, totalRounds, div) {
-    if (div?.trickSets) return ri>=totalRounds-1?"top16":"regular";
-    return null;
+  function getTourneyTrickList(ri, totalRounds, div, trickListMode) {
+    if (!div?.trickSets) return null;
+    // "fullcomp" = regular for early rounds, top16 for final
+    if (trickListMode === "fullcomp") return ri >= totalRounds - 1 ? "top16" : "regular";
+    // Otherwise player picks a fixed list for all rounds
+    return trickListMode || "regular";
+  }
+
+  function getTourneyRaceTo(ri, totalRounds) {
+    // All matches race to 3, final is race to 5
+    return ri >= totalRounds - 1 ? 5 : 3;
   }
 
   function generateBracket(size) {
@@ -279,7 +293,7 @@ export default function App() {
     rounds.push(r1);
     let mc = size/4;
     while (mc>=1) { rounds.push(Array.from({length:mc},()=>({p1:null,p2:null,winner:null,p1Score:0,p2Score:0,played:false}))); mc/=2; }
-    return {bracketSize:size,raceTo:race,baseDiff:diff,players:seeds,rounds,currentRound:0,
+    return {bracketSize:size,raceTo:3,baseDiff:diff,trickListMode:openList,players:seeds,rounds,currentRound:0,
       phase:"bracket",playerSeed:seeds.find(p=>p.isHuman).seed};
   }
 
@@ -294,8 +308,9 @@ export default function App() {
     const oppSeed = myMatch.p1===t.playerSeed?myMatch.p2:myMatch.p1;
     const oppName = t.players.find(p=>p.seed===oppSeed)?.name||"CPU";
     const totalRounds = t.rounds.length;
-    const tl = getTourneyTrickList(t.currentRound, totalRounds, selectedDiv);
+    const tl = getTourneyTrickList(t.currentRound, totalRounds, selectedDiv, t.trickListMode);
     const nudge = getTourneyNudge(t.currentRound);
+    const matchRace = getTourneyRaceTo(t.currentRound, totalRounds);
     // Use unified getTricksForDiv (fix #5)
     const tricks = getTricksForDiv(selectedDiv, tl||openList);
     const { pool } = buildPool(tricks);
@@ -305,7 +320,8 @@ export default function App() {
       playerFirst:true,phase:"reveal",cpuStreak:{active:false,dir:"hot",left:0},
       cpuFirst:null,pResult:null,msg:"",winner:null,cpuMomentum:[],lastScoreKey:0,
       gameLog:[],currentTries:[],cpuNudge:nudge,matchOver:false,scoredTricks:[],cpuName:oppName,
-      config:{diff:t.baseDiff,race:t.raceTo,streaks:true,mode:"tournament"}};
+      tournamentRound:t.currentRound,
+      config:{diff:t.baseDiff,race:matchRace,streaks:true,mode:"tournament"}};
     dispatchGs({type:"INIT_CPU",payload:init});
     if (tl) setOpenList(tl);
     setScreen("battle");
@@ -314,12 +330,14 @@ export default function App() {
   function simulateCpuMatch(match, roundIdx) {
     const t = tourneyRef.current||tourney;
     const rate = CPU_CFG[t?.baseDiff||"medium"].base + getTourneyNudge(roundIdx);
-    let s1=0, s2=0; const rt = t?.raceTo||race;
+    const totalRounds = t?.rounds?.length||2;
+    let s1=0, s2=0; const rt = getTourneyRaceTo(roundIdx, totalRounds);
     while (s1<rt && s2<rt) { Math.random()<rate+0.05*(Math.random()-0.5)?s1++:s2++; }
     return {...match, winner:s1>=rt?match.p1:match.p2, p1Score:s1, p2Score:s2, played:true};
   }
 
-  function handleTournamentResult(won, scores) {
+  function handleTournamentResult(won, scores, gameLog, matchRace) {
+    let finalPhase = null;
     setTourney(prev=>{
       if (!prev) return prev;
       // Deep clone for immutability (fix #7)
@@ -364,6 +382,17 @@ export default function App() {
       } else {
         phase = "advancing";
       }
+      finalPhase = phase;
+
+      // Save tournament match to Supabase
+      const tournamentResult = (phase==="champion"||phase==="eliminated") ? phase : null;
+      saveMatchResult(scores, won, gameLog, {
+        mode: "tournament",
+        race_to: matchRace || 3,
+        tournament_round: prev.currentRound,
+        ...(tournamentResult ? {tournament_result: tournamentResult} : {}),
+      });
+
       return {...prev, players, rounds, phase, lastWonScores:phase==="advancing"?scores:undefined};
     });
     dispatchGs({type:"END_MATCH"});
@@ -430,7 +459,7 @@ export default function App() {
   );
 
   if (screen==="bracket" && tourney) return (
-    <BracketScreen tourney={tourney} selectedComp={selectedComp} selectedDiv={selectedDiv} race={race}
+    <BracketScreen tourney={tourney} selectedComp={selectedComp} selectedDiv={selectedDiv}
       showInfo={showInfo} setShowInfo={setShowInfo} startTournamentMatch={startTournamentMatch}
       onSkipAdvancing={skipAdvancing}
       onQuit={()=>{setTourney(null);setScreen("home");setSelectedComp(null);setSelectedDiv(null);}}

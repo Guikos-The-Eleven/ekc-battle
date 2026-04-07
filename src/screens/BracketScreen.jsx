@@ -3,7 +3,7 @@ import { C, BB, BC, R, MODE_COLORS } from "../config";
 import { Label, BtnPrimary, BtnGhost, BackBtn } from "../components/ui";
 import InfoOverlay from "../components/InfoOverlay";
 
-export default function BracketScreen({ tourney, selectedComp, selectedDiv, race,
+export default function BracketScreen({ tourney, selectedComp, selectedDiv,
   showInfo, setShowInfo, startTournamentMatch, onSkipAdvancing, onQuit, onNewTournament }) {
   if (!tourney) return null;
   const t = tourney;
@@ -24,7 +24,7 @@ export default function BracketScreen({ tourney, selectedComp, selectedDiv, race
 
   const info = {title:"TOURNEY",lines:[
     "Single elimination bracket.","Win your match to advance — lose and you're out.",
-    "CPU gets +2% harder each round.",`First to ${race} per match.`,
+    "CPU gets +2% harder each round.","All matches first to 3. Final is first to 5.",
   ]};
 
   const root = {fontFamily:BC,background:C.bg,color:C.text,height:"100dvh",maxWidth:440,margin:"0 auto",display:"flex",flexDirection:"column",position:"relative",overscrollBehavior:"none",overflow:"hidden"};
