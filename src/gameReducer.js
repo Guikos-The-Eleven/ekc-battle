@@ -67,11 +67,12 @@ export default function gameReducer(state, action) {
     }
 
     case "CPU_RESPONDED": {
-      const prev = state._prev;
+      // Lock the CPU result into _prev so undo replays the same roll
+      const prevBase = state._prev; // points to p_first
       const updated = {...state,
         cpuMomentum:[...state.cpuMomentum, action.landed].slice(-6)};
       const resolved = resolveRound(updated, state.pResult, action.landed);
-      return {...resolved, _prev:prev};
+      return {...resolved, _prev: prevBase ? {...prevBase, _cpuLocked:action.landed} : null};
     }
 
     case "TIE_ADVANCE":
@@ -88,14 +89,15 @@ export default function gameReducer(state, action) {
       return {...state, phase:"2p_score"};
 
     case "2P_SCORE": {
+      const prev = {...state, _prev:null};
       if (action.winner === "null") {
         return {...state, trick:action.trick, pool:action.pool,
-          playerFirst:!state.playerFirst, phase:"2p_reveal", winner:null};
+          playerFirst:!state.playerFirst, phase:"2p_reveal", winner:null, _prev:prev};
       }
       const scores = {...state.scores, [action.winner]:state.scores[action.winner]+1};
       const matchOver = scores.p1 >= state.config.race || scores.p2 >= state.config.race;
       return {...state, scores, winner:action.winner, phase:"2p_point", matchOver,
-        scoredTricks:[...(state.scoredTricks||[]), state.trick]};
+        scoredTricks:[...(state.scoredTricks||[]), state.trick], _prev:prev};
     }
 
     case "2P_NEXT_TRICK":

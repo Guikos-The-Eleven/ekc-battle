@@ -57,9 +57,11 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
     }
     else if (phase === "cpu_resp") {
       const cb = ()=>{
-        const landed = roll(cfg.diff, gs.cpuStreak, cfg.streaks, {
-          cpuMomentum:gs.cpuMomentum, scores:gs.scores, raceTo:cfg.race, cpuNudge:gs.cpuNudge||0
-        });
+        const landed = gs._cpuLocked != null
+          ? gs._cpuLocked
+          : roll(cfg.diff, gs.cpuStreak, cfg.streaks, {
+              cpuMomentum:gs.cpuMomentum, scores:gs.scores, raceTo:cfg.race, cpuNudge:gs.cpuNudge||0
+            });
         dispatch({type:"CPU_RESPONDED", landed});
       };
       t = setTimeout(cb, cpuThinkTime(cfg.diff));
@@ -111,15 +113,11 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
       skipRef.current = { tid:t, cb };
     }
     else if (gs.phase === "2p_point") {
+      if (gs.matchOver) return; // Match over — wait for player to confirm or undo
       const cb = ()=>{
-        if (gs.matchOver) {
-          dispatch({type:"END_MATCH"});
-          onMatchOver({scores:gs.scores, won:gs.scores.p1>=cfg.race, mode:"2p"});
-        } else {
-          const r = drawTrick(gs.pool);
-          if (!r) { dispatch({type:"RESHUFFLE"}); return; }
-          dispatch({type:"2P_NEXT_TRICK", trick:r.trick, pool:r.pool});
-        }
+        const r = drawTrick(gs.pool);
+        if (!r) { dispatch({type:"RESHUFFLE"}); return; }
+        dispatch({type:"2P_NEXT_TRICK", trick:r.trick, pool:r.pool});
       };
       t = setTimeout(cb, 1800);
       skipRef.current = { tid:t, cb };
@@ -148,7 +146,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
     if (phase === "p_second") dispatch({type:"PLAYER_ATTEMPT_SECOND", landed});
   };
 
-  const canUndo = !!gs._prev && !is2p;
+  const canUndo = !!gs._prev;
   const handleUndo = () => {
     const s = skipRef.current;
     if (s) { clearTimeout(s.tid); skipRef.current = null; }
@@ -181,9 +179,10 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
       <button onClick={()=>setScreen("settings")} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:13,letterSpacing:5,cursor:"pointer",padding:0}}>← QUIT</button>
       {canUndo ? (
         <button onClick={handleUndo} aria-label="Undo last attempt" className="tap" style={{
-          background:`${C.white}06`,border:`1px solid ${C.border}`,borderRadius:R,
-          color:C.sub,fontFamily:BB,fontSize:11,letterSpacing:5,padding:"6px 14px",cursor:"pointer",
-        }}>UNDO ↩</button>
+          background:`${C.yellow}08`,border:`1px solid ${C.yellow}25`,borderRadius:R,
+          color:C.yellow,fontFamily:BB,fontSize:11,letterSpacing:5,padding:"6px 14px",cursor:"pointer",
+          opacity:0.7,
+        }}>UNDO</button>
       ) : (
         <div style={{fontFamily:BB,fontSize:9,letterSpacing:4,color:C.muted}}>KOMP</div>
       )}
@@ -246,18 +245,47 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
   );
 
   // ── 2P POINT ──
-  if (is2p && phase==="2p_point") return (
-    <div style={root}>
-      <SkipLayer/>
-      <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
-        <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo} username={username}/>
-        <div key={pk} className="pop" style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center"}}>
-          <div style={{fontFamily:BB,fontSize:56,letterSpacing:2,color:winner==="p1"?P1_COL:P2_COL,
-            textShadow:`0 0 30px ${winner==="p1"?P1_COL:P2_COL}30`}}>{winner==="p1"?(p1Name||"P1"):(p2Name||"P2")} SCORED</div>
+  if (is2p && phase==="2p_point") {
+    const winCol = winner==="p1"?P1_COL:P2_COL;
+    const winName = winner==="p1"?(p1Name||"P1"):(p2Name||"P2");
+    const confirm2PEnd = () => {
+      dispatch({type:"END_MATCH"});
+      onMatchOver({scores:gs.scores, won:gs.scores.p1>=cfg.race, mode:"2p"});
+    };
+    return (
+      <div style={root}>
+        {!gs.matchOver && <SkipLayer/>}
+        <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column"}}>
+          <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo} username={username}/>
+          <div key={pk} className="pop" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",gap:12}}>
+            <div style={{fontFamily:BB,fontSize:56,letterSpacing:2,color:winCol,
+              textShadow:`0 0 30px ${winCol}30`}}>{winName} SCORED</div>
+            {gs.matchOver && (
+              <div style={{fontFamily:BB,fontSize:18,letterSpacing:6,color:C.muted,marginTop:4}}>
+                MATCH OVER — {gs.scores.p1}:{gs.scores.p2}
+              </div>
+            )}
+          </div>
+          {gs.matchOver && (
+            <div style={{padding:"0 24px 12px",display:"flex",flexDirection:"column",gap:8}}>
+              <button onClick={confirm2PEnd} className="tap" style={{
+                width:"100%",padding:"16px",background:winCol,border:"none",borderRadius:R,
+                color:C.bg,fontFamily:BB,fontSize:20,letterSpacing:5,cursor:"pointer",
+              }}>CONTINUE</button>
+              {canUndo && (
+                <button onClick={handleUndo} className="tap" style={{
+                  width:"100%",padding:"12px",background:`${C.yellow}08`,border:`1px solid ${C.yellow}25`,
+                  borderRadius:R,color:C.yellow,fontFamily:BB,fontSize:13,letterSpacing:5,cursor:"pointer",
+                  opacity:0.7,
+                }}>UNDO LAST CALL</button>
+              )}
+            </div>
+          )}
+          {!gs.matchOver && <MenuBack/>}
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   // ── CPU ATTEMPT PHASES ──
   const attemptPhases = ["p_first","cpu_first","p_second","cpu_resp"];
@@ -367,9 +395,10 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
               }}>CONTINUE</button>
               {canUndo && (
                 <button onClick={handleUndo} className="tap" style={{
-                  width:"100%",padding:"12px",background:`${C.white}06`,border:`1px solid ${C.border}`,
-                  borderRadius:R,color:C.sub,fontFamily:BB,fontSize:13,letterSpacing:5,cursor:"pointer",
-                }}>↩ UNDO LAST ATTEMPT</button>
+                  width:"100%",padding:"12px",background:`${C.yellow}08`,border:`1px solid ${C.yellow}25`,
+                  borderRadius:R,color:C.yellow,fontFamily:BB,fontSize:13,letterSpacing:5,cursor:"pointer",
+                  opacity:0.7,
+                }}>UNDO LAST ATTEMPT</button>
               )}
             </div>
           )}
