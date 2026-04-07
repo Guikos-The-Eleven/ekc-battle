@@ -10,7 +10,9 @@ function resolveRound(state, pLanded, cLanded) {
   const cfg = state.config;
 
   if (pLanded === cLanded) {
-    const ns = applyStreak(state.cpuStreak, "null", cfg.streaks);
+    // Only reuse locked streak if original outcome was also a tie
+    const ns = (state._streakLocked && state._undoResult === "null")
+      ? state._streakLocked : applyStreak(state.cpuStreak, "null", cfg.streaks);
     if (state.tryNum >= 3) {
       const entry = {trick:state.trick, playerFirst:state.playerFirst, tries:newTries, result:"null"};
       return {...state, cpuStreak:ns, phase:"null",
@@ -23,8 +25,10 @@ function resolveRound(state, pLanded, cLanded) {
   const winner = pLanded ? "you" : "cpu";
   const newScores = {...state.scores, [winner]:state.scores[winner]+1};
   const matchOver = newScores.you >= cfg.race || newScores.cpu >= cfg.race;
-  // Don't update streaks on match-ending point
-  const ns = matchOver ? state.cpuStreak : applyStreak(state.cpuStreak, winner, cfg.streaks);
+  // Only reuse locked streak if original outcome had same winner
+  const ns = matchOver ? state.cpuStreak
+    : (state._streakLocked && state._undoResult === winner)
+      ? state._streakLocked : applyStreak(state.cpuStreak, winner, cfg.streaks);
   const entry = {trick:state.trick, playerFirst:state.playerFirst, tries:newTries, result:winner};
 
   return {...state, cpuStreak:ns, scores:newScores, winner, phase:"point",
@@ -63,16 +67,20 @@ export default function gameReducer(state, action) {
     case "PLAYER_ATTEMPT_SECOND": {
       const prev = {...state, _prev:null};
       const res = resolveRound(state, action.landed, state.cpuFirst);
-      return {...res, _prev:prev};
+      const undoResult = action.landed === state.cpuFirst ? "null" : (action.landed ? "you" : "cpu");
+      return {...res, _prev:{...prev, _streakLocked:res.cpuStreak, _undoResult:undoResult}};
     }
 
     case "CPU_RESPONDED": {
-      // Lock the CPU result into _prev so undo replays the same roll
+      // Lock CPU result + streak into _prev so undo replays identically
       const prevBase = state._prev; // points to p_first
       const updated = {...state,
         cpuMomentum:[...state.cpuMomentum, action.landed].slice(-6)};
       const resolved = resolveRound(updated, state.pResult, action.landed);
-      return {...resolved, _prev: prevBase ? {...prevBase, _cpuLocked:action.landed} : null};
+      const undoResult = state.pResult === action.landed ? "null" : (state.pResult ? "you" : "cpu");
+      return {...resolved, _prev: prevBase
+        ? {...prevBase, _cpuLocked:action.landed, _streakLocked:resolved.cpuStreak, _undoResult:undoResult}
+        : null};
     }
 
     case "TIE_ADVANCE":
