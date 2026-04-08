@@ -45,12 +45,8 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
   // Filter: tournament matches only
   const tourneyMatches = () => (matches||[]).filter(m=>m.mode==="tournament");
 
-  // Trophy count and tournaments played per difficulty
+  // Trophy count per difficulty
   const trophyCount = (d) => tourneyMatches().filter(m=>m.difficulty===d&&m.tournament_result==="champion").length;
-  const tourneyPlayed = (d) => {
-    const tm = tourneyMatches().filter(m=>m.difficulty===d&&(m.tournament_result==="champion"||m.tournament_result==="eliminated"));
-    return tm.length;
-  };
 
   const recordForDiv = () => {
     const dm = battleMatches();
@@ -167,8 +163,12 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
           {tab==="record" && (()=>{
             const rows = recordForDiv();
             const tot = totalRecord();
-            const hasTrophies = DIFFICULTIES.some(d=>trophyCount(d)>0||tourneyPlayed(d)>0);
-            if (rows.length===0 && !hasTrophies) return (
+            const tm = tourneyMatches();
+            const tourneyTotal = tm.length;
+            const tourneyWins = tm.filter(m=>m.won).length;
+            const tourneyLosses = tourneyTotal - tourneyWins;
+            const tourneyRate = tourneyTotal>0?Math.round(tourneyWins/tourneyTotal*100):0;
+            if (rows.length===0 && tourneyTotal===0) return (
               <div style={{fontFamily:BC,fontSize:14,color:C.muted,lineHeight:1.6}}>
                 No matches yet for {currentDivLabel}.<br/>Play vs CPU to track your record.
               </div>
@@ -179,29 +179,39 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
               return r ? {diff:d, wins:r.wins, losses:r.losses, total:r.total, rate:Math.round(r.wins/r.total*100), active:true}
                        : {diff:d, wins:0, losses:0, total:0, rate:0, active:false};
             });
+
+            const SummaryCol = ({label, color, wins, losses, rate, total, dimmed}) => (
+              <div style={{flex:1,textAlign:"center",opacity:dimmed?0.35:1}}>
+                <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color,marginBottom:12}}>{label}</div>
+                <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:10,marginBottom:6}}>
+                  <div style={{fontFamily:BB,fontSize:36,lineHeight:0.9,color:dimmed?C.muted:C.green}}>{dimmed?"—":wins}</div>
+                  <div style={{fontFamily:BB,fontSize:14,color:C.muted}}>–</div>
+                  <div style={{fontFamily:BB,fontSize:36,lineHeight:0.9,color:dimmed?C.muted:C.red}}>{dimmed?"—":losses}</div>
+                </div>
+                <div>
+                  <span style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:dimmed?C.muted:rate>=60?C.green:rate>=40?C.yellow:C.red}}>{dimmed?"—":`${rate}%`}</span>
+                  {!dimmed && <span style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginLeft:6}}>{total} MATCHES</span>}
+                </div>
+              </div>
+            );
+
             return (
               <>
-                {/* Overall summary — only if battle matches exist */}
-                {tot.total > 0 && (<>
-                  <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:20,marginBottom:8}}>
-                    <div style={{fontFamily:BB,fontSize:48,lineHeight:0.9,color:C.green}}>{tot.wins}</div>
-                    <div style={{fontFamily:BB,fontSize:18,color:C.muted,letterSpacing:2}}>–</div>
-                    <div style={{fontFamily:BB,fontSize:48,lineHeight:0.9,color:C.red}}>{tot.losses}</div>
-                  </div>
-                  <div style={{textAlign:"center",marginBottom:28}}>
-                    <span style={{fontFamily:BB,fontSize:12,letterSpacing:5,color:overallRate>=60?C.green:overallRate>=40?C.yellow:C.red}}>{overallRate}%</span>
-                    <span style={{fontFamily:BB,fontSize:10,letterSpacing:4,color:C.muted,marginLeft:8}}>WIN RATE · {tot.total} MATCHES</span>
-                  </div>
-                  <Div mb={24}/>
-                </>)}
+                {/* Two-column summary: BATTLE vs TOURNEY */}
+                <div style={{display:"flex",gap:0,marginBottom:24}}>
+                  <SummaryCol label="BATTLE" color={C.blue} wins={tot.wins} losses={tot.losses} rate={overallRate} total={tot.total} dimmed={tot.total===0}/>
+                  <div style={{width:1,background:C.divider,margin:"8px 0"}}/>
+                  <SummaryCol label="TOURNEY" color={C.copper} wins={tourneyWins} losses={tourneyLosses} rate={tourneyRate} total={tourneyTotal} dimmed={tourneyTotal===0}/>
+                </div>
+
+                <Div mb={16}/>
 
                 {/* Three-column difficulty breakdown */}
                 <div style={{display:"flex",gap:0}}>
                   {diffData.map(d=>{
                     const col = DIFF_COLORS[d.diff];
-                    const dim = !d.active && !trophyCount(d.diff) && !tourneyPlayed(d.diff);
                     const trophies = trophyCount(d.diff);
-                    const hasTourneyRow = trophies > 0 || tourneyPlayed(d.diff) > 0;
+                    const dim = !d.active && !trophies;
                     return (
                       <div key={d.diff} style={{
                         flex:1,padding:"2px 0",opacity:dim?0.4:1,
@@ -223,18 +233,10 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                           <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:dim?C.muted:C.white}}>{d.active?`${d.rate}%`:"—"}</div>
                           <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:4}}>WIN RATE</div>
                         </div>
-                        {trophies > 0 && (
-                          <div style={{marginTop:10}}>
-                            <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:C.yellow}}>{trophies}<span style={{fontSize:14,color:C.muted}}>/{tourneyPlayed(d.diff)}</span></div>
-                            <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:4}}>TOURNEYS WON</div>
-                          </div>
-                        )}
-                        {!trophies && tourneyPlayed(d.diff) > 0 && (
-                          <div style={{marginTop:10}}>
-                            <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:C.muted}}>0<span style={{fontSize:14,color:C.muted}}>/{tourneyPlayed(d.diff)}</span></div>
-                            <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:4}}>TOURNEYS WON</div>
-                          </div>
-                        )}
+                        <div style={{marginTop:10}}>
+                          <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:trophies>0?C.yellow:C.muted}}>{trophies}</div>
+                          <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:4}}>TOURNEYS WON</div>
+                        </div>
                       </div>
                     );
                   })}
