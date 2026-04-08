@@ -45,8 +45,12 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
   // Filter: tournament matches only
   const tourneyMatches = () => (matches||[]).filter(m=>m.mode==="tournament");
 
-  // Trophy count per difficulty
+  // Trophy count and tournaments played per difficulty
   const trophyCount = (d) => tourneyMatches().filter(m=>m.difficulty===d&&m.tournament_result==="champion").length;
+  const tourneyPlayed = (d) => {
+    const tm = tourneyMatches().filter(m=>m.difficulty===d&&(m.tournament_result==="champion"||m.tournament_result==="eliminated"));
+    return tm.length;
+  };
 
   const recordForDiv = () => {
     const dm = battleMatches();
@@ -163,7 +167,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
           {tab==="record" && (()=>{
             const rows = recordForDiv();
             const tot = totalRecord();
-            const hasTrophies = DIFFICULTIES.some(d=>trophyCount(d)>0);
+            const hasTrophies = DIFFICULTIES.some(d=>trophyCount(d)>0||tourneyPlayed(d)>0);
             if (rows.length===0 && !hasTrophies) return (
               <div style={{fontFamily:BC,fontSize:14,color:C.muted,lineHeight:1.6}}>
                 No matches yet for {currentDivLabel}.<br/>Play vs CPU to track your record.
@@ -195,8 +199,9 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                 <div style={{display:"flex",gap:0}}>
                   {diffData.map(d=>{
                     const col = DIFF_COLORS[d.diff];
-                    const dim = !d.active && !trophyCount(d.diff);
+                    const dim = !d.active && !trophyCount(d.diff) && !tourneyPlayed(d.diff);
                     const trophies = trophyCount(d.diff);
+                    const hasTourneyRow = trophies > 0 || tourneyPlayed(d.diff) > 0;
                     return (
                       <div key={d.diff} style={{
                         flex:1,padding:"2px 0",opacity:dim?0.4:1,
@@ -214,14 +219,20 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                           <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:dim?C.muted:C.red}}>{d.active?d.losses:"—"}</div>
                           <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:4}}>LOSSES</div>
                         </div>
-                        <div style={{marginBottom:trophies?10:0}}>
+                        <div>
                           <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:dim?C.muted:C.white}}>{d.active?`${d.rate}%`:"—"}</div>
                           <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:4}}>WIN RATE</div>
                         </div>
                         {trophies > 0 && (
-                          <div>
-                            <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:C.yellow}}>{trophies}</div>
-                            <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.yellow,marginTop:4,opacity:0.7}}>🏆</div>
+                          <div style={{marginTop:10}}>
+                            <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:C.yellow}}>{trophies}<span style={{fontSize:14,color:C.muted}}>/{tourneyPlayed(d.diff)}</span></div>
+                            <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:4}}>TOURNEYS WON</div>
+                          </div>
+                        )}
+                        {!trophies && tourneyPlayed(d.diff) > 0 && (
+                          <div style={{marginTop:10}}>
+                            <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:C.muted}}>0<span style={{fontSize:14,color:C.muted}}>/{tourneyPlayed(d.diff)}</span></div>
+                            <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:4}}>TOURNEYS WON</div>
                           </div>
                         )}
                       </div>
