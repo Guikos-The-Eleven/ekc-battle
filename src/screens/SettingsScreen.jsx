@@ -31,7 +31,7 @@ export default function SettingsScreen(props) {
       "Land it and the other misses → you score.",
       "Both land or both miss → replay (up to 3×).",
       `First to ${race} wins the match.`,
-      "ROOKIE ~48% · AMATEUR ~68% · PRO ~87% land rate.",
+      "ROOKIE ~35% · AMATEUR ~58% · PRO ~80% land rate.",
       ...(streaks?["Streaks: CPU can go HOT (+12%) or COLD (−18%) randomly after points."]:["Streaks are OFF — CPU uses a steady land rate."]),
     ]},
     "2p":{title:"2 PLAYER",lines:[
@@ -48,7 +48,7 @@ export default function SettingsScreen(props) {
     ]},
     tournament:{title:"TOURNEY",lines:[
       "Single elimination bracket.","Win your match to advance — lose and you're out.",
-      "ROOKIE ~48% · AMATEUR ~68% · PRO ~87% base rate.",
+      "ROOKIE ~35% · AMATEUR ~58% · PRO ~80% base rate.",
       "CPU gets +2% harder each round on top of your chosen base.",
       "All matches are first to 3. The final is first to 5.",
       ...(selectedDiv?.trickSets?[tricklistDesc[openList]||""]:[]),
