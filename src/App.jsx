@@ -18,6 +18,7 @@ import FeedbackScreen from "./screens/FeedbackScreen";
 // Components
 import AuthScreen from "./components/Auth";
 import StatsScreen from "./components/Stats";
+import { BtnPrimary } from "./components/ui";
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function App() {
@@ -27,6 +28,11 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [isGuest,  setIsGuest]  = useState(false);
   const [authStartTab, setAuthStartTab] = useState("login");
+  const [recoveryMode, setRecoveryMode] = useState(false);
+  const [recoveryPw, setRecoveryPw] = useState("");
+  const [recoveryErr, setRecoveryErr] = useState("");
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
+  const [recoveryDone, setRecoveryDone] = useState(false);
 
   // ── Navigation & selection ──
   const [screen,   setScreen]   = useState("home");
@@ -101,6 +107,19 @@ export default function App() {
       // Supabase unreachable — let guest mode through
       setAuthLoading(false);
     });
+  },[]);
+
+  // ── Listen for password recovery redirect ──
+  useEffect(()=>{
+    // Check URL hash for recovery token (catches it before onAuthStateChange)
+    const hash = window.location.hash;
+    if (hash && hash.includes("type=recovery")) {
+      setRecoveryMode(true);
+    }
+    const { data:{ subscription } } = SB.auth.onAuthStateChange((event)=>{
+      if (event === "PASSWORD_RECOVERY") setRecoveryMode(true);
+    });
+    return ()=> subscription.unsubscribe();
   },[]);
 
   // ── Home stats ──
@@ -431,6 +450,53 @@ export default function App() {
       <div className="fadeUp" style={{fontFamily:BB,fontSize:12,letterSpacing:6,color:C.muted,marginTop:16,animationDelay:"0.3s",animationFillMode:"both"}}>LOADING</div>
     </div>
   );
+
+  // ── Password recovery screen ──
+  if (recoveryMode) {
+    const handleRecovery = async ()=>{
+      setRecoveryErr(""); setRecoveryLoading(true);
+      if (recoveryPw.length < 6) { setRecoveryErr("Password must be at least 6 characters"); setRecoveryLoading(false); return; }
+      const { error } = await SB.auth.updateUser({ password: recoveryPw });
+      if (error) { setRecoveryErr(error.message); setRecoveryLoading(false); return; }
+      setRecoveryLoading(false);
+      setRecoveryDone(true);
+    };
+    return (
+      <div style={{fontFamily:BC,background:C.bg,color:C.white,height:"100dvh",maxWidth:440,margin:"0 auto",
+        display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 28px"}}>
+        <div style={{width:"100%"}}>
+          <div style={{textAlign:"center",marginBottom:36}}>
+            <img src={LOGO} alt="NXS" style={{width:100,height:100,objectFit:"contain",display:"block",margin:"0 auto 8px"}}/>
+            <div style={{fontFamily:BB,fontSize:36,letterSpacing:8,color:C.white}}>KOMP</div>
+          </div>
+          {recoveryDone ? (
+            <div className="fadeUp" style={{textAlign:"center"}}>
+              <div style={{fontFamily:BB,fontSize:28,letterSpacing:3,color:C.green,marginBottom:16}}>PASSWORD UPDATED</div>
+              <div style={{fontFamily:BC,fontSize:13,color:C.muted,letterSpacing:2,lineHeight:1.6,marginBottom:32}}>
+                You can now log in with your new password.
+              </div>
+              <BtnPrimary onClick={()=>{ setRecoveryMode(false); setRecoveryDone(false); setRecoveryPw(""); }}>
+                GO TO LOG IN
+              </BtnPrimary>
+            </div>
+          ) : (
+            <>
+              <div style={{fontFamily:BB,fontSize:22,letterSpacing:4,color:C.yellow,marginBottom:20,textAlign:"center"}}>SET NEW PASSWORD</div>
+              <input placeholder="New password" aria-label="New password" type="password" value={recoveryPw}
+                onChange={e=>setRecoveryPw(e.target.value)}
+                onKeyDown={e=>e.key==="Enter"&&handleRecovery()}
+                style={{width:"100%",padding:"15px 16px",background:C.surface,border:`1px solid ${C.border}`,
+                  borderRadius:2,color:C.white,fontFamily:BC,fontSize:15,letterSpacing:3,marginBottom:12,outline:"none"}}/>
+              {recoveryErr && <div style={{fontFamily:BC,fontSize:13,color:C.red,marginBottom:14,letterSpacing:3,lineHeight:1.4}}>{recoveryErr}</div>}
+              <BtnPrimary onClick={handleRecovery} disabled={recoveryLoading}>
+                {recoveryLoading ? "···" : "UPDATE PASSWORD"}
+              </BtnPrimary>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   // ── Auth gate ──
   if (!user && !isGuest) return <AuthScreen onAuth={(u,n)=>{setUser(u);setUsername(n);}} onGuest={enterAsGuest} startTab={authStartTab}/>;
