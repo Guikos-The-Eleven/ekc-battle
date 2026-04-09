@@ -175,15 +175,16 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
   const root = {fontFamily:BC,background:C.bg,color:C.text,height:"100dvh",maxWidth:440,margin:"0 auto",display:"flex",flexDirection:"column",position:"relative",overscrollBehavior:"none",overflow:"hidden"};
 
   const MenuBack = () => (
-    <div style={{padding:"12px 24px calc(22px + env(safe-area-inset-bottom, 0px))",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-      <button onClick={()=>setScreen("settings")} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:13,letterSpacing:5,cursor:"pointer",padding:0}}>← QUIT</button>
-      {canUndo && (
+    <div style={{padding:"12px 24px calc(22px + env(safe-area-inset-bottom, 0px))",display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center"}}>
+      <button onClick={()=>setScreen("settings")} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:13,letterSpacing:5,cursor:"pointer",padding:0,justifySelf:"start"}}>← QUIT</button>
+      {canUndo ? (
         <button onClick={handleUndo} aria-label="Undo last attempt" className="tap" style={{
           background:`${C.yellow}08`,border:`1px solid ${C.yellow}25`,borderRadius:R,
           color:C.yellow,fontFamily:BB,fontSize:11,letterSpacing:5,padding:"6px 14px",cursor:"pointer",
-          opacity:0.7,
+          opacity:0.7,justifySelf:"center",
         }}>UNDO</button>
-      )}
+      ) : <div/>}
+      <div/>
     </div>
   );
 
