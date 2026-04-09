@@ -243,7 +243,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
             background:"transparent",border:"none",fontFamily:BB,fontSize:11,letterSpacing:3,
             color:C.muted,cursor:"pointer",padding:"0 0 16px",display:"flex",alignItems:"center",gap:6,
           }}>← BACK TO BRACKET</button>
-          <div style={{fontFamily:BB,fontSize:13,letterSpacing:4,color:C.orange,marginBottom:8}}>{roundLabel}</div>
+          <div style={{fontFamily:BB,fontSize:13,letterSpacing:4,color:C.copper,marginBottom:8}}>{roundLabel}</div>
           {renderGameLog(tourneyGameLog)}
         </div>
       );
@@ -279,7 +279,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
             }} onClick={()=>hasLog && setTourneyGameLog(g)}>
               <div style={{paddingTop:12,paddingBottom:12}}>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
-                  <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.orange}}>{roundLabel}</div>
+                  <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.copper}}>{roundLabel}</div>
                   <div style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:diffCol,
                     border:`1px solid ${diffCol}30`,padding:"3px 7px",borderRadius:R}}>{DIFF_LABELS[g.difficulty]||g.difficulty}</div>
                 </div>
@@ -382,45 +382,68 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                 <div style={{display:"flex",gap:0,marginBottom:24}}>
                   <SummaryCol label="BATTLE" color={C.blue} wins={bRec.wins} losses={bRec.losses} rate={bRate} total={bRec.total} dimmed={bRec.total===0}/>
                   <div style={{width:1,background:C.divider,margin:"8px 0"}}/>
-                  <SummaryCol label="TOURNEY" color={C.orange} wins={tRec.wins} losses={tRec.losses} rate={tRate} total={tRec.total} dimmed={tRec.total===0}/>
+                  <SummaryCol label="TOURNEY" color={C.copper} wins={tRec.wins} losses={tRec.losses} rate={tRate} total={tRec.total} dimmed={tRec.total===0}/>
                 </div>
 
                 <Div mb={16}/>
 
-                {/* Three-column difficulty breakdown — aligned numbers */}
-                <div style={{display:"flex",gap:0}}>
+                {/* Three-column difficulty breakdown — grid for row alignment */}
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",textAlign:"center",rowGap:0,columnGap:0}}>
+                  {/* Header row */}
                   {diffData.map(d=>{
                     const col = DIFF_COLORS[d.diff];
                     const trophies = trophyCount(d.diff);
                     const dim = !d.active && !trophies;
                     return (
-                      <div key={d.diff} style={{
-                        flex:1,padding:"2px 0",opacity:dim?0.4:1,
-                        transition:"opacity 0.3s",textAlign:"center",
-                      }}>
+                      <div key={`h_${d.diff}`} style={{opacity:dim?0.4:1,paddingBottom:14}}>
                         <div style={{fontFamily:BB,fontSize:15,letterSpacing:4,color:dim?C.muted:C.white,marginBottom:8}}>
                           {DIFF_LABELS[d.diff]}
                         </div>
-                        <div style={{height:2,background:dim?C.border:col,margin:"0 16px 14px"}}/>
-
-                        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12}}>
-                          <div style={{width:"100%",display:"flex",flexDirection:"column",alignItems:"center"}}>
-                            <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:dim?C.muted:C.green,height:28}}>{d.active?d.wins:"—"}</div>
-                            <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:5,height:12}}>WINS</div>
-                          </div>
-                          <div style={{width:"100%",display:"flex",flexDirection:"column",alignItems:"center"}}>
-                            <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:dim?C.muted:C.red,height:28}}>{d.active?d.losses:"—"}</div>
-                            <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:5,height:12}}>LOSSES</div>
-                          </div>
-                          <div style={{width:"100%",display:"flex",flexDirection:"column",alignItems:"center"}}>
-                            <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:dim?C.muted:C.white,height:28}}>{d.active?`${d.rate}%`:"—"}</div>
-                            <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:5,height:12}}>WIN RATE</div>
-                          </div>
-                          <div style={{width:"100%",display:"flex",flexDirection:"column",alignItems:"center"}}>
-                            <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:trophies>0?C.yellow:C.muted,height:28}}>{trophies}</div>
-                            <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:5,height:12}}>TOURNEYS WON</div>
-                          </div>
-                        </div>
+                        <div style={{height:2,background:dim?C.border:col,margin:"0 16px"}}/>
+                      </div>
+                    );
+                  })}
+                  {/* Wins row */}
+                  {diffData.map(d=>{
+                    const trophies = trophyCount(d.diff);
+                    const dim = !d.active && !trophies;
+                    return (
+                      <div key={`w_${d.diff}`} style={{opacity:dim?0.4:1,paddingBottom:14}}>
+                        <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:dim?C.muted:C.green}}>{d.active?d.wins:"—"}</div>
+                        <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:5}}>WINS</div>
+                      </div>
+                    );
+                  })}
+                  {/* Losses row */}
+                  {diffData.map(d=>{
+                    const trophies = trophyCount(d.diff);
+                    const dim = !d.active && !trophies;
+                    return (
+                      <div key={`l_${d.diff}`} style={{opacity:dim?0.4:1,paddingBottom:14}}>
+                        <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:dim?C.muted:C.red}}>{d.active?d.losses:"—"}</div>
+                        <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:5}}>LOSSES</div>
+                      </div>
+                    );
+                  })}
+                  {/* Win rate row */}
+                  {diffData.map(d=>{
+                    const trophies = trophyCount(d.diff);
+                    const dim = !d.active && !trophies;
+                    return (
+                      <div key={`r_${d.diff}`} style={{opacity:dim?0.4:1,paddingBottom:14}}>
+                        <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:dim?C.muted:C.white}}>{d.active?`${d.rate}%`:"—"}</div>
+                        <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:5}}>WIN RATE</div>
+                      </div>
+                    );
+                  })}
+                  {/* Tourneys won row */}
+                  {diffData.map(d=>{
+                    const trophies = trophyCount(d.diff);
+                    const dim = !d.active && !trophies;
+                    return (
+                      <div key={`t_${d.diff}`} style={{opacity:dim?0.4:1}}>
+                        <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:trophies>0?C.yellow:C.muted}}>{trophies}</div>
+                        <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:5}}>TOURNEYS WON</div>
                       </div>
                     );
                   })}
@@ -526,10 +549,10 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                       }} onClick={()=>setTourneyDetail(item)}>
                         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",paddingTop:12,paddingBottom:12}}>
                           <div style={{display:"flex",alignItems:"center",gap:12}}>
-                            <div style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:C.orange,
-                              border:`1px solid ${C.orange}30`,padding:"3px 7px",borderRadius:R}}>TOURNEY</div>
+                            <div style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:C.copper,
+                              border:`1px solid ${C.copper}30`,padding:"3px 7px",borderRadius:R}}>TOURNEY</div>
                             <div style={{fontFamily:BB,fontSize:20,letterSpacing:2,color:col}}>
-                              {item.isChampion?"🏆":"✗"}
+                              {item.isChampion?"W":"L"}
                             </div>
                             <div style={{fontFamily:BB,fontSize:18,letterSpacing:1,color:C.white}}>
                               {item.wins}W–{item.losses}L
@@ -567,6 +590,8 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
                         paddingTop:12,paddingBottom:isOpen&&log?6:12}}>
                         <div style={{display:"flex",alignItems:"center",gap:12}}>
+                          <div style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:C.blue,
+                            border:`1px solid ${C.blue}30`,padding:"3px 7px",borderRadius:R}}>BATTLE</div>
                           <div style={{fontFamily:BB,fontSize:20,letterSpacing:2,color:col,width:24}}>{m.won?"W":"L"}</div>
                           <div style={{fontFamily:BB,fontSize:22,letterSpacing:1,color:C.white}}>
                             {m.your_score}–{m.cpu_score}
