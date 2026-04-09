@@ -180,8 +180,8 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
       {canUndo && (
         <button onClick={handleUndo} aria-label="Undo last attempt" className="tap" style={{
           background:`${C.yellow}08`,border:`1px solid ${C.yellow}25`,borderRadius:R,
-          color:C.yellow,fontFamily:BB,fontSize:11,letterSpacing:5,padding:"6px 14px",cursor:"pointer",
-          opacity:0.7,textAlign:"center",
+          color:C.yellow,fontFamily:BB,fontSize:11,letterSpacing:5,padding:"6px 0",cursor:"pointer",
+          opacity:0.7,textAlign:"center",minWidth:80,
         }}>UNDO</button>
       )}
     </div>
