@@ -14,7 +14,6 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
 
   // Tournament history detail view
   const [tourneyDetail, setTourneyDetail] = useState(null); // { id, matches }
-  const [tourneyGameLog, setTourneyGameLog] = useState(null); // single match expanded
 
   const initComp = selectedComp || COMPS[0];
   const initDiv = selectedDiv || initComp?.divisions[0];
@@ -165,89 +164,15 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
     </div>
   );
 
-  const switchTab = (k) => { setTab(k); setExpandedMatch(null); setConfirmReset(false); setShowAllTricks(false); setTourneyDetail(null); setTourneyGameLog(null); };
+  const switchTab = (k) => { setTab(k); setExpandedMatch(null); setConfirmReset(false); setShowAllTricks(false); setTourneyDetail(null); };
 
-  // ── Tournament Game Log View ──
-  const renderGameLog = (m) => {
-    const log = parseLog(m);
-    if (!log) return <div style={{fontFamily:BC,fontSize:13,color:C.muted,padding:"16px 0"}}>No game log available.</div>;
-    const col = m.won?C.green:C.red;
-    return (
-      <div style={{padding:"8px 0"}}>
-        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
-          <div style={{fontFamily:BB,fontSize:24,letterSpacing:2,color:col}}>{m.won?"W":"L"}</div>
-          <div style={{fontFamily:BB,fontSize:28,letterSpacing:1,color:C.white}}>{m.your_score}–{m.cpu_score}</div>
-          <div style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600}}>{log.length} tricks</div>
-        </div>
-        <div style={{display:"flex",gap:16,marginBottom:14}}>
-          <div style={{display:"flex",alignItems:"center",gap:4}}>
-            <div style={{width:6,height:6,borderRadius:"50%",background:C.sub,opacity:0.85}}/>
-            <span style={{fontFamily:BC,fontSize:9,color:C.muted,letterSpacing:1,fontWeight:600}}>YOU</span>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:4}}>
-            <div style={{width:6,height:6,borderRadius:"50%",background:C.sub,opacity:0.4}}/>
-            <span style={{fontFamily:BC,fontSize:9,color:C.muted,letterSpacing:1,fontWeight:600}}>CPU</span>
-          </div>
-          <span style={{color:C.border}}>·</span>
-          <div style={{display:"flex",alignItems:"center",gap:4}}>
-            <div style={{width:6,height:6,borderRadius:"50%",background:C.green}}/>
-            <span style={{fontFamily:BC,fontSize:9,color:C.muted,letterSpacing:1,fontWeight:600}}>LAND</span>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:4}}>
-            <div style={{width:6,height:6,borderRadius:"50%",background:C.red}}/>
-            <span style={{fontFamily:BC,fontSize:9,color:C.muted,letterSpacing:1,fontWeight:600}}>MISS</span>
-          </div>
-        </div>
-        {log.map((t,ti)=>{
-          const rc = t.result==="you"?C.green:t.result==="cpu"?C.red:C.muted;
-          const rl = t.result==="you"?"YOU":t.result==="cpu"?"CPU":"NULL";
-          return (
-            <div key={ti} style={{borderLeft:`2px solid ${rc}`,paddingLeft:10,marginBottom:ti<log.length-1?10:0,paddingTop:2,paddingBottom:2}}>
-              <div style={{fontFamily:BC,fontSize:11,color:C.sub,fontWeight:600,lineHeight:1.3,marginBottom:4}}>{t.trick}</div>
-              <div style={{display:"flex",alignItems:"center",gap:8}}>
-                <span style={{fontFamily:BB,fontSize:9,letterSpacing:2,color:C.muted}}>
-                  {t.playerFirst?"YOU 1ST":"CPU 1ST"}
-                </span>
-                <span style={{color:C.border}}>·</span>
-                {t.tries && t.tries.map((tr,j)=>(
-                  <div key={j} style={{display:"inline-flex",alignItems:"center",gap:3}}>
-                    <div title="You" style={{width:6,height:6,borderRadius:"50%",background:tr.you?C.green:C.red,opacity:0.85}}/>
-                    <div title="CPU" style={{width:6,height:6,borderRadius:"50%",background:tr.cpu?C.green:C.red,opacity:0.45}}/>
-                    {j<t.tries.length-1 && <span style={{color:C.border,fontSize:8,margin:"0 1px"}}>·</span>}
-                  </div>
-                ))}
-                <span style={{fontFamily:BB,fontSize:9,letterSpacing:2,color:rc,marginLeft:"auto"}}>{rl}</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  // ── Tournament Detail View (bracket-style) ──
+  // ── Tournament Detail View (accordion, same as battle history) ──
   const renderTourneyDetail = () => {
     if (!tourneyDetail) return null;
     const { games, isChampion, bracket_size } = tourneyDetail;
     const ROUND_NAMES = bracket_size>=8
       ? ["QUARTER","SEMI","FINAL"]
       : ["SEMI","FINAL"];
-
-    // If viewing a specific game log
-    if (tourneyGameLog) {
-      const ri = tourneyGameLog.tournament_round;
-      const roundLabel = ROUND_NAMES[ri] || `ROUND ${ri+1}`;
-      return (
-        <div>
-          <button className="tap" onClick={()=>setTourneyGameLog(null)} style={{
-            background:"transparent",border:"none",fontFamily:BB,fontSize:11,letterSpacing:3,
-            color:C.muted,cursor:"pointer",padding:"0 0 16px",display:"flex",alignItems:"center",gap:6,
-          }}>← BACK TO BRACKET</button>
-          <div style={{fontFamily:BB,fontSize:13,letterSpacing:4,color:C.copper,marginBottom:8}}>{roundLabel}</div>
-          {renderGameLog(tourneyGameLog)}
-        </div>
-      );
-    }
 
     return (
       <div>
@@ -266,30 +191,92 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
 
         {games.map((g,i)=>{
           const ri = g.tournament_round ?? i;
-          const roundLabel = ROUND_NAMES[ri] || `ROUND ${ri+1}`;
+          const roundLabel = ROUND_NAMES[ri] || `R${ri+1}`;
           const col = g.won?C.green:C.red;
           const diffCol = DIFF_COLORS[g.difficulty]||C.sub;
+          const date = new Date(g.created_at);
+          const dateStr = `${date.getDate()}/${date.getMonth()+1}`;
           const log = parseLog(g);
           const hasLog = !!log;
+          const trickCount = log ? log.length : (g.your_score + g.cpu_score);
+          const isOpen = expandedMatch===`tg_${g.id||i}`;
           return (
             <div key={g.id||i} className="fadeUp" style={{
-              borderLeft:`3px solid ${col}`,paddingLeft:14,marginBottom:10,
+              borderLeft:`3px solid ${col}`,paddingLeft:14,marginBottom:8,
               background:`${col}06`,cursor:hasLog?"pointer":"default",
               animationDelay:`${i*0.06}s`,animationFillMode:"both",
-            }} onClick={()=>hasLog && setTourneyGameLog(g)}>
-              <div style={{paddingTop:12,paddingBottom:12}}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
-                  <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.copper}}>{roundLabel}</div>
-                  <div style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:diffCol,
-                    border:`1px solid ${diffCol}30`,padding:"3px 0",borderRadius:R,minWidth:80,textAlign:"center"}}>{DIFF_LABELS[g.difficulty]||g.difficulty}</div>
+            }} onClick={()=>hasLog && setExpandedMatch(isOpen?null:`tg_${g.id||i}`)}>
+              <div style={{display:"flex",alignItems:"center",
+                paddingTop:12,paddingBottom:isOpen&&log?6:12}}>
+                <div style={{width:72,flexShrink:0}}>
+                  <div style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:C.copper,
+                    border:`1px solid ${C.copper}30`,padding:"3px 0",borderRadius:R,textAlign:"center"}}>{roundLabel}</div>
                 </div>
-                <div style={{display:"flex",alignItems:"center",gap:12}}>
-                  <div style={{fontFamily:BB,fontSize:20,letterSpacing:2,color:col}}>{g.won?"W":"L"}</div>
-                  <div style={{fontFamily:BB,fontSize:24,letterSpacing:1,color:C.white}}>{g.your_score}–{g.cpu_score}</div>
-                  {log && <div style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600}}>{log.length} tricks</div>}
-                  {hasLog && <div style={{fontFamily:BB,fontSize:10,color:C.muted,marginLeft:"auto"}}>VIEW ▸</div>}
+                <div style={{fontFamily:BB,fontSize:20,letterSpacing:2,color:col,width:28,textAlign:"center",flexShrink:0,marginLeft:8}}>
+                  {g.won?"W":"L"}
+                </div>
+                <div style={{fontFamily:BB,fontSize:22,letterSpacing:1,color:C.white,marginLeft:8}}>
+                  {g.your_score}–{g.cpu_score}
+                </div>
+                <div style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,marginLeft:8}}>{trickCount} tricks</div>
+                <div style={{flex:1}}/>
+                <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+                  <div style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:diffCol,
+                    border:`1px solid ${diffCol}30`,padding:"4px 0",borderRadius:R,
+                    minWidth:80,textAlign:"center"}}>{DIFF_LABELS[g.difficulty]||g.difficulty}</div>
+                  <div style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,minWidth:32,textAlign:"right"}}>{dateStr}</div>
+                  {hasLog && (
+                    <div style={{fontFamily:BB,fontSize:10,color:C.muted,transition:"transform 0.2s",
+                      transform:isOpen?"rotate(180deg)":"rotate(0deg)"}}>▾</div>
+                  )}
                 </div>
               </div>
+              {isOpen && log && (
+                <div style={{paddingBottom:14,paddingTop:4,borderTop:`1px solid ${C.divider}`}} onClick={e=>e.stopPropagation()}>
+                  <div style={{display:"flex",gap:16,marginBottom:10,marginTop:6}}>
+                    <div style={{display:"flex",alignItems:"center",gap:4}}>
+                      <div style={{width:6,height:6,borderRadius:"50%",background:C.sub,opacity:0.85}}/>
+                      <span style={{fontFamily:BC,fontSize:9,color:C.muted,letterSpacing:1,fontWeight:600}}>YOU</span>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:4}}>
+                      <div style={{width:6,height:6,borderRadius:"50%",background:C.sub,opacity:0.4}}/>
+                      <span style={{fontFamily:BC,fontSize:9,color:C.muted,letterSpacing:1,fontWeight:600}}>CPU</span>
+                    </div>
+                    <span style={{color:C.border}}>·</span>
+                    <div style={{display:"flex",alignItems:"center",gap:4}}>
+                      <div style={{width:6,height:6,borderRadius:"50%",background:C.green}}/>
+                      <span style={{fontFamily:BC,fontSize:9,color:C.muted,letterSpacing:1,fontWeight:600}}>LAND</span>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:4}}>
+                      <div style={{width:6,height:6,borderRadius:"50%",background:C.red}}/>
+                      <span style={{fontFamily:BC,fontSize:9,color:C.muted,letterSpacing:1,fontWeight:600}}>MISS</span>
+                    </div>
+                  </div>
+                  {log.map((t,ti)=>{
+                    const rc = t.result==="you"?C.green:t.result==="cpu"?C.red:C.muted;
+                    const rl = t.result==="you"?"YOU":t.result==="cpu"?"CPU":"NULL";
+                    return (
+                      <div key={ti} style={{borderLeft:`2px solid ${rc}`,paddingLeft:10,marginBottom:ti<log.length-1?10:0,paddingTop:2,paddingBottom:2}}>
+                        <div style={{fontFamily:BC,fontSize:11,color:C.sub,fontWeight:600,lineHeight:1.3,marginBottom:4}}>{t.trick}</div>
+                        <div style={{display:"flex",alignItems:"center",gap:8}}>
+                          <span style={{fontFamily:BB,fontSize:9,letterSpacing:2,color:C.muted}}>
+                            {t.playerFirst?"YOU 1ST":"CPU 1ST"}
+                          </span>
+                          <span style={{color:C.border}}>·</span>
+                          {t.tries && t.tries.map((tr,j)=>(
+                            <div key={j} style={{display:"inline-flex",alignItems:"center",gap:3}}>
+                              <div title="You" style={{width:6,height:6,borderRadius:"50%",background:tr.you?C.green:C.red,opacity:0.85}}/>
+                              <div title="CPU" style={{width:6,height:6,borderRadius:"50%",background:tr.cpu?C.green:C.red,opacity:0.45}}/>
+                              {j<t.tries.length-1 && <span style={{color:C.border,fontSize:8,margin:"0 1px"}}>·</span>}
+                            </div>
+                          ))}
+                          <span style={{fontFamily:BB,fontSize:9,letterSpacing:2,color:rc,marginLeft:"auto"}}>{rl}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         })}
