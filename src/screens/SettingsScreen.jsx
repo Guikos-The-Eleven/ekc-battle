@@ -114,7 +114,7 @@ export default function SettingsScreen(props) {
             <Seg label="Base Difficulty" val={diff} onChange={setDiff} opts={[
               {key:"easy",label:"ROOKIE",color:C.green},{key:"medium",label:"AMATEUR",color:C.yellow},{key:"hard",label:"PRO",color:C.red},
             ]}/>
-            <Seg label="Bracket Size" val={bracketSize} onChange={setBracketSize} opts={[{key:4,label:"4",color:C.orange},{key:8,label:"8",color:C.orange}]}/>
+            <Seg label="Bracket Size" val={bracketSize} onChange={setBracketSize} opts={[{key:4,label:"4",color:C.copper},{key:8,label:"8",color:C.copper}]}/>
 
             {/* Tricklist selector for PRO OPEN (divisions with trickSets) */}
             {tourneyTrickOpts && (

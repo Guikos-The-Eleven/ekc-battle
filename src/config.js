@@ -87,9 +87,9 @@ const COMPS = [
 
 // ─── CPU CONFIG ──────────────────────────────────────────────────────────────
 const CPU_CFG = {
-  easy:   { base:0.35, label:"ROOKIE",  color:C.green,  thinkMs:[1400,2200] },
-  medium: { base:0.58, label:"AMATEUR", color:C.yellow, thinkMs:[1200,1800] },
-  hard:   { base:0.80, label:"PRO",     color:C.red,    thinkMs:[900,1500]  },
+  easy:   { base:0.48, label:"ROOKIE",  color:C.green,  thinkMs:[1400,2200] },
+  medium: { base:0.68, label:"AMATEUR", color:C.yellow, thinkMs:[1200,1800] },
+  hard:   { base:0.87, label:"PRO",     color:C.red,    thinkMs:[900,1500]  },
 };
 
 // Haptic feedback helper (mobile vibration)
