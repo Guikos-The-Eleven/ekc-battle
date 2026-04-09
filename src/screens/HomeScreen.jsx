@@ -64,7 +64,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
                 }}>
                   {homeStats.wins}
                 </div>
-                <div style={{ fontFamily: BB, fontSize: 10, letterSpacing: 4, color: C.muted, marginTop: 4 }}>WINS</div>
+                <div style={{ fontFamily: BB, fontSize: 10, letterSpacing: 4, color: C.muted, marginTop: 4, paddingLeft: 4 }}>WINS</div>
               </div>
 
               <div style={{ width: 1, height: 28, background: C.divider }} />
@@ -78,7 +78,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
                 }}>
                   {homeStats.losses}
                 </div>
-                <div style={{ fontFamily: BB, fontSize: 10, letterSpacing: 4, color: C.muted, marginTop: 4 }}>LOSSES</div>
+                <div style={{ fontFamily: BB, fontSize: 10, letterSpacing: 4, color: C.muted, marginTop: 4, paddingLeft: 4 }}>LOSSES</div>
               </div>
 
               <div style={{ width: 1, height: 28, background: C.divider }} />
@@ -92,7 +92,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
                 }}>
                   {Math.round((homeStats.wins / homeStats.total) * 100)}%
                 </div>
-                <div style={{ fontFamily: BB, fontSize: 10, letterSpacing: 4, color: C.muted, marginTop: 4 }}>WIN RATE</div>
+                <div style={{ fontFamily: BB, fontSize: 10, letterSpacing: 4, color: C.muted, marginTop: 4, paddingLeft: 4 }}>WIN RATE</div>
               </div>
 
             </div>
