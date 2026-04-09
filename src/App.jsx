@@ -162,6 +162,8 @@ export default function App() {
       ...(extra.mode ? {mode:extra.mode} : {}),
       ...(extra.tournament_round != null ? {tournament_round:extra.tournament_round} : {}),
       ...(extra.tournament_result ? {tournament_result:extra.tournament_result} : {}),
+      ...(extra.tournament_id ? {tournament_id:extra.tournament_id} : {}),
+      ...(extra.bracket_size ? {bracket_size:extra.bracket_size} : {}),
     };
     const payload = gameLog?.length ? {...base, game_log:JSON.stringify(gameLog)} : base;
     const { error } = await SB.from("match_results").insert(payload);
@@ -294,7 +296,7 @@ export default function App() {
     let mc = size/4;
     while (mc>=1) { rounds.push(Array.from({length:mc},()=>({p1:null,p2:null,winner:null,p1Score:0,p2Score:0,played:false}))); mc/=2; }
     return {bracketSize:size,raceTo:3,baseDiff:diff,trickListMode:openList,players:seeds,rounds,currentRound:0,
-      phase:"bracket",playerSeed:seeds.find(p=>p.isHuman).seed};
+      phase:"bracket",playerSeed:seeds.find(p=>p.isHuman).seed,tournamentId:Date.now().toString(36)+Math.random().toString(36).slice(2,6)};
   }
 
   function startTournament() { setTourney(generateBracket(bracketSize)); setScreen("bracket"); }
@@ -390,6 +392,8 @@ export default function App() {
         mode: "tournament",
         race_to: matchRace || 3,
         tournament_round: prev.currentRound,
+        tournament_id: prev.tournamentId,
+        bracket_size: prev.bracketSize,
         ...(tournamentResult ? {tournament_result: tournamentResult} : {}),
       });
 
