@@ -162,7 +162,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
           <span style={{color:C.border,fontSize:10}}>·</span>
           <FeedbackLink size={13} fontSize={12} label="Feedback" onClick={()=>{setFeedbackText("");setFeedbackSent(false);setScreen("feedback");}} style={{letterSpacing:2}}/>
           <span style={{color:C.border,fontSize:10}}>·</span>
-          <DonateLink size={13} fontSize={12} href="#" label="Support" style={{letterSpacing:2}}/>
+          <DonateLink size={13} fontSize={12} href="https://ko-fi.com/kompapp" label="Support" style={{letterSpacing:2}}/>
         </div>
       </div>
     </div>
