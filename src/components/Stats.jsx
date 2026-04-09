@@ -198,7 +198,6 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
           const dateStr = `${date.getDate()}/${date.getMonth()+1}`;
           const log = parseLog(g);
           const hasLog = !!log;
-          const trickCount = log ? log.length : (g.your_score + g.cpu_score);
           const isOpen = expandedMatch===`tg_${g.id||i}`;
           return (
             <div key={g.id||i} className="fadeUp" style={{
@@ -218,7 +217,6 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                 <div style={{fontFamily:BB,fontSize:22,letterSpacing:1,color:C.white,marginLeft:8}}>
                   {g.your_score}–{g.cpu_score}
                 </div>
-                <div style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,marginLeft:8}}>{trickCount} tricks</div>
                 <div style={{flex:1}}/>
                 <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
                   <div style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:diffCol,
@@ -544,7 +542,6 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                   const isOpen = expandedMatch===(m.id||i);
                   const log = parseLog(m);
                   const canExpand = !!log;
-                  const trickCount = log ? log.length : (m.your_score + m.cpu_score);
 
                   return (
                     <div key={m.id||i} className="fadeUp" style={{
@@ -565,7 +562,6 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                         <div style={{fontFamily:BB,fontSize:22,letterSpacing:1,color:C.white,marginLeft:8}}>
                           {m.your_score}–{m.cpu_score}
                         </div>
-                        <div style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,marginLeft:8}}>{trickCount} tricks</div>
                         <div style={{flex:1}}/>
                         <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
                           <div style={{
