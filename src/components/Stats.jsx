@@ -281,7 +281,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
                   <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.copper}}>{roundLabel}</div>
                   <div style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:diffCol,
-                    border:`1px solid ${diffCol}30`,padding:"3px 7px",borderRadius:R}}>{DIFF_LABELS[g.difficulty]||g.difficulty}</div>
+                    border:`1px solid ${diffCol}30`,padding:"3px 0",borderRadius:R,minWidth:80,textAlign:"center"}}>{DIFF_LABELS[g.difficulty]||g.difficulty}</div>
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:12}}>
                   <div style={{fontFamily:BB,fontSize:20,letterSpacing:2,color:col}}>{g.won?"W":"L"}</div>

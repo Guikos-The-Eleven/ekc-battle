@@ -128,8 +128,8 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
               }} />
 
               {!m.available && <span style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:C.muted,
-                border:`1px solid ${C.muted}50`,padding:"3px 8px",borderRadius:R,
-                position:"absolute",top:10,right:10}}>SOON</span>}
+                border:`1px solid ${C.muted}50`,padding:"3px 0",borderRadius:R,
+                position:"absolute",top:10,right:10,minWidth:52,textAlign:"center"}}>SOON</span>}
               
               {/* 4. Título com a cor neon (mantida) e BRILHO REDUZIDO */}
               <div style={{
