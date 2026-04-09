@@ -16,10 +16,17 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
 
         {/* User bar */}
         <div style={{width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:0}}>
-          <button onClick={()=>setScreen("stats")} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:13,letterSpacing:4,cursor:"pointer",padding:0,display:"flex",alignItems:"center",gap:6}}>
-            <span>{username}</span>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="1" y="9" width="3" height="6" rx="0.5"/><rect x="6.5" y="5" width="3" height="10" rx="0.5"/><rect x="12" y="1" width="3" height="14" rx="0.5"/></svg>
-          </button>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontFamily:BB,fontSize:13,letterSpacing:4,color:C.sub}}>{username}</span>
+            <button className="tap" onClick={()=>setScreen("stats")} aria-label="Stats" style={{
+              width:36,height:36,borderRadius:"50%",
+              background:`${C.white}0a`,border:`1.5px solid ${C.border}`,
+              color:C.sub,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+              transition:"all 0.12s",padding:0,
+            }}>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="1" y="9" width="3" height="6" rx="0.5"/><rect x="6.5" y="5" width="3" height="10" rx="0.5"/><rect x="12" y="1" width="3" height="14" rx="0.5"/></svg>
+            </button>
+          </div>
           {isGuest ? (
             <button onClick={()=>goToAuth("signup")} style={{background:"transparent",border:"none",color:C.green,fontFamily:BB,fontSize:12,letterSpacing:4,cursor:"pointer",padding:0}}>
               SIGN UP
