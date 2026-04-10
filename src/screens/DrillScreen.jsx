@@ -1,7 +1,24 @@
-import React, { useEffect, useRef } from "react";
-import { C, BB, BC, R, haptic, MODE_COLORS } from "../config";
+import React, { useEffect, useRef, useState } from "react";
+import { C, BB, BC, R, haptic, MODE_COLORS, TRICK_INFO } from "../config";
 import { Label, Div, BtnPrimary, BtnGhost } from "../components/ui";
 import InfoOverlay from "../components/InfoOverlay";
+
+function TrickInfoBtn({ trick }) {
+  const info = TRICK_INFO?.[trick];
+  const [open, setOpen] = useState(false);
+  if (!info) return null;
+  return (
+    <>
+      <button onClick={(e)=>{e.stopPropagation();setOpen(v=>!v);}} style={{
+        background:"none",border:`1px solid ${C.border}`,borderRadius:R,color:C.muted,
+        fontFamily:BC,fontSize:11,letterSpacing:1,fontWeight:600,padding:"2px 8px",
+        cursor:"pointer",marginTop:8,display:"inline-flex",alignItems:"center",gap:4,
+      }}><span style={{fontSize:13}}>ⓘ</span> INFO</button>
+      {open && <div style={{fontFamily:BC,fontSize:13,color:C.sub,marginTop:8,lineHeight:1.4,
+        borderLeft:`2px solid ${C.border}`,paddingLeft:10}}>{info}</div>}
+    </>
+  );
+}
 
 export default function DrillScreen({ drill, setDrill, drillType, drillTarget,
   showInfo, setShowInfo, onQuit, onPickMore, onSettings, onMainMenu }) {
@@ -193,6 +210,7 @@ export default function DrillScreen({ drill, setDrill, drillType, drillTarget,
             <div style={{fontFamily:BC,fontSize:drill.trick.length>40?34:42,letterSpacing:2,lineHeight:1.1,color:C.white}}>
               {drill.trick}
             </div>
+            <TrickInfoBtn trick={drill.trick}/>
           </div>
         </div>
         <div style={{padding:"0 24px 16px",display:"flex",flexDirection:"column",gap:10}}>

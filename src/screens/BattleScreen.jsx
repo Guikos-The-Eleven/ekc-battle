@@ -1,9 +1,27 @@
-import React, { useEffect, useRef } from "react";
-import { C, BB, BC, R, haptic, CPU_CFG, getTricksForDiv, MODE_COLORS } from "../config";
+import React, { useEffect, useRef, useState } from "react";
+import { C, BB, BC, R, haptic, CPU_CFG, getTricksForDiv, MODE_COLORS, TRICK_INFO } from "../config";
 import { Label, Div, Dots, TryDots, BtnGhost } from "../components/ui";
 import { roll, cpuThinkTime, drawTrick, buildPool } from "../cpu";
 import ScoreBar from "../components/ScoreBar";
 import InfoOverlay from "../components/InfoOverlay";
+
+/* Small ⓘ button + collapsible info for tricks with extra detail */
+function TrickInfoBtn({ trick }) {
+  const info = TRICK_INFO?.[trick];
+  const [open, setOpen] = useState(false);
+  if (!info) return null;
+  return (
+    <>
+      <button onClick={(e)=>{e.stopPropagation();setOpen(v=>!v);}} style={{
+        background:"none",border:`1px solid ${C.border}`,borderRadius:R,color:C.muted,
+        fontFamily:BC,fontSize:11,letterSpacing:1,fontWeight:600,padding:"2px 8px",
+        cursor:"pointer",marginTop:8,display:"inline-flex",alignItems:"center",gap:4,
+      }}><span style={{fontSize:13}}>ⓘ</span> INFO</button>
+      {open && <div style={{fontFamily:BC,fontSize:13,color:C.sub,marginTop:8,lineHeight:1.4,
+        borderLeft:`2px solid ${C.border}`,paddingLeft:10}}>{info}</div>}
+    </>
+  );
+}
 
 export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, openList,
   p1Name, p2Name, P1_COL, P2_COL, showInfo, setShowInfo, onMatchOver, saveTrickAttempt, onUndo, setScreen, username }) {
@@ -177,12 +195,14 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
   const MenuBack = () => (
     <div style={{padding:"12px 24px calc(22px + env(safe-area-inset-bottom, 0px))",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
       <button onClick={()=>setScreen("settings")} style={{background:"transparent",border:"none",color:C.sub,fontFamily:BB,fontSize:13,letterSpacing:5,cursor:"pointer",padding:0}}>← QUIT</button>
-      {canUndo && (
+      {canUndo ? (
         <button onClick={handleUndo} aria-label="Undo last attempt" className="tap" style={{
           background:`${C.yellow}08`,border:`1px solid ${C.yellow}25`,borderRadius:R,
-          color:C.yellow,fontFamily:BB,fontSize:11,letterSpacing:5,padding:"6px 0",cursor:"pointer",
-          opacity:0.7,textAlign:"center",minWidth:80,
+          color:C.yellow,fontFamily:BB,fontSize:11,letterSpacing:5,padding:"6px 14px",cursor:"pointer",
+          opacity:0.7,
         }}>UNDO</button>
+      ) : (
+        <div style={{fontFamily:BB,fontSize:9,letterSpacing:4,color:C.muted}}>KOMP</div>
       )}
     </div>
   );
@@ -198,6 +218,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
           <div className="slideIn" style={{fontFamily:BB,fontSize:12,letterSpacing:8,color:C.muted,animationDelay:"0s"}}>NEXT TRICK</div>
           <div className="slideIn" style={{borderLeft:`3px solid ${C.white}`,paddingLeft:20,animationDelay:"0.08s",animationFillMode:"both"}}>
             <div style={{fontFamily:BC,fontSize:trick.length>40?38:48,letterSpacing:2,lineHeight:1.1,color:C.white}}>{trick}</div>
+            <TrickInfoBtn trick={trick}/>
           </div>
           <div className="fadeUp" style={{display:"flex",alignItems:"center",gap:10,animationDelay:"0.2s",animationFillMode:"both"}}>
             <div style={{width:20,height:1,background:C.border}}/>
@@ -220,6 +241,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
           <div style={{borderLeft:`3px solid ${C.muted}`,paddingLeft:16,marginBottom:16}}>
             <Label style={{marginBottom:6}}>Trick</Label>
             <div style={{fontFamily:BB,fontSize:28,letterSpacing:2,lineHeight:1.2,color:C.white}}>{trick}</div>
+            <TrickInfoBtn trick={trick}/>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20}}>
             <div style={{width:20,height:1,background:C.border}}/>
@@ -308,6 +330,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
           <ScoreBar gs={gs} race={race} mode={mode} p1Name={p1Name} p2Name={p2Name} P1_COL={P1_COL} P2_COL={P2_COL} showInfo={showInfo} setShowInfo={setShowInfo} username={username}/>
           <div style={{borderLeft:`3px solid ${phase==="p_first"?C.white:C.muted}`,paddingLeft:16,margin:"14px 24px 0",transition:"border-color 0.3s"}}>
             <div style={{fontFamily:BC,fontSize:28,letterSpacing:1,lineHeight:1.2,color:phase==="p_first"?C.white:C.sub}}>{trick}</div>
+            <TrickInfoBtn trick={trick}/>
           </div>
           <div style={{padding:"12px 24px 0"}}><TryDots current={tryNum}/></div>
 
