@@ -57,7 +57,7 @@ export default function CompPickScreen({ mode, expandedComp, setExpandedComp, se
                   cursor:isSoon?"default":"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
                   transition:"all 0.15s",position:"relative",overflow:"hidden",
                 }}>
-                  {comp.banner && <img src={comp.banner} alt="" style={{position:"absolute",right:0,top:0,height:"100%",objectPosition:"right center",opacity:0.45,pointerEvents:"none"}}/>}
+                  {comp.banner && <img src={comp.banner} alt="" style={{position:"absolute",right:0,top:0,height:"100%", width:"100%", objectPosition:"right center",opacity:0.45,pointerEvents:"none"}}/>}
                   <div style={{textAlign:"left",position:"relative",zIndex:1}}>
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
                       <span style={{fontFamily:BB,fontSize:34,letterSpacing:4,color:isOpen?C.white:C.sub}}>{comp.name}</span>
