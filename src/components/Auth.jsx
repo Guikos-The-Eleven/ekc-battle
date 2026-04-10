@@ -42,11 +42,16 @@ function AuthScreen({ onAuth, onGuest, startTab="login" }) {
       if (tab==="signup") {
         const valErr = validateSignup(name, email, pw);
         if (valErr) { setErr(valErr); setLoading(false); return; }
-        const { error } = await SB.auth.signUp({
+        const { data:signUpData, error } = await SB.auth.signUp({
           email, password:pw,
           options: { data: { username: name.trim() } },
         });
         if (error) { setErr(error.message); setLoading(false); return; }
+        if (signUpData?.user?.identities?.length === 0) {
+          setErr("An account with this email already exists. Try logging in.");
+          setLoading(false);
+          return;
+        }
         setConfirmed(true);
         setLoading(false);
         return;
