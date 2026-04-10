@@ -51,7 +51,10 @@ export default function CompPickScreen({ mode, expandedComp, setExpandedComp, se
             return (
               <div key={comp.key} style={{marginBottom:8,opacity:isSoon?0.4:1}}>
                 <button className="tap" onClick={()=>!isSoon&&setExpandedComp(isOpen?null:comp.key)} style={{
-                  width:"100%",padding:"18px 16px",background:isOpen?`${C.white}06`:C.surface,
+                  width:"100%",padding:"18px 16px",
+                  background:comp.banner
+                    ? `linear-gradient(${C.surface}cc, ${C.surface}cc), url(${comp.banner}) center/100% 100% no-repeat`
+                    : isOpen?`${C.white}06`:C.surface,
                   border:`1px solid ${isOpen?C.white+"20":C.border}`,borderRadius:R,
                   cursor:isSoon?"default":"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
                   transition:"all 0.15s",position:"relative",overflow:"hidden",
@@ -68,7 +71,6 @@ export default function CompPickScreen({ mode, expandedComp, setExpandedComp, se
                   </div>
                   {!isSoon && <span style={{fontFamily:BB,fontSize:16,color:C.muted,transition:"transform 0.2s",
                     transform:isOpen?"rotate(90deg)":"rotate(0deg)"}}>→</span>}
-                  {comp.banner && <img src={comp.banner} alt="" style={{position:"absolute",right:0,top:"50%",transform:"translateY(-50%)",height:"130%",opacity:0.22,pointerEvents:"none"}}/>}
                 </button>
                 {isOpen && !isSoon && (
                   <div className="rise" style={{paddingLeft:16,borderLeft:`2px solid ${C.border}`,marginLeft:12,marginTop:4}}>
