@@ -52,14 +52,13 @@ export default function CompPickScreen({ mode, expandedComp, setExpandedComp, se
               <div key={comp.key} style={{marginBottom:8,opacity:isSoon?0.4:1}}>
                 <button className="tap" onClick={()=>!isSoon&&setExpandedComp(isOpen?null:comp.key)} style={{
                   width:"100%",padding:"18px 16px",
-                  background:comp.banner
-                    ? `linear-gradient(${C.surface}88, ${C.surface}88), url(${comp.banner}) center/100% 100% no-repeat`
-                    : isOpen?`${C.white}06`:C.surface,
+                  background:isOpen?`${C.white}06`:C.surface,
                   border:`1px solid ${isOpen?C.white+"20":C.border}`,borderRadius:R,
                   cursor:isSoon?"default":"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
                   transition:"all 0.15s",position:"relative",overflow:"hidden",
                 }}>
-                  <div style={{textAlign:"left"}}>
+                  {comp.banner && <img src={comp.banner} alt="" style={{position:"absolute",right:0,top:0,height:"100%",objectFit:"contain",objectPosition:"right center",opacity:0.45,pointerEvents:"none"}}/>}
+                  <div style={{textAlign:"left",position:"relative",zIndex:1}}>
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
                       <span style={{fontFamily:BB,fontSize:34,letterSpacing:4,color:isOpen?C.white:C.sub}}>{comp.name}</span>
                       {isSoon && <span style={{fontFamily:BC,fontSize:11,letterSpacing:2,color:C.muted,fontWeight:600,
