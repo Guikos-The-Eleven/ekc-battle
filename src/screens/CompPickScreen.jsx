@@ -68,6 +68,7 @@ export default function CompPickScreen({ mode, expandedComp, setExpandedComp, se
                   </div>
                   {!isSoon && <span style={{fontFamily:BB,fontSize:16,color:C.muted,transition:"transform 0.2s",
                     transform:isOpen?"rotate(90deg)":"rotate(0deg)"}}>→</span>}
+                  {comp.banner && <img src={comp.banner} alt="" style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",height:52,opacity:0.7,pointerEvents:"none"}}/>}
                 </button>
                 {isOpen && !isSoon && (
                   <div className="rise" style={{paddingLeft:16,borderLeft:`2px solid ${C.border}`,marginLeft:12,marginTop:4}}>
