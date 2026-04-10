@@ -66,7 +66,10 @@ export default function CompPickScreen({ mode, expandedComp, setExpandedComp, se
                         border:`1px solid ${C.border}`,padding:"2px 0",borderRadius:R,minWidth:52,textAlign:"center",display:"inline-block"}}>SOON</span>}
                     </div>
                     <div style={{fontFamily:BC,fontSize:12,letterSpacing:2,color:C.muted,fontWeight:600,marginTop:2}}>
-                      {comp.full} · {comp.location}
+                      {comp.full}
+                    </div>
+                    <div style={{fontFamily:BC,fontSize:12,letterSpacing:2,color:C.muted,fontWeight:600,marginTop:1}}>
+                      {comp.location}
                     </div>
                   </div>
                   {!isSoon && <span style={{fontFamily:BB,fontSize:16,color:C.muted,transition:"transform 0.2s",
