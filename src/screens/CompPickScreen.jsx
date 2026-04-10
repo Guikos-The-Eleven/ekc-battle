@@ -51,7 +51,7 @@ export default function CompPickScreen({ mode, expandedComp, setExpandedComp, se
             return (
               <div key={comp.key} style={{marginBottom:8,opacity:isSoon?0.4:1}}>
                 <button className="tap" onClick={()=>!isSoon&&setExpandedComp(isOpen?null:comp.key)} style={{
-                  width:"100%",padding:"18px 16px",
+                  height:"100%",padding:"18px 16px",
                   background:comp.banner
                     ? `linear-gradient(${C.surface}88, ${C.surface}88), url(${comp.banner}) right center/cover no-repeat`
                     : isOpen?`${C.white}06`:C.surface,
