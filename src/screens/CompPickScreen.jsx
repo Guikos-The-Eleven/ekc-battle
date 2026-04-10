@@ -53,7 +53,7 @@ export default function CompPickScreen({ mode, expandedComp, setExpandedComp, se
                 <button className="tap" onClick={()=>!isSoon&&setExpandedComp(isOpen?null:comp.key)} style={{
                   width:"100%",padding:"18px 16px",
                   background:comp.banner
-                    ? `linear-gradient(${C.surface}90, ${C.surface}90), url(${comp.banner}) right center/contain no-repeat ${C.surface}`
+                    ? `linear-gradient(${C.surface}88, ${C.surface}88), url(${comp.banner}) center/cover no-repeat`
                     : isOpen?`${C.white}06`:C.surface,
                   border:`1px solid ${isOpen?C.white+"20":C.border}`,borderRadius:R,
                   cursor:isSoon?"default":"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
