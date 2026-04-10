@@ -54,7 +54,7 @@ export default function CompPickScreen({ mode, expandedComp, setExpandedComp, se
                   width:"100%",padding:"18px 16px",background:isOpen?`${C.white}06`:C.surface,
                   border:`1px solid ${isOpen?C.white+"20":C.border}`,borderRadius:R,
                   cursor:isSoon?"default":"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
-                  transition:"all 0.15s",position:"relative",
+                  transition:"all 0.15s",position:"relative",overflow:"hidden",
                 }}>
                   <div style={{textAlign:"left"}}>
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
@@ -68,7 +68,7 @@ export default function CompPickScreen({ mode, expandedComp, setExpandedComp, se
                   </div>
                   {!isSoon && <span style={{fontFamily:BB,fontSize:16,color:C.muted,transition:"transform 0.2s",
                     transform:isOpen?"rotate(90deg)":"rotate(0deg)"}}>→</span>}
-                  {comp.banner && <img src={comp.banner} alt="" style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",height:52,opacity:0.7,pointerEvents:"none"}}/>}
+                  {comp.banner && <img src={comp.banner} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:0.2,pointerEvents:"none",borderRadius:R}}/>}
                 </button>
                 {isOpen && !isSoon && (
                   <div className="rise" style={{paddingLeft:16,borderLeft:`2px solid ${C.border}`,marginLeft:12,marginTop:4}}>
