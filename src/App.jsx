@@ -2,7 +2,7 @@ import React, { useState, useEffect, useReducer, useRef, useMemo } from "react";
 import { SB } from "./supabase";
 import { LOGO, C, BB, BC, R, CPU_CFG, CPU_NAMES, haptic, getTricksForDiv, MODE_COLORS } from "./config";
 import gameReducer from "./gameReducer";
-import { buildPool } from "./cpu";
+import { buildPool, shuffle } from "./cpu";
 
 // Screens
 import HomeScreen from "./screens/HomeScreen";
@@ -200,7 +200,7 @@ export default function App() {
     const restPool = pool.slice(1);
     if (mode==="cpu"||mode==="tournament") {
       const init = {scores:{you:0,cpu:0},pool:restPool,trick,tryNum:1,
-        playerFirst:true,phase:"reveal",cpuStreak:{active:false,dir:"hot",left:0},
+        playerFirst:Math.random()<0.5,phase:"reveal",cpuStreak:{active:false,dir:"hot",left:0},
         cpuFirst:null,pResult:null,msg:"",winner:null,cpuMomentum:[],lastScoreKey:0,
         gameLog:[],currentTries:[],matchOver:false,scoredTricks:[],
         config:{diff,race,streaks,mode}};
@@ -230,7 +230,7 @@ export default function App() {
   // ── Drill start ──
   async function buildDrillQueue(source) {
     const tricks = allTricks();
-    if (source==="pick") return [...tricks].sort(()=>Math.random()-0.5);
+    if (source==="pick") return shuffle(tricks);
     if ((source==="weakest"||source==="full") && userRef.current) {
       const { data } = await SB.from("trick_attempts").select("trick,landed,competition")
         .eq("user_id",userRef.current.id);
@@ -254,7 +254,7 @@ export default function App() {
       if (filtered.length>0) return filtered.map(r=>r.trick);
       return [];
     }
-    return [...tricks].sort(()=>Math.random()-0.5);
+    return shuffle(tricks);
   }
 
   async function startDrill() {
@@ -276,7 +276,7 @@ export default function App() {
   }
 
   function startDrillPick(tricks) {
-    const shuffled = [...tricks].sort(()=>Math.random()-0.5);
+    const shuffled = shuffle(tricks);
     if (drillType==="consistency") {
       setDrill({type:"consistency",target:drillTarget,trick:shuffled[0],
         completed:[],queue:shuffled.slice(1),phase:"active",pickMode:true});
@@ -303,10 +303,10 @@ export default function App() {
   }
 
   function generateBracket(size) {
-    const names = [...CPU_NAMES].sort(()=>Math.random()-0.5).slice(0,size-1);
+    const names = shuffle(CPU_NAMES).slice(0,size-1);
     const players = [{seed:0,name:username||"YOU",isHuman:true,eliminated:false}];
     names.forEach((n,i)=>players.push({seed:i+1,name:n,isHuman:false,eliminated:false}));
-    const seeds = players.sort(()=>Math.random()-0.5).map((p,i)=>({...p,seed:i}));
+    const seeds = shuffle(players).map((p,i)=>({...p,seed:i}));
     const totalRounds = size===4?2:3;
     const rounds = [];
     const r1 = [];
@@ -338,7 +338,7 @@ export default function App() {
     const trick = pool[0];
     const restPool = pool.slice(1);
     const init = {scores:{you:0,cpu:0},pool:restPool,trick,tryNum:1,
-      playerFirst:true,phase:"reveal",cpuStreak:{active:false,dir:"hot",left:0},
+      playerFirst:Math.random()<0.5,phase:"reveal",cpuStreak:{active:false,dir:"hot",left:0},
       cpuFirst:null,pResult:null,msg:"",winner:null,cpuMomentum:[],lastScoreKey:0,
       gameLog:[],currentTries:[],cpuNudge:nudge,matchOver:false,scoredTricks:[],cpuName:oppName,
       tournamentRound:t.currentRound,
