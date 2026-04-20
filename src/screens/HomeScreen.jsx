@@ -130,8 +130,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
               if (m.key==="drill" && isGuest) setDrillSource("full");
               setScreen("compPick");
             }} style={{
-              // 2. Voltar à estrutura anterior (fundo superfície padrão, sem brilho)
-              padding:"20px 16px 20px 24px", // Padding esquerdo aumentado para a barra
+              padding:"20px 16px 20px 24px",
               background: C.surface,
               border: `1px solid ${C.border}`,
               borderRadius:R,
@@ -140,17 +139,16 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
               display:"flex",flexDirection:"column",justifyContent:"center",gap:4,
               position:"relative",overflow:"hidden",minWidth:0,
               animationDelay:`${0.12+i*0.06}s`,animationFillMode:"both",
-              // REMOVIDO: boxShadow de glow agressivo
             }}>
 
-              {/* 3. A NOVA BARRA À ESQUERDA */}
+              {/* 3. A NOVA BARRA À ESQUERDA - Updated to the specific Red */}
               <div style={{
                 position: "absolute",
                 top: 0,
                 left: 0,
                 bottom: 0,
-                width: 4, // Espessura da barra
-                background: m.available ? m.color : `${C.border}A0`, // Cor ou borda/mute
+                width: 4, 
+                background: m.available ? "#F43130" : `${C.border}A0`, // Changed to the red hex code
                 borderTopLeftRadius: R,
                 borderBottomLeftRadius: R
               }} />
@@ -159,13 +157,12 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
                 border:`1px solid ${C.muted}50`,padding:"3px 0",borderRadius:R,
                 position:"absolute",top:10,right:10,minWidth:52,textAlign:"center"}}>SOON</span>}
               
-              {/* 4. Título com a cor neon (mantida) e BRILHO REDUZIDO */}
+              {/* 4. Título com a cor neon (mantida) e BRILHO REDUZIDO - Updated to White */}
               <div style={{
                 fontFamily:BB,fontSize:26,letterSpacing:m.label.length>8?3:5,
-                color:m.available?m.color:C.muted, // Mantém a cor aqui
+                color: m.available ? C.white : C.muted, // Changed from m.color to C.white
                 lineHeight:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
-                // textShadow subtil para dar 'pop' sem agressividade
-                textShadow: m.available ? `0 0 2px ${m.color}60` : "none" // Reduzido drasticamente
+                textShadow: "none" // Removed the colored glow since the text is now white
               }}>
                 {m.label}
               </div>
@@ -175,7 +172,6 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
             </button>
           ))}
         </div>
-
         {/* Footer */}
         <div style={{marginTop:16,display:"flex",justifyContent:"center",alignItems:"center",gap:12,flexWrap:"wrap"}}>
           <IgLink size={13} fontSize={12} style={{letterSpacing:2}}/>
