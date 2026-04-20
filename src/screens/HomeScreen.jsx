@@ -44,7 +44,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
             <img src={LOGO} alt="NXS" style={{width:140,height:140,objectFit:"contain",display:"block",margin:"0 auto"}}/>
           </div>
           <div className="rise" style={{animationDelay:"0.05s",animationFillMode:"both",textAlign:"center"}}>
-            <div style={{fontFamily:BB,fontSize:54,letterSpacing:12,color:C.white,marginTop:-2}}>KOMP</div>
+            {/*<div style={{fontFamily:BB,fontSize:54,letterSpacing:12,color:C.white,marginTop:-2}}>KOMP</div> */ }
             <div style={{fontFamily:BC,fontSize:11,letterSpacing:4,color:C.muted,fontWeight:600,marginTop:4}}>KENDAMA COMPETITION TRAINER</div>
           </div>
         </div>
