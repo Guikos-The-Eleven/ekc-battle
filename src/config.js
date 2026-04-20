@@ -23,6 +23,7 @@ const C = {
   orange2:"#ea7317", yellow2:"#fec601", tile2:"#73bfb8", sea_blue2:"#3da5d9", dark_blue2:"#086788",
   // NOVAS CORES NEON PARA OS MODOS DE JOGO
   cyan: "#00F0FF", lime: "#CCFF00", magenta: "#FF0099", molten: "#FF5F00",
+  logored: "#F43130",
 };
 const BB = "'Bebas Neue', sans-serif";
 const BC = "'Barlow Condensed', sans-serif";

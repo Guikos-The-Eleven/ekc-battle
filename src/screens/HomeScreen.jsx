@@ -1,23 +1,20 @@
 import React, { useState } from "react";
-import { LOGOS, LOGO, C, BB, BC, R } from "../config";
+import { LOGOS, C, BB, BC, R } from "../config"; 
 import { Div, IgLink, FeedbackLink, DonateLink } from "../components/ui";
 
 export default function HomeScreen({ user, username, isGuest, homeStats, setMode, setScreen, setDrillSource, goToAuth, handleSignOut, setFeedbackText, setFeedbackSent }) {
-
-  // 3. Add this state to track the current logo
+  
   const [logoIndex, setLogoIndex] = useState(0);
 
-  // 4. Create a function to cycle to the next logo
   const cycleLogo = () => {
-    // This loops back to 0 when it hits the end of the array
     setLogoIndex((prev) => (prev + 1) % LOGOS.length); 
   };
 
   const modeCards = [
-    {key:"cpu",   label:"BATTLE",     desc:"1v1 vs CPU",          color:C.blue,    available:true},
-    {key:"drill", label:"DRILL",      desc:"Train your tricks",   color:C.amber,  available:true},
-    {key:"tournament", label:"TOURNEY", desc:"Bracket competition", color:C.copper,    available:true},
-    {key:"2p",    label:"2 PLAYER",   desc:"Local head to head",  color:C.slate, available:true},
+    {key:"cpu",   label:"BATTLE",     desc:"1v1 vs CPU",          available:true},
+    {key:"drill", label:"DRILL",      desc:"Train your tricks",   available:true},
+    {key:"tournament", label:"TOURNEY", desc:"Bracket competition", available:true},
+    {key:"2p",    label:"2 PLAYER",   desc:"Local head to head",  available:true},
   ];
 
   return (
@@ -51,26 +48,23 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
         {/* Logo + Name */}
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:"100%",marginTop:8}}>
           <div className="rise">
-            {/* 5. Update the img tag to use LOGOS[logoIndex] and add onClick */}
             <img 
               src={LOGOS[logoIndex]} 
               alt="NXS" 
-              onClick={cycleLogo} // The secret tap!
+              onClick={cycleLogo} 
               style={{
-                width:200, height:200, objectFit:"contain", 
+                width: 180, height: 180, objectFit:"contain", 
                 display:"block", margin:"0 auto", 
-                cursor:"pointer" // Shows a pointer on desktop
+                cursor:"pointer" 
               }}
             />
           </div>
           <div className="rise" style={{animationDelay:"0.05s",animationFillMode:"both",textAlign:"center"}}>
-            {/*<div style={{fontFamily:BB,fontSize:54,letterSpacing:12,color:C.white,marginTop:-2}}>KOMP</div> */ }
-            {/*<div style={{fontFamily:BC,fontSize:11,letterSpacing:4,color:C.muted,fontWeight:600,marginTop:4}}>KENDAMA COMPETITION TRAINER</div> */ }
+            <div style={{fontFamily:BC,fontSize:11,letterSpacing:4,color:C.muted,fontWeight:600,marginTop:4}}>KENDAMA COMPETITION TRAINER</div>
           </div>
         </div>
 
         {/* Stats snapshot */}
-        {/* Stats snapshot - Estilo Opção B com Glow */}
         {homeStats && homeStats.total > 0 ? (
           <div className="fadeUp" style={{ width: "100%", marginTop: 20, marginBottom: 20, animationDelay: "0.1s", animationFillMode: "both" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 0, width: "100%" }}>
@@ -79,8 +73,8 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
               <div style={{ flex: 1, textAlign: "center", padding: "14px 0" }}>
                 <div style={{ 
                   fontFamily: BB, fontSize: 34, lineHeight: 1, 
-                  color:C.white, // Cor da Opção B
-                  textShadow: "0px 0px 12px rgba(200, 200, 212, 0.4)" // Efeito Glow
+                  color:C.white,
+                  textShadow: "0px 0px 12px rgba(200, 200, 212, 0.4)" 
                 }}>
                   {homeStats.wins}
                 </div>
@@ -123,55 +117,69 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
 
         {/* Mode cards */}
         <div style={{width:"100%",display:"grid",gridTemplateColumns:"1fr 1fr",gridTemplateRows:"1fr 1fr",gap:8,flex:1}}>
-          {modeCards.map((m,i)=>(
-            <button key={m.key} className="tap fadeUp" onClick={()=>{
-              if (!m.available) return;
-              setMode(m.key);
-              if (m.key==="drill" && isGuest) setDrillSource("full");
-              setScreen("compPick");
-            }} style={{
-              padding:"20px 16px 20px 24px",
-              background: C.surface,
-              border: `1px solid ${C.border}`,
-              borderRadius:R,
-              cursor:m.available?"pointer":"default",textAlign:"left",
-              transition:"all 0.12s",opacity:m.available?1:0.45,
-              display:"flex",flexDirection:"column",justifyContent:"center",gap:4,
-              position:"relative",overflow:"hidden",minWidth:0,
-              animationDelay:`${0.12+i*0.06}s`,animationFillMode:"both",
-            }}>
+          {modeCards.map((m,i)=>{
+            
+            // Determine the accent color based on the mode key
+            let accentColor = C.muted;
+            if (m.available) {
+                if (m.key === "cpu" || m.key === "tournament") {
+                    accentColor = C.logored;
+                } else if (m.key === "drill" || m.key === "2p") {
+                    accentColor = C.green;
+                }
+            }
 
-              {/* 3. A NOVA BARRA À ESQUERDA - Updated to the specific Red */}
-              <div style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                bottom: 0,
-                width: 4, 
-                background: m.available ? C.green : `${C.border}A0`, // Changed to the red hex code
-                borderTopLeftRadius: R,
-                borderBottomLeftRadius: R
-              }} />
-
-              {!m.available && <span style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:C.muted,
-                border:`1px solid ${C.muted}50`,padding:"3px 0",borderRadius:R,
-                position:"absolute",top:10,right:10,minWidth:52,textAlign:"center"}}>SOON</span>}
-              
-              {/* 4. Título com a cor neon (mantida) e BRILHO REDUZIDO - Updated to White */}
-              <div style={{
-                fontFamily:BB,fontSize:26,letterSpacing:m.label.length>8?3:5,
-                color: m.available ? C.white : C.muted, // Changed from m.color to C.white
-                lineHeight:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
-                textShadow: "none" // Removed the colored glow since the text is now white
+            return (
+              <button key={m.key} className="tap fadeUp" onClick={()=>{
+                if (!m.available) return;
+                setMode(m.key);
+                if (m.key==="drill" && isGuest) setDrillSource("full");
+                setScreen("compPick");
+              }} style={{
+                padding:"20px 16px 20px 24px",
+                background: C.surface,
+                border: `1px solid ${C.border}`,
+                borderRadius:R,
+                cursor:m.available?"pointer":"default",textAlign:"left",
+                transition:"all 0.12s",opacity:m.available?1:0.45,
+                display:"flex",flexDirection:"column",justifyContent:"center",gap:4,
+                position:"relative",overflow:"hidden",minWidth:0,
+                animationDelay:`${0.12+i*0.06}s`,animationFillMode:"both",
               }}>
-                {m.label}
-              </div>
-              <div style={{fontFamily:BC,fontSize:13,letterSpacing:1,color:m.available?C.white:C.muted,fontWeight:600}}>
-                {m.desc}
-              </div>
-            </button>
-          ))}
+
+                {/* Left Accent Bar */}
+                <div style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  bottom: 0,
+                  width: 4, 
+                  background: m.available ? accentColor : `${C.border}A0`, 
+                  borderTopLeftRadius: R,
+                  borderBottomLeftRadius: R
+                }} />
+
+                {!m.available && <span style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:C.muted,
+                  border:`1px solid ${C.muted}50`,padding:"3px 0",borderRadius:R,
+                  position:"absolute",top:10,right:10,minWidth:52,textAlign:"center"}}>SOON</span>}
+                
+                {/* Title */}
+                <div style={{
+                  fontFamily:BB,fontSize:26,letterSpacing:m.label.length>8?3:5,
+                  color: m.available ? C.white : C.muted, 
+                  lineHeight:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+                  textShadow: "none" 
+                }}>
+                  {m.label}
+                </div>
+                <div style={{fontFamily:BC,fontSize:13,letterSpacing:1,color:m.available?C.white:C.muted,fontWeight:600}}>
+                  {m.desc}
+                </div>
+              </button>
+            )
+          })}
         </div>
+
         {/* Footer */}
         <div style={{marginTop:16,display:"flex",justifyContent:"center",alignItems:"center",gap:12,flexWrap:"wrap"}}>
           <IgLink size={13} fontSize={12} style={{letterSpacing:2}}/>
