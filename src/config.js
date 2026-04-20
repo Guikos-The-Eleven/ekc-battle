@@ -2,9 +2,9 @@
 //import newLogoImg from "./assets/KOMP_logo_full-removebg-preview.png";
 //const LOGO = newLogoImg;
 
-import logo1 from "./assets/KOMP logo/KOMP_logo_full"
-import logo2 from "./assets/KOMP logo/KOMP_logo_full_2x2"
-import logo3 from "./assets/KOMP logo/KOMP_logo_solo"
+import logo1 from "./assets/KOMP logo/KOMP_logo_full.png"
+import logo2 from "./assets/KOMP logo/KOMP_logo_full_2x2.png"
+import logo3 from "./assets/KOMP logo/KOMP_logo_solo.png"
 
 const LOGOS = [logo1, logo2, logo3];
 
