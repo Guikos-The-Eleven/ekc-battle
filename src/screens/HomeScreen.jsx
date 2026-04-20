@@ -57,7 +57,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
               alt="NXS" 
               onClick={cycleLogo} // The secret tap!
               style={{
-                width:180, height:180, objectFit:"contain", 
+                width:200, height:200, objectFit:"contain", 
                 display:"block", margin:"0 auto", 
                 cursor:"pointer" // Shows a pointer on desktop
               }}
