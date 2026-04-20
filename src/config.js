@@ -8,7 +8,7 @@ import logo3 from "./assets/KOMP logo/KOMP_logo_solo_corte_vermelho.png"
 import logo4 from "./assets/KOMP logo/KOMP_logo_full_vermelho_verde.png"
 
 
-const LOGOS = [logo1, logo2, logo3];
+const LOGOS = [logo1, logo2, logo3, logo4];
 
 const LOGO = LOGOS[0];
 
