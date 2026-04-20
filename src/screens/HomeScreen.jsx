@@ -1,8 +1,18 @@
-import React from "react";
-import { LOGO, C, BB, BC, R } from "../config";
+import React, { useState } from "react";
+import { LOGOS, C, BB, BC, R } from "../config";
 import { Div, IgLink, FeedbackLink, DonateLink } from "../components/ui";
 
 export default function HomeScreen({ user, username, isGuest, homeStats, setMode, setScreen, setDrillSource, goToAuth, handleSignOut, setFeedbackText, setFeedbackSent }) {
+
+  // 3. Add this state to track the current logo
+  const [logoIndex, setLogoIndex] = useState(0);
+
+  // 4. Create a function to cycle to the next logo
+  const cycleLogo = () => {
+    // This loops back to 0 when it hits the end of the array
+    setLogoIndex((prev) => (prev + 1) % LOGOS.length); 
+  };
+
   const modeCards = [
     {key:"cpu",   label:"BATTLE",     desc:"1v1 vs CPU",          color:C.blue,    available:true},
     {key:"drill", label:"DRILL",      desc:"Train your tricks",   color:C.amber,  available:true},
@@ -41,7 +51,17 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
         {/* Logo + Name */}
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:"100%",marginTop:8}}>
           <div className="rise">
-            <img src={LOGO} alt="NXS" style={{width:140,height:140,objectFit:"contain",display:"block",margin:"0 auto"}}/>
+            {/* 5. Update the img tag to use LOGOS[logoIndex] and add onClick */}
+            <img 
+              src={LOGOS[logoIndex]} 
+              alt="NXS" 
+              onClick={cycleLogo} // The secret tap!
+              style={{
+                width:140, height:140, objectFit:"contain", 
+                display:"block", margin:"0 auto", 
+                cursor:"pointer" // Shows a pointer on desktop
+              }}
+            />
           </div>
           <div className="rise" style={{animationDelay:"0.05s",animationFillMode:"both",textAlign:"center"}}>
             {/*<div style={{fontFamily:BB,fontSize:54,letterSpacing:12,color:C.white,marginTop:-2}}>KOMP</div> */ }
