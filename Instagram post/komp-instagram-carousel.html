@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOMP Instagram Carousel</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1a1c;font-family:'Barlow Condensed',sans-serif;display:flex;flex-direction:column;align-items:center;padding:40px 20px;color:#fafafa}
+h1{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;margin-bottom:8px;color:#888}
+.instructions{color:#666;font-size:14px;margin-bottom:40px;text-align:center;max-width:500px;line-height:1.5}
+.slides-wrapper{display:flex;gap:32px;flex-wrap:wrap;justify-content:center}
+.slide-container{display:flex;flex-direction:column;align-items:center;gap:8px}
+.slide-label{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:#555}
+.slide{width:400px;height:400px;background:#0b0b0c;position:relative;overflow:hidden;border:1px solid #1f1f23}
+.slide::after{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");pointer-events:none;z-index:10}
+.slide-inner{width:100%;height:100%;display:flex;flex-direction:column;position:relative;z-index:1}
+.nxs-bg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:260px;height:260px;opacity:0.035;z-index:0;object-fit:contain}
+.top-bar{padding:20px 36px 0}
+.mode-label{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:3px}
+.content{flex:1;display:flex;flex-direction:column;justify-content:center;padding:24px 36px;position:relative;z-index:2}
+.title{font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:3px;line-height:1;color:#fafafa}
+.sub{font-size:15px;color:#b8b8c0;margin-top:14px;line-height:1.5;font-weight:300}
+</style>
+</head>
+<body>
+<h1>KOMP — INSTAGRAM CAROUSEL</h1>
+<p class="instructions">9 slides. Set .slide to 1080×1080 in dev tools to screenshot at full res.</p>
+<div class="slides-wrapper">
+
+<!-- SLIDE 1: HERO -->
+<div class="slide-container">
+<div class="slide-label">SLIDE 1 — COVER</div>
+<div class="slide">
+<div class="slide-inner">
+<img class="nxs-bg" style="width:300px;height:300px" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQCAYAAACAvzbMAAABAGlDQ1BpY2MAABiVY2BgPMEABCwGDAy5eSVFQe5OChGRUQrsDxgYgRAMEpOLCxhwA6Cqb9cgai/r4lGHC3CmpBYnA+kPQKxSBLQcaKQIkC2SDmFrgNhJELYNiF1eUlACZAeA2EUhQc5AdgqQrZGOxE5CYicXFIHU9wDZNrk5pckIdzPwpOaFBgNpDiCWYShmCGJwZ3AC+R+iJH8RA4PFVwYG5gkIsaSZDAzbWxkYJG4hxFQWMDDwtzAwbDuPEEOESUFiUSJYiAWImdLSGBg+LWdg4I1kYBC+wMDAFQ0LCBxuUwC7zZ0hHwjTGXIYUoEingx5DMkMekCWEYMBgyGDGQCm1j8/yRb+6wAAAABJRU5ErkJggg==" alt="">
+<div class="content" style="align-items:center;text-align:center;padding:40px">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:4px;color:#555;margin-bottom:24px">KENDAMANXS PRESENTS</div>
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:96px;letter-spacing:8px;line-height:0.9;color:#fafafa">KOMP</div>
+  <div style="font-size:14px;letter-spacing:5px;color:#888894;margin-top:12px;text-transform:uppercase">Kendama Competition Trainer</div>
+  <div style="width:40px;height:3px;background:#4da3ff;margin:20px auto 0"></div>
+  <div style="margin-top:32px;border:1px solid #4da3ff;color:#4da3ff;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;padding:8px 24px">OUT NOW — FREE</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 2: INTRO -->
+<div class="slide-container">
+<div class="slide-label">SLIDE 2 — INTRO</div>
+<div class="slide">
+<div class="slide-inner">
+<img class="nxs-bg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQCAYAAACAvzbMAAABAGlDQ1BpY2MAABiVY2BgPMEABCwGDAy5eSVFQe5OChGRUQrsDxgYgRAMEpOLCxhwA6Cqb9cgai/r4lGHC3CmpBYnA+kPQKxSBLQcaKQIkC2SDmFrgNhJELYNiF1eUlACZAeA2EUhQc5AdgqQrZGOxE5CYicXFIHU9wDZNrk5pckIdzPwpOaFBgNpDiCWYShmCGJwZ3AC+R+iJH8RA4PFVwYG5gkIsaSZDAzbWxkYJG4hxFQWMDDwtzAwbDuPEEOESUFiUSJYiAWImdLSGBg+LWdg4I1kYBC+wMDAFQ0LCBxuUwC7zZ0hHwjTGXIYUoEingx5DMkMekCWEYMBgyGDGQCm1j8/yRb+6wAAAABJRU5ErkJggg==" alt="">
+<div class="content" style="padding:40px 36px">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:2px;color:#fafafa;line-height:1;margin-bottom:24px">TRAIN LIKE<br>YOU <span style="color:#4da3ff">COMPETE</span></div>
+  <div style="font-size:16px;line-height:1.6;color:#b8b8c0;font-weight:300">A free web app for kendama players who want to sharpen their game using real competition trick lists.</div>
+  <div style="margin-top:28px;display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;align-items:center;gap:12px"><div style="width:3px;height:28px;background:#4da3ff;flex-shrink:0"></div><div><div style="font-size:15px;color:#f3f3f3;font-weight:500">BATTLE</div><div style="font-size:12px;color:#888894">1v1 vs CPU</div></div></div>
+    <div style="display:flex;align-items:center;gap:12px"><div style="width:3px;height:28px;background:#e8b04a;flex-shrink:0"></div><div><div style="font-size:15px;color:#f3f3f3;font-weight:500">DRILL</div><div style="font-size:12px;color:#888894">Train your tricks</div></div></div>
+    <div style="display:flex;align-items:center;gap:12px"><div style="width:3px;height:28px;background:#c47a4e;flex-shrink:0"></div><div><div style="font-size:15px;color:#f3f3f3;font-weight:500">TOURNEY</div><div style="font-size:12px;color:#888894">Bracket competition</div></div></div>
+    <div style="display:flex;align-items:center;gap:12px"><div style="width:3px;height:28px;background:#8b9eb0;flex-shrink:0"></div><div><div style="font-size:15px;color:#f3f3f3;font-weight:500">2 PLAYER</div><div style="font-size:12px;color:#888894">Local head to head</div></div></div>
+  </div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 3: BATTLE -->
+<div class="slide-container">
+<div class="slide-label">SLIDE 3 — BATTLE</div>
+<div class="slide">
+<div class="slide-inner">
+<img class="nxs-bg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQCAYAAACAvzbMAAABAGlDQ1BpY2MAABiVY2BgPMEABCwGDAy5eSVFQe5OChGRUQrsDxgYgRAMEpOLCxhwA6Cqb9cgai/r4lGHC3CmpBYnA+kPQKxSBLQcaKQIkC2SDmFrgNhJELYNiF1eUlACZAeA2EUhQc5AdgqQrZGOxE5CYicXFIHU9wDZNrk5pckIdzPwpOaFBgNpDiCWYShmCGJwZ3AC+R+iJH8RA4PFVwYG5gkIsaSZDAzbWxkYJG4hxFQWMDDwtzAwbDuPEEOESUFiUSJYiAWImdLSGBg+LWdg4I1kYBC+wMDAFQ0LCBxuUwC7zZ0hHwjTGXIYUoEingx5DMkMekCWEYMBgyGDGQCm1j8/yRb+6wAAAABJRU5ErkJggg==" alt="">
+<div class="top-bar"><div class="mode-label" style="color:#4da3ff">BATTLE</div></div>
+<div class="content">
+  <div class="title">1v1 VS CPU</div>
+  <div class="sub">A trick is called — you both attempt it. Land while the CPU misses to score. The CPU adapts with momentum, streaks, and clutch.</div>
+  <div style="margin-top:24px;background:#121214;border-left:3px solid #4da3ff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center">
+    <div><div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#3ddc84">YOU</div><div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#3ddc84">3</div></div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:#555;letter-spacing:2px">VS</div>
+    <div style="text-align:right"><div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#ff4d4f">SPIKE LORD</div><div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#ff4d4f">2</div></div>
+  </div>
+  <div style="margin-top:16px;display:flex;gap:10px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;padding:6px 14px;border:1px solid #1f1f23;color:#888894">ROOKIE</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;padding:6px 14px;border:1px solid #4da3ff;color:#4da3ff">AMATEUR</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;padding:6px 14px;border:1px solid #1f1f23;color:#888894">PRO</div>
+  </div>
+  <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div style="background:#3ddc84;color:#0b0b0c;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;padding:14px 0;text-align:center;border-radius:2px">LAND</div>
+    <div style="background:rgba(255,77,79,0.05);border:1px solid rgba(255,77,79,0.2);color:rgba(255,77,79,0.8);font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;padding:14px 0;text-align:center;border-radius:2px">MISS</div>
+  </div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 4: TOURNAMENT -->
+<div class="slide-container">
+<div class="slide-label">SLIDE 4 — TOURNAMENT</div>
+<div class="slide">
+<div class="slide-inner">
+<img class="nxs-bg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQCAYAAACAvzbMAAABAGlDQ1BpY2MAABiVY2BgPMEABCwGDAy5eSVFQe5OChGRUQrsDxgYgRAMEpOLCxhwA6Cqb9cgai/r4lGHC3CmpBYnA+kPQKxSBLQcaKQIkC2SDmFrgNhJELYNiF1eUlACZAeA2EUhQc5AdgqQrZGOxE5CYicXFIHU9wDZNrk5pckIdzPwpOaFBgNpDiCWYShmCGJwZ3AC+R+iJH8RA4PFVwYG5gkIsaSZDAzbWxkYJG4hxFQWMDDwtzAwbDuPEEOESUFiUSJYiAWImdLSGBg+LWdg4I1kYBC+wMDAFQ0LCBxuUwC7zZ0hHwjTGXIYUoEingx5DMkMekCWEYMBgyGDGQCm1j8/yRb+6wAAAABJRU5ErkJggg==" alt="">
+<div class="top-bar"><div class="mode-label" style="color:#c47a4e">TOURNEY</div></div>
+<div class="content">
+  <div class="title" style="font-size:50px">BRACKET<br>COMPETITION</div>
+  <div class="sub">Single elimination. 4 or 8 players. Difficulty scales each round. Win it all or go home.</div>
+  <div style="margin-top:24px;display:flex;gap:12px;align-items:center">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:2px;color:#555;text-align:center;margin-bottom:4px">SEMI</div>
+      <div style="background:#121214;border-left:3px solid #3ddc84;padding:8px 12px;min-width:90px"><div style="font-size:12px;color:#3ddc84;font-weight:500">● YOU</div></div>
+      <div style="background:#121214;border-left:3px solid #ff4d4f;padding:8px 12px;min-width:90px"><div style="font-size:12px;color:#b8b8c0;font-weight:500">KEN MASTER</div></div>
+      <div style="height:8px"></div>
+      <div style="background:#121214;border-left:3px solid #3ddc84;padding:8px 12px"><div style="font-size:12px;color:#b8b8c0;font-weight:500">LUNAR KING</div></div>
+      <div style="background:#121214;border-left:3px solid #ff4d4f;padding:8px 12px"><div style="font-size:12px;color:#b8b8c0;font-weight:500">CUP WIZARD</div></div>
+    </div>
+    <div style="width:16px;height:1px;background:#1f1f23"></div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:2px;color:#555;text-align:center;margin-bottom:4px">FINAL</div>
+      <div style="background:#121214;border-left:3px solid #3ddc84;padding:8px 12px;min-width:90px"><div style="font-size:12px;color:#3ddc84;font-weight:500">● YOU</div></div>
+      <div style="background:#121214;border-left:3px solid #ff4d4f;padding:8px 12px"><div style="font-size:12px;color:#b8b8c0;font-weight:500">LUNAR KING</div></div>
+    </div>
+    <div style="width:16px;height:1px;background:#1f1f23"></div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:2px;color:#555;text-align:center;margin-bottom:4px">WINNER</div>
+      <div style="background:#121214;border-left:3px solid #f4c430;padding:8px 12px"><div style="font-size:12px;color:#f4c430;font-weight:500">🏆 YOU</div></div>
+    </div>
+  </div>
+  <div style="margin-top:20px;display:inline-block;border:1px solid #f4c430;color:#f4c430;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:3px;padding:6px 16px">BECOME THE CHAMPION</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 5: DRILL -->
+<div class="slide-container">
+<div class="slide-label">SLIDE 5 — DRILL</div>
+<div class="slide">
+<div class="slide-inner">
+<img class="nxs-bg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQCAYAAACAvzbMAAABAGlDQ1BpY2MAABiVY2BgPMEABCwGDAy5eSVFQe5OChGRUQrsDxgYgRAMEpOLCxhwA6Cqb9cgai/r4lGHC3CmpBYnA+kPQKxSBLQcaKQIkC2SDmFrgNhJELYNiF1eUlACZAeA2EUhQc5AdgqQrZGOxE5CYicXFIHU9wDZNrk5pckIdzPwpOaFBgNpDiCWYShmCGJwZ3AC+R+iJH8RA4PFVwYG5gkIsaSZDAzbWxkYJG4hxFQWMDDwtzAwbDuPEEOESUFiUSJYiAWImdLSGBg+LWdg4I1kYBC+wMDAFQ0LCBxuUwC7zZ0hHwjTGXIYUoEingx5DMkMekCWEYMBgyGDGQCm1j8/yRb+6wAAAABJRU5ErkJggg==" alt="">
+<div class="top-bar"><div class="mode-label" style="color:#e8b04a">DRILL</div></div>
+<div class="content">
+  <div class="title">TRAIN YOUR<br>TRICKS</div>
+  <div class="sub">Target your weakest tricks. Build consistency streaks. Track your land rate. Get comp-ready.</div>
+  <div style="margin-top:20px;background:#121214;border-left:3px solid #e8b04a;padding:14px 18px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:#f3f3f3">LUNAR FLIP SPIKE</div>
+    <div style="margin-top:8px;display:flex;gap:6px">
+      <div style="width:10px;height:10px;border-radius:1px;background:#3ddc84"></div>
+      <div style="width:10px;height:10px;border-radius:1px;background:#3ddc84"></div>
+      <div style="width:10px;height:10px;border-radius:1px;background:#3ddc84"></div>
+      <div style="width:10px;height:10px;border-radius:1px;background:#ff4d4f"></div>
+      <div style="width:10px;height:10px;border-radius:1px;background:#1f1f23"></div>
+    </div>
+  </div>
+  <div style="margin-top:8px;background:#121214;border-left:3px solid #e8b04a;padding:14px 18px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:#f3f3f3">BIRD TO EARTH TURN</div>
+    <div style="margin-top:8px;display:flex;gap:6px">
+      <div style="width:10px;height:10px;border-radius:1px;background:#3ddc84"></div>
+      <div style="width:10px;height:10px;border-radius:1px;background:#3ddc84"></div>
+      <div style="width:10px;height:10px;border-radius:1px;background:#1f1f23"></div>
+      <div style="width:10px;height:10px;border-radius:1px;background:#1f1f23"></div>
+      <div style="width:10px;height:10px;border-radius:1px;background:#1f1f23"></div>
+    </div>
+  </div>
+  <div style="margin-top:16px;display:flex;gap:10px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;padding:6px 14px;border:1px solid #e8b04a;color:#e8b04a">CONSISTENCY</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;padding:6px 14px;border:1px solid #1f1f23;color:#888894">FIRST TRY</div>
+  </div>
+  <div style="margin-top:10px;display:flex;gap:8px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;padding:5px 12px;border:1px solid #e8b04a;color:#e8b04a">WEAKEST</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;padding:5px 12px;border:1px solid #1f1f23;color:#888894">FULL LIST</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;padding:5px 12px;border:1px solid #1f1f23;color:#888894">PICK</div>
+  </div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 6: 2 PLAYER -->
+<div class="slide-container">
+<div class="slide-label">SLIDE 6 — 2 PLAYER</div>
+<div class="slide">
+<div class="slide-inner">
+<img class="nxs-bg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQCAYAAACAvzbMAAABAGlDQ1BpY2MAABiVY2BgPMEABCwGDAy5eSVFQe5OChGRUQrsDxgYgRAMEpOLCxhwA6Cqb9cgai/r4lGHC3CmpBYnA+kPQKxSBLQcaKQIkC2SDmFrgNhJELYNiF1eUlACZAeA2EUhQc5AdgqQrZGOxE5CYicXFIHU9wDZNrk5pckIdzPwpOaFBgNpDiCWYShmCGJwZ3AC+R+iJH8RA4PFVwYG5gkIsaSZDAzbWxkYJG4hxFQWMDDwtzAwbDuPEEOESUFiUSJYiAWImdLSGBg+LWdg4I1kYBC+wMDAFQ0LCBxuUwC7zZ0hHwjTGXIYUoEingx5DMkMekCWEYMBgyGDGQCm1j8/yRb+6wAAAABJRU5ErkJggg==" alt="">
+<div class="top-bar"><div class="mode-label" style="color:#8b9eb0">2 PLAYER</div></div>
+<div class="content">
+  <div class="title">LOCAL<br>HEAD TO HEAD</div>
+  <div class="sub">Grab a friend. A trick is called — both attempt it in real life. Tap who landed it. First to the target wins.</div>
+  <div style="margin-top:24px;background:#121214;border-left:3px solid #8b9eb0;padding:16px 20px;display:flex;justify-content:space-between;align-items:center">
+    <div><div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#3ddc84">GUIKO</div><div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#3ddc84">2</div></div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:#555;letter-spacing:2px">VS</div>
+    <div style="text-align:right"><div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#ff7a18">NANDO</div><div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#ff7a18">1</div></div>
+  </div>
+  <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div style="background:#3ddc84;color:#0b0b0c;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;padding:14px 0;text-align:center;border-radius:2px">GUIKO</div>
+    <div style="background:rgba(255,122,24,0.08);border:1px solid rgba(255,122,24,0.25);color:rgba(255,122,24,0.8);font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;padding:14px 0;text-align:center;border-radius:2px">NANDO</div>
+  </div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 7: COMPETITIONS -->
+<div class="slide-container">
+<div class="slide-label">SLIDE 7 — COMPETITIONS</div>
+<div class="slide">
+<div class="slide-inner">
+<img class="nxs-bg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQCAYAAACAvzbMAAABAGlDQ1BpY2MAABiVY2BgPMEABCwGDAy5eSVFQe5OChGRUQrsDxgYgRAMEpOLCxhwA6Cqb9cgai/r4lGHC3CmpBYnA+kPQKxSBLQcaKQIkC2SDmFrgNhJELYNiF1eUlACZAeA2EUhQc5AdgqQrZGOxE5CYicXFIHU9wDZNrk5pckIdzPwpOaFBgNpDiCWYShmCGJwZ3AC+R+iJH8RA4PFVwYG5gkIsaSZDAzbWxkYJG4hxFQWMDDwtzAwbDuPEEOESUFiUSJYiAWImdLSGBg+LWdg4I1kYBC+wMDAFQ0LCBxuUwC7zZ0hHwjTGXIYUoEingx5DMkMekCWEYMBgyGDGQCm1j8/yRb+6wAAAABJRU5ErkJggg==" alt="">
+<div class="content" style="padding:36px">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:4px;color:#888894;margin-bottom:24px">REAL COMPETITION TRICK LISTS</div>
+  <div style="background:#121214;border-left:3px solid #4da3ff;padding:18px 20px;margin-bottom:12px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:#fafafa;line-height:1">EKC 2026</div>
+    <div style="font-size:12px;color:#888894;letter-spacing:1px;margin-top:4px">European Kendama Championship</div>
+    <div style="font-size:13px;color:#b8b8c0;margin-top:6px;font-weight:500">Utrecht, NL · May 22–23</div>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:2px;padding:4px 10px;border:1px solid #4da3ff44;color:#4da3ff">AM OPEN · 20</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:2px;padding:4px 10px;border:1px solid #4da3ff44;color:#4da3ff">PRO OPEN · 30</div>
+    </div>
+  </div>
+  <div style="background:#121214;border-left:3px solid #c47a4e;padding:18px 20px;margin-bottom:12px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:#fafafa;line-height:1">BKO 2026</div>
+    <div style="font-size:12px;color:#888894;letter-spacing:1px;margin-top:4px">British Kendama Open</div>
+    <div style="font-size:13px;color:#b8b8c0;margin-top:6px;font-weight:500">Cardiff, UK · May 2</div>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:2px;padding:4px 10px;border:1px solid #c47a4e44;color:#c47a4e">OPEN · 17</div>
+    </div>
+  </div>
+  <div style="margin-top:16px;font-size:13px;color:#555;letter-spacing:1px;text-align:center">MORE COMPETITIONS COMING SOON</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 8: SUPPORT -->
+<div class="slide-container">
+<div class="slide-label">SLIDE 8 — SUPPORT</div>
+<div class="slide">
+<div class="slide-inner">
+<img class="nxs-bg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQCAYAAACAvzbMAAABAGlDQ1BpY2MAABiVY2BgPMEABCwGDAy5eSVFQe5OChGRUQrsDxgYgRAMEpOLCxhwA6Cqb9cgai/r4lGHC3CmpBYnA+kPQKxSBLQcaKQIkC2SDmFrgNhJELYNiF1eUlACZAeA2EUhQc5AdgqQrZGOxE5CYicXFIHU9wDZNrk5pckIdzPwpOaFBgNpDiCWYShmCGJwZ3AC+R+iJH8RA4PFVwYG5gkIsaSZDAzbWxkYJG4hxFQWMDDwtzAwbDuPEEOESUFiUSJYiAWImdLSGBg+LWdg4I1kYBC+wMDAFQ0LCBxuUwC7zZ0hHwjTGXIYUoEingx5DMkMekCWEYMBgyGDGQCm1j8/yRb+6wAAAABJRU5ErkJggg==" alt="">
+<div class="content" style="align-items:center;text-align:center;padding:40px 36px">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:3px;color:#fafafa;line-height:1;margin-bottom:20px">HELP US<br><span style="color:#e8b04a">GROW</span></div>
+  <div style="font-size:15px;color:#b8b8c0;line-height:1.6;font-weight:300;max-width:300px;margin-bottom:28px">KOMP is free and community-driven. Here's how you can support the project.</div>
+  <div style="display:flex;flex-direction:column;gap:14px;width:100%;max-width:280px">
+    <div style="background:#121214;border-left:3px solid #4da3ff;padding:16px 20px;text-align:left">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#4da3ff">SEND FEEDBACK</div>
+      <div style="font-size:12px;color:#888894;margin-top:4px">Tell us what you want to see next — right inside the app</div>
+    </div>
+    <div style="background:#121214;border-left:3px solid #e8b04a;padding:16px 20px;text-align:left">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#e8b04a">DONATE</div>
+      <div style="font-size:12px;color:#888894;margin-top:4px">Buy us a coffee to keep the servers running ☕</div>
+    </div>
+    <div style="background:#121214;border-left:3px solid #3ddc84;padding:16px 20px;text-align:left">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#3ddc84">SHARE</div>
+      <div style="font-size:12px;color:#888894;margin-top:4px">Send it to your kendama crew</div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 9: CTA -->
+<div class="slide-container">
+<div class="slide-label">SLIDE 9 — CTA</div>
+<div class="slide">
+<div class="slide-inner">
+<img class="nxs-bg" style="width:300px;height:300px" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQCAYAAACAvzbMAAABAGlDQ1BpY2MAABiVY2BgPMEABCwGDAy5eSVFQe5OChGRUQrsDxgYgRAMEpOLCxhwA6Cqb9cgai/r4lGHC3CmpBYnA+kPQKxSBLQcaKQIkC2SDmFrgNhJELYNiF1eUlACZAeA2EUhQc5AdgqQrZGOxE5CYicXFIHU9wDZNrk5pckIdzPwpOaFBgNpDiCWYShmCGJwZ3AC+R+iJH8RA4PFVwYG5gkIsaSZDAzbWxkYJG4hxFQWMDDwtzAwbDuPEEOESUFiUSJYiAWImdLSGBg+LWdg4I1kYBC+wMDAFQ0LCBxuUwC7zZ0hHwjTGXIYUoEingx5DMkMekCWEYMBgyGDGQCm1j8/yRb+6wAAAABJRU5ErkJggg==" alt="">
+<div class="content" style="align-items:center;text-align:center;padding:40px">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:6px;color:#fafafa;line-height:0.9">KOMP</div>
+  <div style="width:40px;height:3px;background:#4da3ff;margin:16px auto"></div>
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:#b8b8c0;margin-top:8px">START TRAINING NOW</div>
+  <div style="margin-top:28px;font-size:14px;color:#4da3ff;letter-spacing:1px;font-weight:500;padding:10px 24px;border:1px solid #4da3ff">LINK IN BIO</div>
+  <div style="margin-top:20px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:3px;color:#888894">FREE · NO DOWNLOAD · WORKS ON PHONE</div>
+  <div style="margin-top:32px;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:4px;color:#444">BY KENDAMANXS</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</body>
+</html>
