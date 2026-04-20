@@ -148,7 +148,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
                 left: 0,
                 bottom: 0,
                 width: 4, 
-                background: m.available ? "#F43130" : `${C.border}A0`, // Changed to the red hex code
+                background: m.available ? C.green : `${C.border}A0`, // Changed to the red hex code
                 borderTopLeftRadius: R,
                 borderBottomLeftRadius: R
               }} />
