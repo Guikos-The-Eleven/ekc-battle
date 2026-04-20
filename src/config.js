@@ -5,6 +5,8 @@
 import logo1 from "./assets/KOMP logo/KOMP_logo_full_corte_vermelho.png"
 import logo2 from "./assets/KOMP logo/KOMP_logo_full_2x2_corte_vermelho.png"
 import logo3 from "./assets/KOMP logo/KOMP_logo_solo_corte_vermelho.png"
+import logo4 from "./assets/KOMP logo/KOMP_logo_full_vermelho_verde.png"
+
 
 const LOGOS = [logo1, logo2, logo3];
 
