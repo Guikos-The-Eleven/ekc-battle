@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { LOGOS, C, BB, BC, R } from "../config";
+import { LOGOS, LOGO, C, BB, BC, R } from "../config";
 import { Div, IgLink, FeedbackLink, DonateLink } from "../components/ui";
 
 export default function HomeScreen({ user, username, isGuest, homeStats, setMode, setScreen, setDrillSource, goToAuth, handleSignOut, setFeedbackText, setFeedbackSent }) {
