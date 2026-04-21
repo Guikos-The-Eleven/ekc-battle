@@ -53,7 +53,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
               alt="NXS" 
               onClick={cycleLogo} 
               style={{
-                width: 180, height: 180, objectFit:"contain", 
+                width: 220, height: 220, objectFit:"contain", 
                 display:"block", margin:"0 auto", 
                 cursor:"pointer" 
               }}
