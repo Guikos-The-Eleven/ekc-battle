@@ -60,7 +60,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
             />
           </div>
           <div className="rise" style={{animationDelay:"0.05s",animationFillMode:"both",textAlign:"center"}}>
-            {/* <div style={{fontFamily:BC,fontSize:11,letterSpacing:4,color:C.muted,fontWeight:600,marginTop:4}}>KENDAMA COMPETITION TRAINER</div> */}
+            <div style={{fontFamily:BC,fontSize:11,letterSpacing:4,color:C.muted,fontWeight:600,marginTop:4}}>KENDAMA COMPETITION TRAINER</div>
           </div>
         </div>
 
