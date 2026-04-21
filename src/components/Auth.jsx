@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { SB } from "../supabase";
-import { C, BB, BC, R, LOGO } from "../config";
+import { C, BB, BC, R, LOGOS } from "../config";
 import { BtnPrimary, IgLink } from "./ui";
 
 // ── Validation helpers ──────────────────────────────────────────────────────
@@ -126,10 +126,9 @@ function AuthScreen({ onAuth, onGuest, startTab="login" }) {
     <div style={{fontFamily:BC,background:C.bg,color:C.white,height:"100dvh",maxWidth:440,margin:"0 auto",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 28px",position:"relative"}}>
       <div style={{position:"relative",zIndex:1,width:"100%"}}>
         <div style={{textAlign:"center",marginBottom:36}}>
-          <img src={LOGO} alt="NXS" style={{width:100,height:100,objectFit:"contain",display:"block",margin:"0 auto 8px"}}/>
-          <div style={{fontFamily:BB,fontSize:36,letterSpacing:8,color:C.white}}>KOMP</div>
-          <div style={{fontFamily:BC,fontSize:10,letterSpacing:3,color:C.muted,fontWeight:600,marginTop:4}}>KENDAMA COMPETITION TRAINER</div>
-          <div style={{marginTop:10,display:"flex",justifyContent:"center"}}>
+          <img src={LOGOS[0]} alt="KOMP" style={{width:220,height:"auto",display:"block",margin:"0 auto"}}/>
+          <div style={{fontFamily:BC,fontSize:11,letterSpacing:4,color:C.muted,fontWeight:600,marginTop:6}}>KENDAMA COMPETITION TRAINER</div>
+          <div style={{marginTop:12,display:"flex",justifyContent:"center"}}>
             <IgLink size={12} fontSize={10}/>
           </div>
         </div>

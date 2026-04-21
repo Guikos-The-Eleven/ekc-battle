@@ -1,20 +1,14 @@
-import React, { useState } from "react";
+import React from "react";
 import { LOGOS, C, BB, BC, R } from "../config"; 
 import { Div, IgLink, FeedbackLink, DonateLink } from "../components/ui";
 
 export default function HomeScreen({ user, username, isGuest, homeStats, setMode, setScreen, setDrillSource, goToAuth, handleSignOut, setFeedbackText, setFeedbackSent }) {
-  
-  const [logoIndex, setLogoIndex] = useState(0);
-
-  const cycleLogo = () => {
-    setLogoIndex((prev) => (prev + 1) % LOGOS.length); 
-  };
 
   const modeCards = [
-    {key:"cpu",   label:"BATTLE",     desc:"1v1 vs CPU",          available:true},
-    {key:"drill", label:"DRILL",      desc:"Train your tricks",   available:true},
-    {key:"tournament", label:"TOURNEY", desc:"Bracket competition", available:true},
-    {key:"2p",    label:"2 PLAYER",   desc:"Local head to head",  available:true},
+    {key:"cpu",        label:"BATTLE",   desc:"1v1 vs CPU",          accentColor:C.logored, available:true},
+    {key:"drill",      label:"DRILL",    desc:"Train your tricks",   accentColor:C.green,   available:true},
+    {key:"tournament", label:"TOURNEY",  desc:"Bracket competition", accentColor:C.logored, available:true},
+    {key:"2p",         label:"2 PLAYER", desc:"Local head to head",  accentColor:C.green,   available:true},
   ];
 
   return (
@@ -45,22 +39,17 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
           )}
         </div>
 
-        {/* Logo + Name */}
+        {/* Logo (green-dot variant echoes the home green accents) */}
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:"100%",marginTop:8}}>
           <div className="rise">
             <img 
-              src={LOGOS[logoIndex]} 
-              alt="NXS" 
-              onClick={cycleLogo} 
+              src={LOGOS[3]} 
+              alt="KOMP" 
               style={{
-                width: 220, height: 220, objectFit:"contain", 
-                display:"block", margin:"0 auto", 
-                cursor:"pointer" 
+                width: 180, height: 180, objectFit:"contain", 
+                display:"block", margin:"0 auto"
               }}
             />
-          </div>
-          <div className="rise" style={{animationDelay:"0.05s",animationFillMode:"both",textAlign:"center"}}>
-            {/* <div style={{fontFamily:BC,fontSize:11,letterSpacing:4,color:C.muted,fontWeight:600,marginTop:4}}>KENDAMA COMPETITION TRAINER</div> */}
           </div>
         </div>
 
@@ -118,16 +107,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
         {/* Mode cards */}
         <div style={{width:"100%",display:"grid",gridTemplateColumns:"1fr 1fr",gridTemplateRows:"1fr 1fr",gap:8,flex:1}}>
           {modeCards.map((m,i)=>{
-            
-            // Determine the accent color based on the mode key
-            let accentColor = C.muted;
-            if (m.available) {
-                if (m.key === "cpu" || m.key === "tournament") {
-                    accentColor = C.logored;
-                } else if (m.key === "drill" || m.key === "2p") {
-                    accentColor = C.green;
-                }
-            }
+            const accentColor = m.available ? m.accentColor : C.muted;
 
             return (
               <button key={m.key} className="tap fadeUp" onClick={()=>{

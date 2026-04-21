@@ -42,7 +42,8 @@ export default function CompPickScreen({ mode, expandedComp, setExpandedComp, se
         <BackBtn onClick={()=>{setScreen("home");setSelectedComp(null);setSelectedDiv(null);setExpandedComp(null);}}/>
         <div className="rise" style={{marginBottom:24}}>
           <div style={{fontFamily:BB,fontSize:38,letterSpacing:5,lineHeight:1,color:modeColor}}>{modeLabel}</div>
-          <div style={{fontFamily:BC,fontSize:14,color:C.muted,letterSpacing:2,marginTop:6,fontWeight:600}}>Pick a competition</div>
+          <div style={{width:48,height:3,background:modeColor,marginTop:12,opacity:0.9}}/>
+          <div style={{fontFamily:BC,fontSize:14,color:C.muted,letterSpacing:2,marginTop:10,fontWeight:600}}>Pick a competition</div>
         </div>
         <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",margin:"0 -24px",padding:"0 24px"}}>
           {COMPS.map((comp)=>{

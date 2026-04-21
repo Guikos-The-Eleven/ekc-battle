@@ -137,8 +137,9 @@ const CPU_NAMES = [
   "ORBIT ACE","GRIP FURY","LACE GOD","PULL PHANTOM","EARTH WALKER",
 ];
 
-// ─── MODE COLORS (for InfoOverlay accents) ──────────────────────────────────
-const MODE_COLORS = { cpu:C.blue, drill:C.amber, tournament:C.copper, "2p":C.slate };
+// ─── MODE COLORS (Option B: matches home-screen identity) ──────────────────
+// Competitive modes → brand red. Casual/practice modes → green.
+const MODE_COLORS = { cpu:C.logored, drill:C.green, tournament:C.logored, "2p":C.green };
 // ─── TRICK HELPERS ──────────────────────────────────────────────────────────
 const getTricksForDiv = (div, listKey) => {
   if (!div) return AM_TRICKS;

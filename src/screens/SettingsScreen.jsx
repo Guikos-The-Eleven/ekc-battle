@@ -72,7 +72,8 @@ export default function SettingsScreen(props) {
         <BackBtn onClick={()=>setScreen("compPick")}/>
         <div className="rise" style={{marginBottom:24}}>
           <div style={{fontFamily:BB,fontSize:40,letterSpacing:5,lineHeight:1,color:C.white}}>{selectedDiv.name}</div>
-          <div style={{fontFamily:BC,fontSize:14,letterSpacing:3,marginTop:6,fontWeight:600}}>
+          <div style={{width:48,height:3,background:mc,marginTop:12,opacity:0.9}}/>
+          <div style={{fontFamily:BC,fontSize:14,letterSpacing:3,marginTop:10,fontWeight:600}}>
             <span style={{color:C.muted}}>{selectedComp?.name} · </span>
             <span style={{color:mc}}>{modeLabel}</span>
           </div>
@@ -114,7 +115,7 @@ export default function SettingsScreen(props) {
             <Seg label="Base Difficulty" val={diff} onChange={setDiff} opts={[
               {key:"easy",label:"ROOKIE",color:C.green},{key:"medium",label:"AMATEUR",color:C.yellow},{key:"hard",label:"PRO",color:C.red},
             ]}/>
-            <Seg label="Bracket Size" val={bracketSize} onChange={setBracketSize} opts={[{key:4,label:"4",color:C.copper},{key:8,label:"8",color:C.copper}]}/>
+            <Seg label="Bracket Size" val={bracketSize} onChange={setBracketSize} opts={[{key:4,label:"4",color:mc},{key:8,label:"8",color:mc}]}/>
 
             {/* Tricklist selector for PRO OPEN (divisions with trickSets) */}
             {tourneyTrickOpts && (

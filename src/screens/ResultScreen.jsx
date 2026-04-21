@@ -1,5 +1,5 @@
 import React from "react";
-import { LOGO, C, BB, BC, R } from "../config";
+import { LOGOS, C, BB, BC, R } from "../config";
 import { Label, Div, BtnPrimary, BtnGhost } from "../components/ui";
 
 export default function ResultScreen({ result, race, p1Name, p2Name, P1_COL, P2_COL, isGuest, onPlayAgain, onSettings, onMainMenu, haptic, username }) {
@@ -20,7 +20,7 @@ export default function ResultScreen({ result, race, p1Name, p2Name, P1_COL, P2_
       <div style={{position:"fixed",inset:0,background:resultColor,opacity:0,animation:"flash 0.8s ease-out",zIndex:2,pointerEvents:"none"}}/>
       <div style={{position:"relative",zIndex:1,textAlign:"center",padding:"0 24px"}}>
         <div className="fadeUp" style={{animationDelay:"0s"}}>
-          <img src={LOGO} alt="KOMP" style={{width:64,height:64,objectFit:"contain",margin:"0 auto 20px",display:"block",opacity:0.4}}/>
+          <img src={LOGOS[2]} alt="KOMP" style={{width:64,height:64,objectFit:"contain",margin:"0 auto 20px",display:"block",opacity:0.4}}/>
         </div>
         <div className="pop" style={{animationDelay:"0.15s",animationFillMode:"both"}}>
           <div style={{fontFamily:BB,fontSize:is2p?56:72,letterSpacing:2,lineHeight:0.88,color:resultColor,textShadow:`0 0 40px ${resultColor}30`}}>{winLabel}</div>

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useReducer, useRef, useMemo } from "react";
 import { SB } from "./supabase";
-import { LOGO, C, BB, BC, R, CPU_CFG, CPU_NAMES, haptic, getTricksForDiv, MODE_COLORS } from "./config";
+import { LOGOS, C, BB, BC, R, CPU_CFG, CPU_NAMES, haptic, getTricksForDiv, MODE_COLORS } from "./config";
 import gameReducer from "./gameReducer";
-import { buildPool, shuffle } from "./cpu";
+import { buildPool } from "./cpu";
 
 // Screens
 import HomeScreen from "./screens/HomeScreen";
@@ -200,7 +200,7 @@ export default function App() {
     const restPool = pool.slice(1);
     if (mode==="cpu"||mode==="tournament") {
       const init = {scores:{you:0,cpu:0},pool:restPool,trick,tryNum:1,
-        playerFirst:Math.random()<0.5,phase:"reveal",cpuStreak:{active:false,dir:"hot",left:0},
+        playerFirst:true,phase:"reveal",cpuStreak:{active:false,dir:"hot",left:0},
         cpuFirst:null,pResult:null,msg:"",winner:null,cpuMomentum:[],lastScoreKey:0,
         gameLog:[],currentTries:[],matchOver:false,scoredTricks:[],
         config:{diff,race,streaks,mode}};
@@ -230,7 +230,7 @@ export default function App() {
   // ── Drill start ──
   async function buildDrillQueue(source) {
     const tricks = allTricks();
-    if (source==="pick") return shuffle(tricks);
+    if (source==="pick") return [...tricks].sort(()=>Math.random()-0.5);
     if ((source==="weakest"||source==="full") && userRef.current) {
       const { data } = await SB.from("trick_attempts").select("trick,landed,competition")
         .eq("user_id",userRef.current.id);
@@ -254,7 +254,7 @@ export default function App() {
       if (filtered.length>0) return filtered.map(r=>r.trick);
       return [];
     }
-    return shuffle(tricks);
+    return [...tricks].sort(()=>Math.random()-0.5);
   }
 
   async function startDrill() {
@@ -276,7 +276,7 @@ export default function App() {
   }
 
   function startDrillPick(tricks) {
-    const shuffled = shuffle(tricks);
+    const shuffled = [...tricks].sort(()=>Math.random()-0.5);
     if (drillType==="consistency") {
       setDrill({type:"consistency",target:drillTarget,trick:shuffled[0],
         completed:[],queue:shuffled.slice(1),phase:"active",pickMode:true});
@@ -303,10 +303,10 @@ export default function App() {
   }
 
   function generateBracket(size) {
-    const names = shuffle(CPU_NAMES).slice(0,size-1);
+    const names = [...CPU_NAMES].sort(()=>Math.random()-0.5).slice(0,size-1);
     const players = [{seed:0,name:username||"YOU",isHuman:true,eliminated:false}];
     names.forEach((n,i)=>players.push({seed:i+1,name:n,isHuman:false,eliminated:false}));
-    const seeds = shuffle(players).map((p,i)=>({...p,seed:i}));
+    const seeds = players.sort(()=>Math.random()-0.5).map((p,i)=>({...p,seed:i}));
     const totalRounds = size===4?2:3;
     const rounds = [];
     const r1 = [];
@@ -338,7 +338,7 @@ export default function App() {
     const trick = pool[0];
     const restPool = pool.slice(1);
     const init = {scores:{you:0,cpu:0},pool:restPool,trick,tryNum:1,
-      playerFirst:Math.random()<0.5,phase:"reveal",cpuStreak:{active:false,dir:"hot",left:0},
+      playerFirst:true,phase:"reveal",cpuStreak:{active:false,dir:"hot",left:0},
       cpuFirst:null,pResult:null,msg:"",winner:null,cpuMomentum:[],lastScoreKey:0,
       gameLog:[],currentTries:[],cpuNudge:nudge,matchOver:false,scoredTricks:[],cpuName:oppName,
       tournamentRound:t.currentRound,
@@ -446,7 +446,7 @@ export default function App() {
   if (authLoading) return (
     <div style={{fontFamily:BC,background:C.bg,color:C.text,height:"100dvh",maxWidth:440,margin:"0 auto",
       display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}} role="status" aria-label="Loading app">
-      <img src={LOGO} alt="KOMP" className="glow" style={{width:100,height:100,objectFit:"contain"}}/>
+      <img src={LOGOS[2]} alt="KOMP" className="glow" style={{width:80,height:80,objectFit:"contain"}}/>
       <div className="fadeUp" style={{fontFamily:BB,fontSize:12,letterSpacing:6,color:C.muted,marginTop:16,animationDelay:"0.3s",animationFillMode:"both"}}>LOADING</div>
     </div>
   );
@@ -466,8 +466,8 @@ export default function App() {
         display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 28px"}}>
         <div style={{width:"100%"}}>
           <div style={{textAlign:"center",marginBottom:36}}>
-            <img src={LOGO} alt="NXS" style={{width:100,height:100,objectFit:"contain",display:"block",margin:"0 auto 8px"}}/>
-            <div style={{fontFamily:BB,fontSize:36,letterSpacing:8,color:C.white}}>KOMP</div>
+            <img src={LOGOS[0]} alt="KOMP" style={{width:220,height:"auto",display:"block",margin:"0 auto"}}/>
+            <div style={{fontFamily:BC,fontSize:11,letterSpacing:4,color:C.muted,fontWeight:600,marginTop:6}}>KENDAMA COMPETITION TRAINER</div>
           </div>
           {recoveryDone ? (
             <div className="fadeUp" style={{textAlign:"center"}}>
