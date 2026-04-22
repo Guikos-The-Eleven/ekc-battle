@@ -40,7 +40,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
         </div>
 
         {/* Logo (green-dot variant echoes the home green accents) */}
-        <div className="rise" style={{textAlign:"center",width:"100%",marginTop:8}}>
+        <div className="rise" style={{textAlign:"center",width:"100%",marginTop:24}}>
           <img 
             src={LOGOS[3]} 
             alt="KOMP" 
@@ -51,7 +51,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
 
         {/* Stats snapshot */}
         {homeStats && homeStats.total > 0 ? (
-          <div className="fadeUp" style={{ width: "100%", marginTop: 20, marginBottom: 20, animationDelay: "0.1s", animationFillMode: "both" }}>
+          <div className="fadeUp" style={{ width: "100%", marginTop: 28, marginBottom: 20, animationDelay: "0.1s", animationFillMode: "both" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 0, width: "100%" }}>
               
               {/* WINS */}
@@ -97,7 +97,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
             </div>
           </div>
         ) : (
-          <div style={{ marginTop: 20, marginBottom: 20 }} />
+          <div style={{ marginTop: 28, marginBottom: 20 }} />
         )}
 
         {/* Mode cards */}
@@ -157,7 +157,7 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
         </div>
 
         {/* Footer */}
-        <div style={{marginTop:16,display:"flex",justifyContent:"center",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+        <div style={{marginTop:20,display:"flex",justifyContent:"center",alignItems:"center",gap:12,flexWrap:"wrap"}}>
           <IgLink size={13} fontSize={12} style={{letterSpacing:2}}/>
           <span style={{color:C.border,fontSize:10}}>·</span>
           <FeedbackLink size={13} fontSize={12} label="Feedback" onClick={()=>{setFeedbackText("");setFeedbackSent(false);setScreen("feedback");}} style={{letterSpacing:2}}/>
