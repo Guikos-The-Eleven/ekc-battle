@@ -94,11 +94,19 @@ export default function App() {
   useEffect(()=>{
     SB.auth.getSession().then(async ({ data:{ session } })=>{
       if (session?.user) {
+        const metaName = session.user.user_metadata?.username;
+        const emailFallback = session.user.email.split("@")[0];
         let { data:prof } = await SB.from("profiles").select("username").eq("id",session.user.id).single();
         if (!prof) {
-          const fallbackName = session.user.email.split("@")[0];
-          await SB.from("profiles").insert({ id:session.user.id, username:fallbackName });
-          prof = { username:fallbackName };
+          // First login after confirmation — create profile from signup metadata
+          const uname = metaName || emailFallback;
+          await SB.from("profiles").insert({ id:session.user.id, username:uname });
+          prof = { username:uname };
+        } else if (metaName && prof.username === emailFallback && prof.username !== metaName) {
+          // Self-heal: legacy profile was written with the email-split fallback,
+          // but user's signup metadata has the real username. Fix it once.
+          await SB.from("profiles").update({ username:metaName }).eq("id",session.user.id);
+          prof = { username:metaName };
         }
         setUser(session.user); setUsername(prof.username);
       }

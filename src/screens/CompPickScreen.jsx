@@ -43,7 +43,7 @@ export default function CompPickScreen({ mode, expandedComp, setExpandedComp, se
         <div className="rise" style={{marginBottom:24}}>
           <div style={{display:"inline-block"}}>
             <div style={{fontFamily:BB,fontSize:38,letterSpacing:5,lineHeight:1,color:C.white}}>{modeLabel}</div>
-            <div style={{width:"100%",height:3,background:modeColor,marginTop:12,opacity:0.9}}/>
+            <div style={{width:"calc(100% - 5px)",height:3,background:modeColor,marginTop:6,opacity:0.9}}/>
           </div>
           <div style={{fontFamily:BC,fontSize:14,color:C.muted,letterSpacing:2,marginTop:10,fontWeight:600}}>Pick a competition</div>
         </div>
