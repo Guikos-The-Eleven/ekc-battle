@@ -40,17 +40,13 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
         </div>
 
         {/* Logo (green-dot variant echoes the home green accents) */}
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:"100%",marginTop:8}}>
-          <div className="rise">
-            <img 
-              src={LOGOS[3]} 
-              alt="KOMP" 
-              style={{
-                width: 180, height: 180, objectFit:"contain", 
-                display:"block", margin:"0 auto"
-              }}
-            />
-          </div>
+        <div className="rise" style={{textAlign:"center",width:"100%",marginTop:8}}>
+          <img 
+            src={LOGOS[3]} 
+            alt="KOMP" 
+            style={{width:220,height:"auto",display:"block",margin:"0 auto"}}
+          />
+          <div style={{fontFamily:BC,fontSize:11,letterSpacing:4,color:C.muted,fontWeight:600,marginTop:6}}>KENDAMA COMPETITION TRAINER</div>
         </div>
 
         {/* Stats snapshot */}

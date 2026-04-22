@@ -240,7 +240,7 @@ export default function BattleScreen({ gs, dispatch, mode, race, selectedDiv, op
         <div style={{flex:1,display:"flex",flexDirection:"column",padding:"20px 24px 0"}}>
           <div style={{borderLeft:`3px solid ${C.muted}`,paddingLeft:16,marginBottom:16}}>
             <Label style={{marginBottom:6}}>Trick</Label>
-            <div style={{fontFamily:BB,fontSize:28,letterSpacing:2,lineHeight:1.2,color:C.white}}>{trick}</div>
+            <div style={{fontFamily:BC,fontSize:28,letterSpacing:1,lineHeight:1.2,color:C.white}}>{trick}</div>
             <TrickInfoBtn trick={trick}/>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20}}>
