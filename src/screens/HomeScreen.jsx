@@ -22,10 +22,10 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
             <button className="tap" onClick={()=>setScreen("stats")} aria-label="Stats" style={{
               width:36,height:36,borderRadius:"50%",
               background:`${C.white}0a`,border:`1.5px solid ${C.border}`,
-              color:C.sub,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
-              transition:"all 0.12s",padding:0,
+              cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+              transition:"all 0.12s",padding:0,overflow:"hidden",
             }}>
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="1" y="9" width="3" height="6" rx="0.5"/><rect x="6.5" y="5" width="3" height="10" rx="0.5"/><rect x="12" y="1" width="3" height="14" rx="0.5"/></svg>
+              <img src={LOGOS[2]} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
             </button>
           </div>
           {isGuest ? (
