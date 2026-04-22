@@ -1,24 +1,37 @@
 {
-  "name": "KOMP",
+  "name": "KOMP — Kendama Competition Trainer",
   "short_name": "KOMP",
-  "description": "Battle simulator for the European Kendama Championship 2026",
+  "description": "Battle CPU opponents, drill weak tricks, and run bracket tournaments using real kendama competition trick lists.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0b0b0c",
   "theme_color": "#0b0b0c",
-  "orientation": "portrait",
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
