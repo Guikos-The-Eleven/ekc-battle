@@ -60,8 +60,8 @@ export default function SettingsScreen(props) {
 
   // Build tournament tricklist options (only for divisions with trickSets)
   const tourneyTrickOpts = selectedDiv.trickSets ? [
-    ...selectedDiv.trickSets.map(s=>({key:s.key,label:s.label,sub:s.sub,color:mc})),
-    {key:"fullcomp",label:"FULL COMP",sub:"auto-switch",color:mc},
+    ...selectedDiv.trickSets.map(s=>({key:s.key,label:s.label,sub:s.sub,color:C.white})),
+    {key:"fullcomp",label:"FULL COMP",sub:"auto-switch",color:C.white},
   ] : null;
 
   return (
@@ -83,7 +83,7 @@ export default function SettingsScreen(props) {
 
         {selectedDiv.trickSets && mode!=="tournament" && (
           <Seg label="Trick List" val={openList} onChange={setOpenList} opts={
-            selectedDiv.trickSets.map(s=>({key:s.key,label:s.label,sub:s.sub,color:mc}))
+            selectedDiv.trickSets.map(s=>({key:s.key,label:s.label,sub:s.sub,color:C.white}))
           }/>
         )}
         <Div mb={20}/>
@@ -102,7 +102,10 @@ export default function SettingsScreen(props) {
               {[[p1Name,setP1Name,"Player 1",P1_COL],[p2Name,setP2Name,"Player 2",P2_COL]].map(([val,set,lbl,col])=>(
                 <div key={lbl}>
                   <Label style={{textAlign:"center",marginBottom:8,color:col}}>{lbl}</Label>
-                  <input value={val} onChange={e=>set(e.target.value||"")} placeholder={lbl.replace("Player ","P")} maxLength={12} aria-label={`${lbl} name`}
+                  <input value={val}
+                    onChange={e=>set((e.target.value||"").replace(/[^A-Za-z0-9 ]/g,""))}
+                    placeholder={lbl.replace("Player ","P")} maxLength={12} aria-label={`${lbl} name`}
+                    inputMode="text" autoCapitalize="characters" autoCorrect="off" spellCheck="false"
                     style={{width:"100%",padding:"12px 10px",background:C.surface,
                       border:`1px solid ${col}40`,borderLeft:`3px solid ${col}`,borderRadius:R,
                       color:C.white,fontFamily:BB,fontSize:22,letterSpacing:3,textAlign:"center",
@@ -126,7 +129,7 @@ export default function SettingsScreen(props) {
 
             {/* Race info + tricklist description */}
             <div style={{borderLeft:`3px solid ${mc}`,paddingLeft:14,marginBottom:20,marginTop:tourneyTrickOpts?0:0}}>
-              <Label style={{letterSpacing:3,color:mc,marginBottom:4}}>Match Format</Label>
+              <Label style={{letterSpacing:3,color:C.white,marginBottom:4}}>Match Format</Label>
               <div style={{fontFamily:BC,fontSize:14,color:C.sub,fontWeight:600,lineHeight:1.5}}>
                 All matches are first to 3. The final is first to 5.
               </div>

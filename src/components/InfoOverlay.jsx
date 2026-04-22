@@ -15,7 +15,7 @@ export default function InfoOverlay({ showInfo, setShowInfo, info, modeColor }) 
         background:"#1a1a1f",border:`1px solid ${C.border}`,borderRadius:R,
         borderTop:`3px solid ${C.muted}`,
       }}>
-        <div style={{fontFamily:BB,fontSize:24,letterSpacing:6,color:col,marginBottom:20}}>{info.title}</div>
+        <div style={{fontFamily:BB,fontSize:24,letterSpacing:6,color:C.white,marginBottom:20}}>{info.title}</div>
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
           {info.lines.map((line,i)=>(
             <div key={i} style={{

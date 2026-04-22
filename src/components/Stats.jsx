@@ -208,8 +208,8 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
               <div style={{display:"flex",alignItems:"center",
                 paddingTop:12,paddingBottom:isOpen&&log?6:12}}>
                 <div style={{width:72,flexShrink:0}}>
-                  <div style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:C.logored,
-                    border:`1px solid ${C.logored}30`,padding:"3px 0",borderRadius:R,textAlign:"center"}}>{roundLabel}</div>
+                  <div style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:C.white,
+                    border:`1px solid ${C.white}30`,padding:"3px 0",borderRadius:R,textAlign:"center"}}>{roundLabel}</div>
                 </div>
                 <div style={{fontFamily:BB,fontSize:20,letterSpacing:2,color:col,width:28,textAlign:"center",flexShrink:0,marginLeft:8}}>
                   {g.won?"W":"L"}
@@ -365,9 +365,9 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
               <>
                 {/* Two-column summary: BATTLE vs TOURNEY */}
                 <div style={{display:"flex",gap:0,marginBottom:24}}>
-                  <SummaryCol label="BATTLE" color={C.logored} wins={bRec.wins} losses={bRec.losses} rate={bRate} total={bRec.total} dimmed={bRec.total===0}/>
+                  <SummaryCol label="BATTLE" color={C.white} wins={bRec.wins} losses={bRec.losses} rate={bRate} total={bRec.total} dimmed={bRec.total===0}/>
                   <div style={{width:1,background:C.divider,margin:"8px 0"}}/>
-                  <SummaryCol label="TOURNEY" color={C.logored} wins={tRec.wins} losses={tRec.losses} rate={tRate} total={tRec.total} dimmed={tRec.total===0}/>
+                  <SummaryCol label="TOURNEY" color={C.white} wins={tRec.wins} losses={tRec.losses} rate={tRate} total={tRec.total} dimmed={tRec.total===0}/>
                 </div>
 
                 <Div mb={16}/>
@@ -514,8 +514,8 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                       }} onClick={()=>setTourneyDetail(item)}>
                         <div style={{display:"flex",alignItems:"center",paddingTop:12,paddingBottom:12}}>
                           <div style={{width:72,flexShrink:0}}>
-                            <div style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:C.logored,
-                              border:`1px solid ${C.logored}30`,padding:"3px 0",borderRadius:R,textAlign:"center"}}>TOURNEY</div>
+                            <div style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:C.white,
+                              border:`1px solid ${C.white}30`,padding:"3px 0",borderRadius:R,textAlign:"center"}}>TOURNEY</div>
                           </div>
                           <div style={{fontFamily:BB,fontSize:20,letterSpacing:2,color:col,width:28,textAlign:"center",flexShrink:0,marginLeft:8}}>
                             {item.isChampion?"W":"L"}
@@ -553,8 +553,8 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                       <div style={{display:"flex",alignItems:"center",
                         paddingTop:12,paddingBottom:isOpen&&log?6:12}}>
                         <div style={{width:72,flexShrink:0}}>
-                          <div style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:C.logored,
-                            border:`1px solid ${C.logored}30`,padding:"3px 0",borderRadius:R,textAlign:"center"}}>BATTLE</div>
+                          <div style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:C.white,
+                            border:`1px solid ${C.white}30`,padding:"3px 0",borderRadius:R,textAlign:"center"}}>BATTLE</div>
                         </div>
                         <div style={{fontFamily:BB,fontSize:20,letterSpacing:2,color:col,width:28,textAlign:"center",flexShrink:0,marginLeft:8}}>
                           {m.won?"W":"L"}
