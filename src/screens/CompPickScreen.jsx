@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { C, BB, BC, R, COMPS, MODE_COLORS } from "../config";
+import { C, BB, BC, R, COMPS_SORTED, MODE_COLORS } from "../config";
 import { BackBtn, IgLink } from "../components/ui";
 import InfoOverlay, { InfoBtn } from "../components/InfoOverlay";
 
@@ -48,7 +48,7 @@ export default function CompPickScreen({ mode, expandedComp, setExpandedComp, se
           <div style={{fontFamily:BC,fontSize:14,color:C.muted,letterSpacing:2,marginTop:10,fontWeight:600}}>Pick a competition</div>
         </div>
         <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",margin:"0 -24px",padding:"0 24px"}}>
-          {COMPS.map((comp)=>{
+          {COMPS_SORTED.map((comp)=>{
             const isOpen = expandedComp===comp.key;
             const isSoon = comp.soon;
             return (

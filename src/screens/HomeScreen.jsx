@@ -68,20 +68,6 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
 
               <div style={{ width: 1, height: 28, background: C.divider }} />
 
-              {/* LOSSES */}
-              <div style={{ flex: 1, textAlign: "center", padding: "14px 0" }}>
-                <div style={{ 
-                  fontFamily: BB, fontSize: 34, lineHeight: 1, 
-                  color:C.white, 
-                  textShadow: "0px 0px 12px rgba(200, 200, 212, 0.4)" 
-                }}>
-                  {homeStats.losses}
-                </div>
-                <div style={{ fontFamily: BB, fontSize: 10, letterSpacing: 4, color: C.muted, marginTop: 4, paddingLeft: 4 }}>LOSSES</div>
-              </div>
-
-              <div style={{ width: 1, height: 28, background: C.divider }} />
-
               {/* WIN RATE */}
               <div style={{ flex: 1, textAlign: "center", padding: "14px 0" }}>
                 <div style={{ 
@@ -92,6 +78,20 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
                   {Math.round((homeStats.wins / homeStats.total) * 100)}%
                 </div>
                 <div style={{ fontFamily: BB, fontSize: 10, letterSpacing: 4, color: C.muted, marginTop: 4, paddingLeft: 4 }}>WIN RATE</div>
+              </div>
+
+              <div style={{ width: 1, height: 28, background: C.divider }} />
+
+              {/* TROPHIES */}
+              <div style={{ flex: 1, textAlign: "center", padding: "14px 0" }}>
+                <div style={{ 
+                  fontFamily: BB, fontSize: 34, lineHeight: 1, 
+                  color:C.white, 
+                  textShadow: "0px 0px 12px rgba(200, 200, 212, 0.4)" 
+                }}>
+                  {homeStats.trophies || 0}
+                </div>
+                <div style={{ fontFamily: BB, fontSize: 10, letterSpacing: 4, color: C.muted, marginTop: 4, paddingLeft: 4 }}>TROPHIES</div>
               </div>
 
             </div>

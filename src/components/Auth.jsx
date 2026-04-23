@@ -6,7 +6,7 @@ import { BtnPrimary } from "./ui";
 // ── Validation helpers ──────────────────────────────────────────────────────
 const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 const validateSignup = (name, email, pw) => {
-  if (!name.trim() || name.trim().length < 2) return "Username must be at least 2 characters";
+  if (!name.trim() || name.trim().length < 3) return "Username must be at least 3 characters";
   if (name.trim().length > 20) return "Username must be 20 characters or fewer";
   if (/[^a-zA-Z0-9_\-]/.test(name.trim())) return "Username: letters, numbers, _ and - only";
   if (!isValidEmail(email)) return "Enter a valid email address";
@@ -17,6 +17,14 @@ const validateLogin = (email, pw) => {
   if (!isValidEmail(email)) return "Enter a valid email address";
   if (pw.length < 1) return "Enter your password";
   return null;
+};
+
+// Translate RPC reason codes into user-facing copy
+const USERNAME_ERRORS = {
+  taken:     "That username is already taken.",
+  reserved:  "That username is reserved. Please choose another.",
+  profanity: "Please choose a different username.",
+  invalid:   "Username: 3–20 characters, letters / numbers / _ / - only.",
 };
 
 function AuthScreen({ onAuth, onGuest, startTab="login" }) {
@@ -42,6 +50,16 @@ function AuthScreen({ onAuth, onGuest, startTab="login" }) {
       if (tab==="signup") {
         const valErr = validateSignup(name, email, pw);
         if (valErr) { setErr(valErr); setLoading(false); return; }
+
+        // Pre-signup: check username against reservation table (unique,
+        // case-insensitive, profanity-blocked, permanently reserved).
+        const { data:avail, error:availErr } = await SB.rpc("check_username_available", { p_name: name.trim() });
+        if (availErr) { setErr("Couldn't verify username — please try again."); setLoading(false); return; }
+        if (avail && avail.ok === false) {
+          setErr(USERNAME_ERRORS[avail.reason] || USERNAME_ERRORS.invalid);
+          setLoading(false); return;
+        }
+
         const { data:signUpData, error } = await SB.auth.signUp({
           email, password:pw,
           options: { data: { username: name.trim() } },
@@ -52,6 +70,21 @@ function AuthScreen({ onAuth, onGuest, startTab="login" }) {
           setLoading(false);
           return;
         }
+
+        // Post-signup: claim the username permanently. This also catches the
+        // tiny race window where two people try the same name at the same time.
+        if (signUpData?.user?.id) {
+          const { data:res } = await SB.rpc("reserve_username", {
+            p_name: name.trim(),
+            p_user_id: signUpData.user.id,
+          });
+          if (res && res.ok === false) {
+            // Extremely rare — another signup grabbed it in the window between check and signup.
+            setErr("That username was just taken. Please choose another.");
+            setLoading(false); return;
+          }
+        }
+
         setConfirmed(true);
         setLoading(false);
         return;

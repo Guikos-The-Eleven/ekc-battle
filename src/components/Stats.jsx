@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { SB } from "../supabase";
-import { LOGOS, C, BB, BC, R, COMPS } from "../config";
+import { LOGOS, C, BB, BC, R, COMPS_SORTED } from "../config";
 import { Label, Div, BtnPrimary, BtnGhost, BackBtn } from "./ui";
 
 function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selectedComp, selectedDiv }) {
@@ -15,7 +15,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
   // Tournament history detail view
   const [tourneyDetail, setTourneyDetail] = useState(null); // { id, matches }
 
-  const initComp = selectedComp || COMPS[0];
+  const initComp = selectedComp || COMPS_SORTED[0];
   const initDiv = selectedDiv || initComp?.divisions[0];
   const [statsComp, setStatsComp] = useState(initComp);
   const [statsDiv,  setStatsDiv]  = useState(initDiv);
@@ -292,7 +292,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
           </div>
 
           <div style={{display:"flex",gap:0}}>
-            {COMPS.filter(c=>!c.soon).map(c=>(
+            {COMPS_SORTED.filter(c=>!c.soon).map(c=>(
               <button key={c.key} onClick={()=>{setStatsComp(c);setStatsDiv(c.divisions[0]);switchTab("record");}} style={{
                 flex:1,padding:"10px 0",background:"transparent",border:"none",
                 borderBottom:`2px solid ${statsComp?.key===c.key?C.white:"transparent"}`,

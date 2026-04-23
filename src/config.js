@@ -95,10 +95,14 @@ const TRICK_INFO = {
 };
 
 // ─── COMPETITIONS ────────────────────────────────────────────────────────────
+// COMPS: source of truth. Each comp has a `date` field (ISO YYYY-MM-DD)
+// used to sort the comp picker and stats tabs chronologically.
+// When adding a new comp, include the `date` field — COMPS_SORTED handles the order.
 const COMPS = [
   {
     key:"ekc_2026", name:"EKC 2026", full:"European Kendama Championship",
     location:"Utrecht, NL · May 22–23",
+    date:"2026-05-22",
     ig:{ href:"https://instagram.com/eukendamachamp", label:"eukendamachamp" },
     divisions:[
       { key:"am_open", name:"AM OPEN", badge:"20 TRICKS", tricks:AM_TRICKS },
@@ -112,6 +116,7 @@ const COMPS = [
   {
     key:"bko_2026", name:"BKO 2026", full:"British Kendama Open",
     location:"Cardiff, UK · May 2",
+    date:"2026-05-02",
     ig:{ href:"https://instagram.com/britishkendamaopen", label:"britishkendamaopen" },
     banner:BKO_BANNER,
     divisions:[
@@ -119,6 +124,14 @@ const COMPS = [
     ],
   },
 ];
+
+// Chronological order (earliest first). Comps without a date fall to the end.
+// Import this instead of COMPS for anywhere that renders a list.
+const COMPS_SORTED = [...COMPS].sort((a,b) => {
+  if (!a.date) return 1;
+  if (!b.date) return -1;
+  return a.date.localeCompare(b.date);
+});
 
 // ─── CPU CONFIG ──────────────────────────────────────────────────────────────
 const CPU_CFG = {
@@ -204,4 +217,4 @@ if (typeof document !== "undefined") {
   }
 }
 
-export { LOGOS, LOGO, C, BB, BC, R, AM_TRICKS, OPEN_REGULAR, OPEN_TOP16, BKO_OPEN, COMPS, CPU_CFG, haptic, CPU_NAMES, getTricksForDiv, MODE_COLORS, TRICK_INFO };
+export { LOGOS, LOGO, C, BB, BC, R, AM_TRICKS, OPEN_REGULAR, OPEN_TOP16, BKO_OPEN, COMPS, COMPS_SORTED, CPU_CFG, haptic, CPU_NAMES, getTricksForDiv, MODE_COLORS, TRICK_INFO };

@@ -135,12 +135,13 @@ export default function App() {
     if (!user) { setHomeStats(null); return; }
     if (screen !== "home") return;
     Promise.all([
-      SB.from("match_results").select("won").eq("user_id",user.id),
+      SB.from("match_results").select("won,tournament_result").eq("user_id",user.id),
       SB.from("trick_attempts").select("landed").eq("user_id",user.id),
     ]).then(([mRes, tRes])=>{
       const matches = mRes.data||[]; const tricks = tRes.data||[];
       const wins = matches.filter(m=>m.won).length;
-      setHomeStats({wins, losses:matches.length-wins, total:matches.length,
+      const trophies = matches.filter(m=>m.tournament_result==="champion").length;
+      setHomeStats({wins, losses:matches.length-wins, total:matches.length, trophies,
         trickLands:tricks.filter(t=>t.landed).length, trickTotal:tricks.length});
     }).catch(()=>setHomeStats(null));
   },[user, screen]);
