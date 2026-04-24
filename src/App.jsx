@@ -24,7 +24,7 @@ import { BtnPrimary } from "./components/ui";
 // ─── ADMIN ────────────────────────────────────────────────────────────────────
 // Users allowed to view the /admin page. Add your Supabase user.id here.
 // Find yours: Supabase → Authentication → Users → click your row → copy the ID.
-const ADMIN_USER_IDS = ["0a4558448-1fa3-4b64-b3fe-fbca6e9a5727",]
+const ADMIN_USER_IDS = ["a4558448-1fa3-4b64-b3fe-fbca6e9a5727",]
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function App() {
