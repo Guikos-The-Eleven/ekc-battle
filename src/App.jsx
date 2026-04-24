@@ -25,7 +25,7 @@ import { BtnPrimary } from "./components/ui";
 // Users allowed to view the /admin page. Add your Supabase user.id here.
 // Find yours: Supabase → Authentication → Users → click your row → copy the ID.
 const ADMIN_USER_IDS = [
-  // "00000000-0000-0000-0000-000000000000",   // ← paste your user.id here
+  "0a4558448-1fa3-4b64-b3fe-fbca6e9a5727",   // ← paste your user.id here
 ];
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
