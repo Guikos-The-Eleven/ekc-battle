@@ -14,11 +14,19 @@ import BracketScreen from "./screens/BracketScreen";
 import DrillScreen from "./screens/DrillScreen";
 import DrillPickScreen from "./screens/DrillPickScreen";
 import FeedbackScreen from "./screens/FeedbackScreen";
+import AdminScreen from "./screens/AdminScreen";
 
 // Components
 import AuthScreen from "./components/Auth";
 import StatsScreen from "./components/Stats";
 import { BtnPrimary } from "./components/ui";
+
+// ─── ADMIN ────────────────────────────────────────────────────────────────────
+// Users allowed to view the /admin page. Add your Supabase user.id here.
+// Find yours: Supabase → Authentication → Users → click your row → copy the ID.
+const ADMIN_USER_IDS = [
+  // "00000000-0000-0000-0000-000000000000",   // ← paste your user.id here
+];
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function App() {
@@ -90,6 +98,18 @@ export default function App() {
   // Discard buffered trick attempts if player quits mid-match
   useEffect(()=>{ if (screen !== "battle") trickBufferRef.current = []; },[screen]);
 
+  // ── Admin URL handler: visit with ?admin=1 to access stats page ──
+  // Runs once user is known. Silently redirects home if not an admin.
+  useEffect(()=>{
+    if (!user) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("admin") === "1" && ADMIN_USER_IDS.includes(user.id)) {
+      setScreen("admin");
+      // Clean the URL so a refresh doesn't re-trigger
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  },[user]);
+
   // ── Auth: check session on load (fix #8: .catch for error boundary) ──
   useEffect(()=>{
     SB.auth.getSession().then(async ({ data:{ session } })=>{
@@ -135,12 +155,13 @@ export default function App() {
     if (!user) { setHomeStats(null); return; }
     if (screen !== "home") return;
     Promise.all([
-      SB.from("match_results").select("won").eq("user_id",user.id),
+      SB.from("match_results").select("won,tournament_result").eq("user_id",user.id),
       SB.from("trick_attempts").select("landed").eq("user_id",user.id),
     ]).then(([mRes, tRes])=>{
       const matches = mRes.data||[]; const tricks = tRes.data||[];
       const wins = matches.filter(m=>m.won).length;
-      setHomeStats({wins, losses:matches.length-wins, total:matches.length,
+      const trophies = matches.filter(m=>m.tournament_result==="champion").length;
+      setHomeStats({wins, losses:matches.length-wins, total:matches.length, trophies,
         trickLands:tricks.filter(t=>t.landed).length, trickTotal:tricks.length});
     }).catch(()=>setHomeStats(null));
   },[user, screen]);
@@ -510,6 +531,10 @@ export default function App() {
   if (!user && !isGuest) return <AuthScreen onAuth={(u,n)=>{setUser(u);setUsername(n);}} onGuest={enterAsGuest} startTab={authStartTab}/>;
 
   // ── Screen router ──
+  if (screen==="admin" && user && ADMIN_USER_IDS.includes(user.id)) return (
+    <AdminScreen onBack={()=>setScreen("home")}/>
+  );
+
   if (screen==="stats") return (
     <StatsScreen user={user} username={username} isGuest={isGuest}
       onBack={()=>setScreen(selectedDiv?"settings":"home")} onAuth={goToAuth}
