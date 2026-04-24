@@ -24,7 +24,9 @@ import { BtnPrimary } from "./components/ui";
 // ─── ADMIN ────────────────────────────────────────────────────────────────────
 // Users allowed to view the /admin page. Add your Supabase user.id here.
 // Find yours: Supabase → Authentication → Users → click your row → copy the ID.
-const ADMIN_USER_IDS = ["a4558448-1fa3-4b64-b3fe-fbca6e9a5727",];
+const ADMIN_USER_IDS = [
+  // "00000000-0000-0000-0000-000000000000",   // ← paste your user.id here
+];
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function App() {
@@ -603,6 +605,7 @@ export default function App() {
 
   if (screen==="home") return (
     <HomeScreen user={user} username={username} isGuest={isGuest} homeStats={homeStats}
+      isAdmin={!!(user && ADMIN_USER_IDS.includes(user.id))}
       setMode={setMode} setScreen={setScreen} setDrillSource={setDrillSource}
       goToAuth={goToAuth} handleSignOut={handleSignOut}
       setFeedbackText={setFeedbackText} setFeedbackSent={setFeedbackSent}/>

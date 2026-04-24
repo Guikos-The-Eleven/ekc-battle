@@ -2,7 +2,7 @@ import React from "react";
 import { LOGOS, C, BB, BC, R } from "../config"; 
 import { Div, IgLink, FeedbackLink, DonateLink } from "../components/ui";
 
-export default function HomeScreen({ user, username, isGuest, homeStats, setMode, setScreen, setDrillSource, goToAuth, handleSignOut, setFeedbackText, setFeedbackSent }) {
+export default function HomeScreen({ user, username, isGuest, homeStats, isAdmin, setMode, setScreen, setDrillSource, goToAuth, handleSignOut, setFeedbackText, setFeedbackSent }) {
 
   const modeCards = [
     {key:"cpu",        label:"BATTLE",   desc:"1v1 vs CPU",          accentColor:C.logored, available:true},
@@ -27,6 +27,16 @@ export default function HomeScreen({ user, username, isGuest, homeStats, setMode
             }}>
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="1" y="9" width="3" height="6" rx="0.5"/><rect x="6.5" y="5" width="3" height="10" rx="0.5"/><rect x="12" y="1" width="3" height="14" rx="0.5"/></svg>
             </button>
+            {isAdmin && (
+              <button className="tap" onClick={()=>setScreen("admin")} aria-label="Admin" style={{
+                width:36,height:36,borderRadius:"50%",
+                background:`${C.logored}12`,border:`1.5px solid ${C.logored}60`,
+                color:C.logored,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+                transition:"all 0.12s",padding:0,fontFamily:BB,fontSize:13,letterSpacing:1,
+              }}>
+                A
+              </button>
+            )}
           </div>
           {isGuest ? (
             <button onClick={()=>goToAuth("signup")} style={{background:"transparent",border:"none",color:C.green,fontFamily:BB,fontSize:12,letterSpacing:4,cursor:"pointer",padding:0}}>
