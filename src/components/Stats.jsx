@@ -348,81 +348,101 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                 No matches yet for {currentDivLabel}.<br/>Play vs CPU to track your record.
               </div>
             );
+
+            const totals = totalRecord();
+            const totalRate = totals.total>0?Math.round(totals.wins/totals.total*100):0;
+            const totalTrophies = DIFFICULTIES.reduce((a,d)=>a+trophyCount(d),0);
+            const heroColor = totalRate>=60?C.green:totalRate>=40?C.yellow:C.red;
+
             const bRate = bRec.total>0?Math.round(bRec.wins/bRec.total*100):0;
             const tRate = tRec.total>0?Math.round(tRec.wins/tRec.total*100):0;
+
             const diffData = DIFFICULTIES.map(d=>{
               const r = rows.find(x=>x.diff===d);
               return r ? {diff:d, wins:r.wins, losses:r.losses, total:r.total, rate:Math.round(r.wins/r.total*100), active:true}
                        : {diff:d, wins:0, losses:0, total:0, rate:0, active:false};
             });
 
-            const SummaryCol = ({label, color, wins, losses, rate, total, dimmed}) => (
-              <div style={{flex:1,textAlign:"center",opacity:dimmed?0.35:1}}>
-                <div style={{fontFamily:BB,fontSize:14,letterSpacing:4,color,marginBottom:12}}>{label}</div>
-                <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:10,marginBottom:6}}>
-                  <div style={{fontFamily:BB,fontSize:36,lineHeight:0.9,color:dimmed?C.muted:C.green}}>{dimmed?"—":wins}</div>
-                  <div style={{fontFamily:BB,fontSize:14,color:C.muted}}>–</div>
-                  <div style={{fontFamily:BB,fontSize:36,lineHeight:0.9,color:dimmed?C.muted:C.red}}>{dimmed?"—":losses}</div>
+            const ModeCol = ({label, wins, losses, rate, total, trophies}) => {
+              const dimmed = total===0;
+              const rateColor = dimmed?C.muted:rate>=60?C.green:rate>=40?C.yellow:C.red;
+              return (
+                <div style={{flex:1,textAlign:"center",opacity:dimmed?0.45:1}}>
+                  <div style={{fontFamily:BB,fontSize:12,letterSpacing:4,color:C.muted,marginBottom:12}}>{label}</div>
+                  <div style={{fontFamily:BB,fontSize:32,lineHeight:0.9,color:rateColor}}>{dimmed?"—":`${rate}%`}</div>
+                  <div style={{fontFamily:BB,fontSize:11,letterSpacing:2,color:C.sub,marginTop:10}}>
+                    {dimmed?"NO MATCHES":`${wins}W · ${losses}L`}
+                  </div>
+                  {!dimmed && trophies>0 && (
+                    <div style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:C.yellow,marginTop:6}}>
+                      {trophies} {trophies===1?"TROPHY":"TROPHIES"}
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <span style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:dimmed?C.muted:rate>=60?C.green:rate>=40?C.yellow:C.red}}>{dimmed?"—":`${rate}%`}</span>
-                  {!dimmed && <span style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginLeft:6}}>{total} MATCHES</span>}
+              );
+            };
+
+            const DiffRow = ({diff, wins, losses, rate, active}) => {
+              const col = DIFF_COLORS[diff];
+              const trophies = trophyCount(diff);
+              const dim = !active && !trophies;
+              const rateColor = dim?C.muted:rate>=60?C.green:rate>=40?C.yellow:C.red;
+              return (
+                <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",
+                  borderBottom:`1px solid ${C.divider}`,opacity:dim?0.45:1}}>
+                  <div style={{width:74,fontFamily:BB,fontSize:13,letterSpacing:3,color:dim?C.muted:C.white,flexShrink:0}}>
+                    {DIFF_LABELS[diff]}
+                  </div>
+                  <div style={{flex:1,height:5,background:C.divider,borderRadius:1,overflow:"hidden"}}>
+                    {active && (
+                      <div style={{height:"100%",width:`${Math.max(rate,2)}%`,background:col,transition:"width 0.4s"}}/>
+                    )}
+                  </div>
+                  <div style={{minWidth:54,fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,textAlign:"right",flexShrink:0}}>
+                    {active?`${wins}–${losses}`:"—"}
+                  </div>
+                  <div style={{minWidth:44,fontFamily:BB,fontSize:14,letterSpacing:1,color:rateColor,textAlign:"right",flexShrink:0}}>
+                    {active?`${rate}%`:"—"}
+                  </div>
                 </div>
-              </div>
-            );
+              );
+            };
 
             return (
               <>
-                {/* Two-column summary: BATTLE vs TOURNEY */}
-                <div style={{display:"flex",gap:0,marginBottom:24}}>
-                  <SummaryCol label="BATTLE" color={C.white} wins={bRec.wins} losses={bRec.losses} rate={bRate} total={bRec.total} dimmed={bRec.total===0}/>
-                  <div style={{width:1,background:C.divider,margin:"8px 0"}}/>
-                  <SummaryCol label="TOURNEY" color={C.white} wins={tRec.wins} losses={tRec.losses} rate={tRate} total={tRec.total} dimmed={tRec.total===0}/>
+                {/* HERO — overall mastery at a glance */}
+                <div style={{textAlign:"center",marginBottom:32}}>
+                  <div style={{fontFamily:BB,fontSize:72,lineHeight:0.9,color:heroColor}}>{totalRate}%</div>
+                  <div style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.muted,marginTop:8}}>OVERALL WIN RATE</div>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,marginTop:14,flexWrap:"wrap"}}>
+                    <span style={{fontFamily:BB,fontSize:13,letterSpacing:2,color:C.green}}>{totals.wins}W</span>
+                    <span style={{color:C.border}}>·</span>
+                    <span style={{fontFamily:BB,fontSize:13,letterSpacing:2,color:C.red}}>{totals.losses}L</span>
+                    {totalTrophies>0 && (
+                      <>
+                        <span style={{color:C.border}}>·</span>
+                        <span style={{fontFamily:BB,fontSize:13,letterSpacing:2,color:C.yellow}}>
+                          {totalTrophies} {totalTrophies===1?"TROPHY":"TROPHIES"}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
 
-                <Div mb={16}/>
+                <Div mb={24}/>
 
-                {/* Three-column difficulty breakdown — table for guaranteed alignment */}
-                <table style={{width:"100%",borderCollapse:"collapse",textAlign:"center",tableLayout:"fixed"}}>
-                  <tbody>
-                    {/* Header */}
-                    <tr>
-                      {diffData.map(d=>{
-                        const col = DIFF_COLORS[d.diff];
-                        const trophies = trophyCount(d.diff);
-                        const dim = !d.active && !trophies;
-                        return (
-                          <td key={d.diff} style={{padding:"0 4px 14px",opacity:dim?0.4:1}}>
-                            <div style={{fontFamily:BB,fontSize:15,letterSpacing:4,color:dim?C.muted:C.white,marginBottom:8}}>
-                              {DIFF_LABELS[d.diff]}
-                            </div>
-                            <div style={{height:2,background:dim?C.border:col,margin:"0 12px"}}/>
-                          </td>
-                        );
-                      })}
-                    </tr>
-                    {/* Stat rows */}
-                    {[
-                      {key:"wins",  label:"WINS",        val:d=>d.active?d.wins:"—",   color:d=>C.green},
-                      {key:"loss",  label:"LOSSES",      val:d=>d.active?d.losses:"—", color:d=>C.red},
-                      {key:"rate",  label:"WIN RATE",    val:d=>d.active?`${d.rate}%`:"—", color:d=>C.white},
-                      {key:"trophy",label:"TOURNEYS WON",val:d=>{const t=trophyCount(d.diff);return t;}, color:d=>{const t=trophyCount(d.diff);return t>0?C.yellow:C.muted}},
-                    ].map(row=>(
-                      <tr key={row.key}>
-                        {diffData.map(d=>{
-                          const trophies = trophyCount(d.diff);
-                          const dim = !d.active && !trophies;
-                          return (
-                            <td key={d.diff} style={{padding:"0 4px 14px",opacity:dim?0.4:1,verticalAlign:"top"}}>
-                              <div style={{fontFamily:BB,fontSize:28,lineHeight:1,color:dim?C.muted:row.color(d)}}>{row.val(d)}</div>
-                              <div style={{fontFamily:BB,fontSize:9,letterSpacing:3,color:C.muted,marginTop:5}}>{row.label}</div>
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                {/* MODE BREAKDOWN */}
+                <div style={{display:"flex",gap:0,marginBottom:28}}>
+                  <ModeCol label="BATTLE" wins={bRec.wins} losses={bRec.losses} rate={bRate} total={bRec.total}/>
+                  <div style={{width:1,background:C.divider,margin:"8px 0"}}/>
+                  <ModeCol label="TOURNEY" wins={tRec.wins} losses={tRec.losses} rate={tRate} total={tRec.total} trophies={totalTrophies}/>
+                </div>
+
+                <Div mb={20}/>
+
+                {/* DIFFICULTY BREAKDOWN — visual rows */}
+                <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted,marginBottom:6}}>BY DIFFICULTY</div>
+                {diffData.map(d => <DiffRow key={d.diff} {...d}/>)}
               </>
             );
           })()}
