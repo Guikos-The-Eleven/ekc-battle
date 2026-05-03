@@ -108,6 +108,39 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
     return {wins:w, losses:list.length-w, total:list.length, rate:list.length>0?Math.round(w/list.length*100):0};
   };
 
+  // Tournament-level stats per difficulty: attempts, trophies, best run reached.
+  const tourneyStatsByDiff = (d) => {
+    const tm = tourneyMatches().filter(m => m.difficulty===d);
+    if (tm.length===0) return {attempts:0, won:0, bestLabel:null, bestRank:-1};
+    const byId = {};
+    tm.forEach(m => {
+      const id = m.tournament_id || `t_${m.created_at}`;
+      if (!byId[id]) byId[id] = {hasChampion:false, deepestRound:0, bracketSize:0};
+      if (m.tournament_result==="champion") byId[id].hasChampion = true;
+      if (m.tournament_round && m.tournament_round > byId[id].deepestRound) byId[id].deepestRound = m.tournament_round;
+      if (m.bracket_size) byId[id].bracketSize = m.bracket_size;
+    });
+    const list = Object.values(byId);
+    const attempts = list.length;
+    const won = list.filter(t => t.hasChampion).length;
+    let bestLabel = null, bestRank = -1;
+    list.forEach(t => {
+      let rank, label;
+      if (t.hasChampion) { rank = 100; label = "CHAMPION"; }
+      else {
+        const totalR = t.bracketSize ? Math.log2(t.bracketSize) : 0;
+        const fromEnd = totalR - t.deepestRound;
+        if (fromEnd<=0)      { rank = 90; label = "RUNNER-UP"; }
+        else if (fromEnd===1){ rank = 70; label = "SEMIFINAL"; }
+        else if (fromEnd===2){ rank = 50; label = "QUARTERFINAL"; }
+        else                 { rank = 30; label = `ROUND ${t.deepestRound||1}`; }
+      }
+      if (rank>bestRank) { bestRank = rank; bestLabel = label; }
+    });
+    return {attempts, won, bestLabel, bestRank};
+  };
+  const totalTourneyAttempts = () => DIFFICULTIES.reduce((a,d)=>a+tourneyStatsByDiff(d).attempts, 0);
+
   const tricksForDiv = () => {
     const stats = {};
     (attempts||[]).forEach(a=>{
@@ -371,8 +404,9 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
               </span>
             );
 
-            const ModeCol = ({mode, label, wins, losses, rate, total, trophies}) => {
-              const dimmed = total===0;
+            const tourneyAttempts = totalTourneyAttempts();
+
+            const ModeCol = ({mode, label, dimmed, big, sub}) => {
               const expanded = expandedMode===mode;
               return (
                 <button
@@ -391,29 +425,18 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                         transition:"transform 0.2s",transform:expanded?"rotate(180deg)":"rotate(0deg)"}}>▾</span>
                     )}
                   </div>
-                  <div style={{fontFamily:BB,fontSize:32,lineHeight:0.9,color:C.text}}>{dimmed?"—":`${rate}%`}</div>
-                  <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:8,marginTop:12}}>
-                    {dimmed
-                      ? <span style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:C.muted}}>NO MATCHES</span>
-                      : <>
-                          <Inline n={wins} label="W" color={C.green}/>
-                          <span style={{color:C.border}}>·</span>
-                          <Inline n={losses} label="L" color={C.red}/>
-                        </>
-                    }
+                  <div style={{fontFamily:BB,fontSize:32,lineHeight:0.9,color:C.text}}>{big}</div>
+                  <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:8,marginTop:12,minHeight:14}}>
+                    {sub}
                   </div>
-                  {!dimmed && trophies>0 && (
-                    <div style={{marginTop:8}}>
-                      <Inline n={trophies} label={trophies===1?"TROPHY":"TROPHIES"} color={C.yellow}/>
-                    </div>
-                  )}
                 </button>
               );
             };
 
-            const DrillRow = ({diff, rec, trophies, isTourney}) => {
+            const BattleDrillRow = ({diff}) => {
               const col = DIFF_COLORS[diff];
-              const dim = rec.total===0 && !trophies;
+              const rec = recordByDiffAndMode(diff, false);
+              const dim = rec.total===0;
               return (
                 <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",
                   borderBottom:`1px solid ${C.divider}`,opacity:dim?0.45:1}}>
@@ -431,13 +454,43 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                   <div style={{minWidth:40,fontFamily:BB,fontSize:13,color:dim?C.muted:C.text,textAlign:"right",flexShrink:0}}>
                     {rec.total>0?`${rec.rate}%`:"—"}
                   </div>
-                  {isTourney && (
-                    trophies>0 ? (
-                      <div style={{flexShrink:0,fontFamily:BB,fontSize:9,letterSpacing:2,color:C.yellow,
-                        border:`1px solid ${C.yellow}40`,borderRadius:R,padding:"2px 6px",minWidth:24,textAlign:"center"}}>
-                        {trophies}
-                      </div>
-                    ) : <div style={{flexShrink:0,minWidth:24}}/>
+                </div>
+              );
+            };
+
+            const TourneyDrillRow = ({diff}) => {
+              const col = DIFF_COLORS[diff];
+              const stats = tourneyStatsByDiff(diff);
+              const dim = stats.attempts===0;
+              const champion = stats.bestLabel==="CHAMPION";
+              return (
+                <div style={{display:"flex",alignItems:"center",gap:14,padding:"12px 0",
+                  borderBottom:`1px solid ${C.divider}`,opacity:dim?0.45:1}}>
+                  <div style={{width:80,fontFamily:BB,fontSize:13,letterSpacing:3,color:dim?C.muted:col,flexShrink:0}}>
+                    {DIFF_LABELS[diff]}
+                  </div>
+                  <div style={{flex:1,display:"flex",alignItems:"baseline",gap:10,flexWrap:"wrap"}}>
+                    {dim ? (
+                      <span style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600}}>—</span>
+                    ) : (
+                      <>
+                        <Inline n={stats.attempts} label="PLAYED" color={C.muted}/>
+                        {stats.won>0 && (
+                          <>
+                            <span style={{color:C.border}}>·</span>
+                            <Inline n={stats.won} label={stats.won===1?"TROPHY":"TROPHIES"} color={C.yellow}/>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </div>
+                  {!dim && stats.bestLabel && (
+                    <div style={{fontFamily:BB,fontSize:10,letterSpacing:2,
+                      color:champion?C.yellow:C.sub,flexShrink:0,
+                      border:champion?`1px solid ${C.yellow}40`:"none",
+                      borderRadius:R,padding:champion?"3px 6px":0}}>
+                      {stats.bestLabel}
+                    </div>
                   )}
                 </div>
               );
@@ -466,9 +519,33 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
 
                 {/* MODE BREAKDOWN — tappable to drill into per-difficulty detail */}
                 <div style={{display:"flex",gap:0,marginBottom:expandedMode?12:8}}>
-                  <ModeCol mode="battle"  label="BATTLE"  wins={bRec.wins} losses={bRec.losses} rate={bRate} total={bRec.total}/>
+                  <ModeCol
+                    mode="battle"
+                    label="BATTLE"
+                    dimmed={bRec.total===0}
+                    big={bRec.total===0 ? "—" : `${bRate}%`}
+                    sub={bRec.total===0
+                      ? <span style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:C.muted}}>NO MATCHES</span>
+                      : <>
+                          <Inline n={bRec.wins} label="W" color={C.green}/>
+                          <span style={{color:C.border}}>·</span>
+                          <Inline n={bRec.losses} label="L" color={C.red}/>
+                        </>
+                    }
+                  />
                   <div style={{width:1,background:C.divider,margin:"8px 0"}}/>
-                  <ModeCol mode="tourney" label="TOURNEY" wins={tRec.wins} losses={tRec.losses} rate={tRate} total={tRec.total} trophies={totalTrophies}/>
+                  <ModeCol
+                    mode="tourney"
+                    label="TOURNEY"
+                    dimmed={tourneyAttempts===0}
+                    big={tourneyAttempts===0 ? "—" : `${totalTrophies}`}
+                    sub={tourneyAttempts===0
+                      ? <span style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:C.muted}}>NO TOURNEYS</span>
+                      : <span style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:C.yellow}}>
+                          {totalTrophies===1?"TROPHY":"TROPHIES"}
+                        </span>
+                    }
+                  />
                 </div>
 
                 {expandedMode && (
@@ -479,12 +556,11 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                     <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted,marginBottom:6}}>
                       {expandedMode==="battle"?"BATTLE":"TOURNEY"} BY DIFFICULTY
                     </div>
-                    {DIFFICULTIES.map(d => {
-                      const isTourney = expandedMode==="tourney";
-                      const rec = recordByDiffAndMode(d, isTourney);
-                      const trophies = isTourney ? trophyCount(d) : 0;
-                      return <DrillRow key={d} diff={d} rec={rec} trophies={trophies} isTourney={isTourney}/>;
-                    })}
+                    {DIFFICULTIES.map(d =>
+                      expandedMode==="tourney"
+                        ? <TourneyDrillRow key={d} diff={d}/>
+                        : <BattleDrillRow  key={d} diff={d}/>
+                    )}
                   </div>
                 )}
               </>
