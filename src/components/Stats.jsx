@@ -99,6 +99,13 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
     const w = tm.filter(m=>m.won).length;
     return {wins:w, losses:tm.length-w, total:tm.length};
   };
+  const recordByDiffAndMode = (d, isTourney) => {
+    const list = (matches||[]).filter(m =>
+      m.difficulty===d && (isTourney ? m.mode==="tournament" : m.mode!=="tournament")
+    );
+    const w = list.filter(m=>m.won).length;
+    return {wins:w, losses:list.length-w, total:list.length, rate:list.length>0?Math.round(w/list.length*100):0};
+  };
 
   const tricksForDiv = () => {
     const stats = {};
@@ -352,58 +359,85 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
             const totals = totalRecord();
             const totalRate = totals.total>0?Math.round(totals.wins/totals.total*100):0;
             const totalTrophies = DIFFICULTIES.reduce((a,d)=>a+trophyCount(d),0);
-            const heroColor = totalRate>=60?C.green:totalRate>=40?C.yellow:C.red;
 
             const bRate = bRec.total>0?Math.round(bRec.wins/bRec.total*100):0;
             const tRate = tRec.total>0?Math.round(tRec.wins/tRec.total*100):0;
 
-            const diffData = DIFFICULTIES.map(d=>{
-              const r = rows.find(x=>x.diff===d);
-              return r ? {diff:d, wins:r.wins, losses:r.losses, total:r.total, rate:Math.round(r.wins/r.total*100), active:true}
-                       : {diff:d, wins:0, losses:0, total:0, rate:0, active:false};
-            });
+            const Inline = ({n, label, color}) => (
+              <span style={{display:"inline-flex",alignItems:"baseline",gap:5}}>
+                <span style={{fontFamily:BB,fontSize:13,color:C.text}}>{n}</span>
+                <span style={{fontFamily:BB,fontSize:9,letterSpacing:2,color}}>{label}</span>
+              </span>
+            );
 
             const ModeCol = ({label, wins, losses, rate, total, trophies}) => {
               const dimmed = total===0;
-              const rateColor = dimmed?C.muted:rate>=60?C.green:rate>=40?C.yellow:C.red;
               return (
                 <div style={{flex:1,textAlign:"center",opacity:dimmed?0.45:1}}>
                   <div style={{fontFamily:BB,fontSize:12,letterSpacing:4,color:C.muted,marginBottom:12}}>{label}</div>
-                  <div style={{fontFamily:BB,fontSize:32,lineHeight:0.9,color:rateColor}}>{dimmed?"—":`${rate}%`}</div>
-                  <div style={{fontFamily:BB,fontSize:11,letterSpacing:2,color:C.sub,marginTop:10}}>
-                    {dimmed?"NO MATCHES":`${wins}W · ${losses}L`}
+                  <div style={{fontFamily:BB,fontSize:32,lineHeight:0.9,color:C.text}}>{dimmed?"—":`${rate}%`}</div>
+                  <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:8,marginTop:12}}>
+                    {dimmed
+                      ? <span style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:C.muted}}>NO MATCHES</span>
+                      : <>
+                          <Inline n={wins} label="W" color={C.green}/>
+                          <span style={{color:C.border}}>·</span>
+                          <Inline n={losses} label="L" color={C.red}/>
+                        </>
+                    }
                   </div>
                   {!dimmed && trophies>0 && (
-                    <div style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:C.yellow,marginTop:6}}>
-                      {trophies} {trophies===1?"TROPHY":"TROPHIES"}
+                    <div style={{marginTop:8}}>
+                      <Inline n={trophies} label={trophies===1?"TROPHY":"TROPHIES"} color={C.yellow}/>
                     </div>
                   )}
                 </div>
               );
             };
 
-            const DiffRow = ({diff, wins, losses, rate, active}) => {
-              const col = DIFF_COLORS[diff];
-              const trophies = trophyCount(diff);
-              const dim = !active && !trophies;
-              const rateColor = dim?C.muted:rate>=60?C.green:rate>=40?C.yellow:C.red;
+            const ModeBar = ({label, rec, barColor, trophies}) => {
+              const dim = rec.total===0;
               return (
-                <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",
-                  borderBottom:`1px solid ${C.divider}`,opacity:dim?0.45:1}}>
-                  <div style={{width:74,fontFamily:BB,fontSize:13,letterSpacing:3,color:dim?C.muted:C.white,flexShrink:0}}>
-                    {DIFF_LABELS[diff]}
+                <div style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",opacity:dim?0.45:1}}>
+                  <div style={{width:62,fontFamily:BB,fontSize:10,letterSpacing:3,color:C.muted,flexShrink:0}}>
+                    {label}
                   </div>
                   <div style={{flex:1,height:5,background:C.divider,borderRadius:1,overflow:"hidden"}}>
-                    {active && (
-                      <div style={{height:"100%",width:`${Math.max(rate,2)}%`,background:col,transition:"width 0.4s"}}/>
+                    {!dim && (
+                      <div style={{height:"100%",width:`${Math.max(rec.rate,2)}%`,background:barColor,transition:"width 0.4s"}}/>
                     )}
                   </div>
-                  <div style={{minWidth:54,fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,textAlign:"right",flexShrink:0}}>
-                    {active?`${wins}–${losses}`:"—"}
+                  <div style={{minWidth:48,fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,textAlign:"right",flexShrink:0}}>
+                    {dim?"—":`${rec.wins}–${rec.losses}`}
                   </div>
-                  <div style={{minWidth:44,fontFamily:BB,fontSize:14,letterSpacing:1,color:rateColor,textAlign:"right",flexShrink:0}}>
-                    {active?`${rate}%`:"—"}
+                  <div style={{minWidth:40,fontFamily:BB,fontSize:13,color:dim?C.muted:C.text,textAlign:"right",flexShrink:0}}>
+                    {dim?"—":`${rec.rate}%`}
                   </div>
+                  {trophies>0 ? (
+                    <div style={{flexShrink:0,fontFamily:BB,fontSize:9,letterSpacing:2,color:C.yellow,
+                      border:`1px solid ${C.yellow}40`,borderRadius:R,padding:"2px 5px",minWidth:22,textAlign:"center"}}>
+                      {trophies}
+                    </div>
+                  ) : (
+                    <div style={{flexShrink:0,minWidth:22}}/>
+                  )}
+                </div>
+              );
+            };
+
+            const DiffGroup = ({diff}) => {
+              const col = DIFF_COLORS[diff];
+              const battle  = recordByDiffAndMode(diff, false);
+              const tourney = recordByDiffAndMode(diff, true);
+              const trophies = trophyCount(diff);
+              const empty = battle.total===0 && tourney.total===0 && trophies===0;
+              return (
+                <div style={{marginBottom:18,opacity:empty?0.4:1}}>
+                  <div style={{fontFamily:BB,fontSize:14,letterSpacing:3,color:empty?C.muted:col,marginBottom:4}}>
+                    {DIFF_LABELS[diff]}
+                  </div>
+                  <ModeBar label="BATTLE"  rec={battle}  barColor={col}/>
+                  <ModeBar label="TOURNEY" rec={tourney} barColor={col} trophies={trophies}/>
                 </div>
               );
             };
@@ -412,18 +446,16 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
               <>
                 {/* HERO — overall mastery at a glance */}
                 <div style={{textAlign:"center",marginBottom:32}}>
-                  <div style={{fontFamily:BB,fontSize:72,lineHeight:0.9,color:heroColor}}>{totalRate}%</div>
+                  <div style={{fontFamily:BB,fontSize:72,lineHeight:0.9,color:C.text}}>{totalRate}%</div>
                   <div style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.muted,marginTop:8}}>OVERALL WIN RATE</div>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,marginTop:14,flexWrap:"wrap"}}>
-                    <span style={{fontFamily:BB,fontSize:13,letterSpacing:2,color:C.green}}>{totals.wins}W</span>
+                  <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:10,marginTop:14,flexWrap:"wrap"}}>
+                    <Inline n={totals.wins}   label="WINS"   color={C.green}/>
                     <span style={{color:C.border}}>·</span>
-                    <span style={{fontFamily:BB,fontSize:13,letterSpacing:2,color:C.red}}>{totals.losses}L</span>
+                    <Inline n={totals.losses} label="LOSSES" color={C.red}/>
                     {totalTrophies>0 && (
                       <>
                         <span style={{color:C.border}}>·</span>
-                        <span style={{fontFamily:BB,fontSize:13,letterSpacing:2,color:C.yellow}}>
-                          {totalTrophies} {totalTrophies===1?"TROPHY":"TROPHIES"}
-                        </span>
+                        <Inline n={totalTrophies} label={totalTrophies===1?"TROPHY":"TROPHIES"} color={C.yellow}/>
                       </>
                     )}
                   </div>
@@ -440,9 +472,9 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
 
                 <Div mb={20}/>
 
-                {/* DIFFICULTY BREAKDOWN — visual rows */}
-                <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted,marginBottom:6}}>BY DIFFICULTY</div>
-                {diffData.map(d => <DiffRow key={d.diff} {...d}/>)}
+                {/* DIFFICULTY BREAKDOWN — split by mode */}
+                <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted,marginBottom:10}}>BY DIFFICULTY</div>
+                {DIFFICULTIES.map(d => <DiffGroup key={d} diff={d}/>)}
               </>
             );
           })()}
