@@ -121,30 +121,35 @@ export default function CompPickScreen({ mode, expandedComp, setExpandedComp, se
               );
             };
 
-            const SectionHeader = ({label, count, action, actionLabel}) => (
-              <div style={{display:"flex",alignItems:"center",gap:10,marginTop:upcoming.length>0?20:0,marginBottom:10}}>
-                <div style={{fontFamily:BB,fontSize:12,letterSpacing:4,color:C.muted}}>{label}</div>
-                <div style={{flex:1,height:1,background:C.divider}}/>
-                {count!=null && <div style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600}}>{count}</div>}
-                {action && (
-                  <button onClick={action} style={{background:"transparent",border:"none",cursor:"pointer",
-                    fontFamily:BB,fontSize:11,letterSpacing:3,color:C.sub}}>{actionLabel}</button>
-                )}
-              </div>
-            );
+            const SectionHeader = ({label, onToggle, expanded}) => {
+              const interactive = !!onToggle;
+              return (
+                <div onClick={onToggle} style={{
+                  display:"flex",alignItems:"center",gap:10,
+                  marginTop:upcoming.length>0?20:0,marginBottom:10,
+                  cursor:interactive?"pointer":"default",userSelect:"none",
+                }}>
+                  <div style={{fontFamily:BB,fontSize:12,letterSpacing:4,color:C.muted}}>{label}</div>
+                  <div style={{flex:1,height:1,background:C.divider}}/>
+                  {interactive && (
+                    <div style={{fontFamily:BB,fontSize:10,color:C.muted,transition:"transform 0.2s",
+                      transform:expanded?"rotate(180deg)":"rotate(0deg)"}}>▾</div>
+                  )}
+                </div>
+              );
+            };
 
             return (
               <>
                 {upcoming.length>0 && past.length>0 && (
-                  <SectionHeader label="UPCOMING" count={upcoming.length}/>
+                  <SectionHeader label="UPCOMING"/>
                 )}
                 {upcoming.map(c => renderComp(c))}
                 {past.length>0 && (
                   <SectionHeader
                     label="PAST"
-                    count={past.length}
-                    action={()=>setShowPast(s=>!s)}
-                    actionLabel={showPast?"HIDE":"SHOW"}
+                    onToggle={()=>setShowPast(s=>!s)}
+                    expanded={showPast}
                   />
                 )}
                 {showPast && past.map(c => renderComp(c,{past:true}))}
