@@ -1,10 +1,7 @@
 import React, { useState } from "react";
-import { C, BB, BC, R, COMPS_SORTED, MODE_COLORS } from "../config";
+import { C, BB, BC, R, COMPS_SORTED, MODE_COLORS, isCompPast } from "../config";
 import { BackBtn, IgLink } from "../components/ui";
 import InfoOverlay, { InfoBtn } from "../components/InfoOverlay";
-
-const todayISO = () => new Date().toISOString().slice(0,10);
-const isCompPast = (comp) => comp.date && comp.date < todayISO();
 
 export default function CompPickScreen({ mode, expandedComp, setExpandedComp, setSelectedComp, setSelectedDiv, setOpenList, setScreen }) {
   const modeLabel = {cpu:"BATTLE",drill:"DRILL","2p":"2 PLAYER",tournament:"TOURNEY"}[mode]||"";

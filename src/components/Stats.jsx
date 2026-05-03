@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { SB } from "../supabase";
-import { LOGOS, C, BB, BC, R, COMPS_SORTED } from "../config";
+import { LOGOS, C, BB, BC, R, COMPS_SORTED, isCompPast } from "../config";
 import { Label, Div, BtnPrimary, BtnGhost, BackBtn } from "./ui";
 
 function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selectedComp, selectedDiv }) {
@@ -19,6 +19,8 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
   const initDiv = selectedDiv || initComp?.divisions[0];
   const [statsComp, setStatsComp] = useState(initComp);
   const [statsDiv,  setStatsDiv]  = useState(initDiv);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerShowPast, setPickerShowPast] = useState(false);
   const statsDivKey = statsComp && statsDiv ? `${statsComp.key}:${statsDiv.key}` : "ekc_2026:am_open";
   const currentDivLabel = statsDiv?.name || "AM OPEN";
 
@@ -291,27 +293,17 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
             <div style={{fontFamily:BB,fontSize:34,letterSpacing:4,lineHeight:1,color:C.white}}>TRAINING STATS</div>
           </div>
 
-          <div style={{display:"flex",gap:0}}>
-            {COMPS_SORTED.filter(c=>!c.soon).map(c=>(
-              <button key={c.key} onClick={()=>{setStatsComp(c);setStatsDiv(c.divisions[0]);switchTab("record");}} style={{
-                flex:1,padding:"10px 0",background:"transparent",border:"none",
-                borderBottom:`2px solid ${statsComp?.key===c.key?C.white:"transparent"}`,
-                color:statsComp?.key===c.key?C.white:C.muted,
-                fontFamily:BB,fontSize:13,letterSpacing:3,cursor:"pointer",transition:"all 0.15s",
-              }}>{c.name}</button>
-            ))}
-          </div>
-          <Div/>
-          <div style={{display:"flex",gap:0}}>
-            {(statsComp?.divisions||[]).map(d=>(
-              <button key={d.key} onClick={()=>{setStatsDiv(d);switchTab("record");}} style={{
-                flex:1,padding:"10px 0",background:"transparent",border:"none",
-                borderBottom:`2px solid ${statsDiv?.key===d.key?C.white:"transparent"}`,
-                color:statsDiv?.key===d.key?C.white:C.muted,
-                fontFamily:BB,fontSize:14,letterSpacing:3,cursor:"pointer",transition:"all 0.15s",
-              }}>{d.name}</button>
-            ))}
-          </div>
+          <button className="tap" onClick={()=>setPickerOpen(true)} style={{
+            width:"100%",padding:"14px 0",background:"transparent",border:"none",
+            display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",
+          }}>
+            <div style={{display:"flex",alignItems:"baseline",gap:10,textAlign:"left"}}>
+              <span style={{fontFamily:BB,fontSize:20,letterSpacing:3,color:C.white}}>{statsComp?.name||""}</span>
+              <span style={{fontFamily:BC,fontSize:11,color:C.border}}>·</span>
+              <span style={{fontFamily:BB,fontSize:15,letterSpacing:3,color:C.sub}}>{statsDiv?.name||""}</span>
+            </div>
+            <span style={{fontFamily:BB,fontSize:12,color:C.muted,letterSpacing:2}}>▾</span>
+          </button>
           <Div/>
           <div style={{display:"flex",gap:0}}>
             {[["record","RECORD"],["tricks","TRICKS"],["history","HISTORY"]].map(([k,l])=>(
@@ -678,6 +670,93 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
           </div>
         </div>
       </div>
+      {pickerOpen && (() => {
+        const upcoming = COMPS_SORTED.filter(c=>!c.soon && !isCompPast(c));
+        const past     = COMPS_SORTED.filter(c=>!c.soon &&  isCompPast(c)).reverse();
+
+        const pick = (comp, div) => {
+          setStatsComp(comp); setStatsDiv(div);
+          switchTab("record"); setPickerOpen(false);
+        };
+
+        const CompBlock = ({comp, dimmed}) => (
+          <div style={{marginBottom:18,opacity:dimmed?0.6:1}}>
+            <div style={{display:"flex",alignItems:"baseline",gap:10,marginBottom:6}}>
+              <span style={{fontFamily:BB,fontSize:20,letterSpacing:3,color:C.white}}>{comp.name}</span>
+              {dimmed && <span style={{fontFamily:BC,fontSize:10,letterSpacing:2,color:C.muted,fontWeight:600,
+                border:`1px solid ${C.border}`,padding:"2px 6px",borderRadius:R}}>PAST</span>}
+              <span style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,letterSpacing:2}}>{comp.full}</span>
+            </div>
+            {comp.divisions.map(d=>{
+              const active = statsComp?.key===comp.key && statsDiv?.key===d.key;
+              return (
+                <button key={d.key} className="tap" onClick={()=>pick(comp,d)} style={{
+                  width:"100%",padding:"12px 14px",marginBottom:4,
+                  background:active?`${C.white}10`:"transparent",
+                  border:`1px solid ${active?C.white+"30":C.border}`,borderRadius:R,
+                  display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",
+                }}>
+                  <div style={{display:"flex",alignItems:"baseline",gap:10,textAlign:"left"}}>
+                    <span style={{fontFamily:BB,fontSize:16,letterSpacing:3,color:active?C.white:C.sub}}>{d.name}</span>
+                    {d.badge && <span style={{fontFamily:BC,fontSize:10,letterSpacing:2,color:C.muted,fontWeight:600}}>{d.badge}</span>}
+                  </div>
+                  {active && <span style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:C.white}}>•</span>}
+                </button>
+              );
+            })}
+          </div>
+        );
+
+        const SectionHeader = ({label, onToggle, expanded}) => (
+          <div onClick={onToggle} style={{
+            display:"flex",alignItems:"center",gap:10,marginBottom:12,
+            cursor:onToggle?"pointer":"default",userSelect:"none",
+          }}>
+            <div style={{fontFamily:BB,fontSize:12,letterSpacing:4,color:C.muted}}>{label}</div>
+            <div style={{flex:1,height:1,background:C.divider}}/>
+            {onToggle && (
+              <div style={{fontFamily:BB,fontSize:10,color:C.muted,transition:"transform 0.2s",
+                transform:expanded?"rotate(180deg)":"rotate(0deg)"}}>▾</div>
+            )}
+          </div>
+        );
+
+        return (
+          <>
+            <div onClick={()=>setPickerOpen(false)} style={{
+              position:"absolute",inset:0,background:"#000c",zIndex:50,
+            }}/>
+            <div className="rise" style={{
+              position:"absolute",left:0,right:0,bottom:0,zIndex:51,
+              background:C.bg,borderTop:`1px solid ${C.border}`,
+              maxHeight:"78%",display:"flex",flexDirection:"column",
+              paddingBottom:"env(safe-area-inset-bottom, 0px)",
+            }}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 24px 10px"}}>
+                <div style={{fontFamily:BB,fontSize:14,letterSpacing:4,color:C.muted}}>SELECT</div>
+                <button className="tap" onClick={()=>setPickerOpen(false)} style={{
+                  background:"transparent",border:"none",fontFamily:BB,fontSize:18,
+                  color:C.muted,cursor:"pointer",padding:"4px 8px",
+                }}>✕</button>
+              </div>
+              <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"6px 24px 24px"}}>
+                {upcoming.length>0 && past.length>0 && (
+                  <SectionHeader label="UPCOMING"/>
+                )}
+                {upcoming.map(c => <CompBlock key={c.key} comp={c}/>)}
+                {past.length>0 && (
+                  <SectionHeader
+                    label="PAST"
+                    onToggle={()=>setPickerShowPast(s=>!s)}
+                    expanded={pickerShowPast}
+                  />
+                )}
+                {pickerShowPast && past.map(c => <CompBlock key={c.key} comp={c} dimmed/>)}
+              </div>
+            </div>
+          </>
+        );
+      })()}
     </div>
   );
 }
