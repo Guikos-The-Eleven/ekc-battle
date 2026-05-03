@@ -37,6 +37,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
   const [statsDiv,  setStatsDiv]  = useState(initDiv);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerShowPast, setPickerShowPast] = useState(false);
+  const [expandedMode, setExpandedMode] = useState(null);
 
   useEffect(() => {
     if (!statsComp || !statsDiv) return;
@@ -370,11 +371,26 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
               </span>
             );
 
-            const ModeCol = ({label, wins, losses, rate, total, trophies}) => {
+            const ModeCol = ({mode, label, wins, losses, rate, total, trophies}) => {
               const dimmed = total===0;
+              const expanded = expandedMode===mode;
               return (
-                <div style={{flex:1,textAlign:"center",opacity:dimmed?0.45:1}}>
-                  <div style={{fontFamily:BB,fontSize:12,letterSpacing:4,color:C.muted,marginBottom:12}}>{label}</div>
+                <button
+                  onClick={()=>!dimmed && setExpandedMode(expanded?null:mode)}
+                  className="tap"
+                  style={{
+                    flex:1,padding:"10px 4px",background:expanded?`${C.white}08`:"transparent",
+                    border:"none",borderRadius:R,cursor:dimmed?"default":"pointer",
+                    transition:"background 0.15s",textAlign:"center",opacity:dimmed?0.45:1,
+                  }}
+                >
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:12}}>
+                    <span style={{fontFamily:BB,fontSize:12,letterSpacing:4,color:C.muted}}>{label}</span>
+                    {!dimmed && (
+                      <span style={{fontFamily:BB,fontSize:9,color:C.muted,
+                        transition:"transform 0.2s",transform:expanded?"rotate(180deg)":"rotate(0deg)"}}>▾</span>
+                    )}
+                  </div>
                   <div style={{fontFamily:BB,fontSize:32,lineHeight:0.9,color:C.text}}>{dimmed?"—":`${rate}%`}</div>
                   <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:8,marginTop:12}}>
                     {dimmed
@@ -391,53 +407,38 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                       <Inline n={trophies} label={trophies===1?"TROPHY":"TROPHIES"} color={C.yellow}/>
                     </div>
                   )}
-                </div>
+                </button>
               );
             };
 
-            const ModeBar = ({label, rec, barColor, trophies}) => {
-              const dim = rec.total===0;
+            const DrillRow = ({diff, rec, trophies, isTourney}) => {
+              const col = DIFF_COLORS[diff];
+              const dim = rec.total===0 && !trophies;
               return (
-                <div style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",opacity:dim?0.45:1}}>
-                  <div style={{width:62,fontFamily:BB,fontSize:10,letterSpacing:3,color:C.muted,flexShrink:0}}>
-                    {label}
+                <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",
+                  borderBottom:`1px solid ${C.divider}`,opacity:dim?0.45:1}}>
+                  <div style={{width:74,fontFamily:BB,fontSize:12,letterSpacing:3,color:dim?C.muted:col,flexShrink:0}}>
+                    {DIFF_LABELS[diff]}
                   </div>
                   <div style={{flex:1,height:5,background:C.divider,borderRadius:1,overflow:"hidden"}}>
-                    {!dim && (
-                      <div style={{height:"100%",width:`${Math.max(rec.rate,2)}%`,background:barColor,transition:"width 0.4s"}}/>
+                    {rec.total>0 && (
+                      <div style={{height:"100%",width:`${Math.max(rec.rate,2)}%`,background:col,transition:"width 0.4s"}}/>
                     )}
                   </div>
                   <div style={{minWidth:48,fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,textAlign:"right",flexShrink:0}}>
-                    {dim?"—":`${rec.wins}–${rec.losses}`}
+                    {rec.total>0?`${rec.wins}–${rec.losses}`:"—"}
                   </div>
                   <div style={{minWidth:40,fontFamily:BB,fontSize:13,color:dim?C.muted:C.text,textAlign:"right",flexShrink:0}}>
-                    {dim?"—":`${rec.rate}%`}
+                    {rec.total>0?`${rec.rate}%`:"—"}
                   </div>
-                  {trophies>0 ? (
-                    <div style={{flexShrink:0,fontFamily:BB,fontSize:9,letterSpacing:2,color:C.yellow,
-                      border:`1px solid ${C.yellow}40`,borderRadius:R,padding:"2px 5px",minWidth:22,textAlign:"center"}}>
-                      {trophies}
-                    </div>
-                  ) : (
-                    <div style={{flexShrink:0,minWidth:22}}/>
+                  {isTourney && (
+                    trophies>0 ? (
+                      <div style={{flexShrink:0,fontFamily:BB,fontSize:9,letterSpacing:2,color:C.yellow,
+                        border:`1px solid ${C.yellow}40`,borderRadius:R,padding:"2px 6px",minWidth:24,textAlign:"center"}}>
+                        {trophies}
+                      </div>
+                    ) : <div style={{flexShrink:0,minWidth:24}}/>
                   )}
-                </div>
-              );
-            };
-
-            const DiffGroup = ({diff}) => {
-              const col = DIFF_COLORS[diff];
-              const battle  = recordByDiffAndMode(diff, false);
-              const tourney = recordByDiffAndMode(diff, true);
-              const trophies = trophyCount(diff);
-              const empty = battle.total===0 && tourney.total===0 && trophies===0;
-              return (
-                <div style={{marginBottom:18,opacity:empty?0.4:1}}>
-                  <div style={{fontFamily:BB,fontSize:14,letterSpacing:3,color:empty?C.muted:col,marginBottom:4}}>
-                    {DIFF_LABELS[diff]}
-                  </div>
-                  <ModeBar label="BATTLE"  rec={battle}  barColor={col}/>
-                  <ModeBar label="TOURNEY" rec={tourney} barColor={col} trophies={trophies}/>
                 </div>
               );
             };
@@ -463,18 +464,29 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
 
                 <Div mb={24}/>
 
-                {/* MODE BREAKDOWN */}
-                <div style={{display:"flex",gap:0,marginBottom:28}}>
-                  <ModeCol label="BATTLE" wins={bRec.wins} losses={bRec.losses} rate={bRate} total={bRec.total}/>
+                {/* MODE BREAKDOWN — tappable to drill into per-difficulty detail */}
+                <div style={{display:"flex",gap:0,marginBottom:expandedMode?12:8}}>
+                  <ModeCol mode="battle"  label="BATTLE"  wins={bRec.wins} losses={bRec.losses} rate={bRate} total={bRec.total}/>
                   <div style={{width:1,background:C.divider,margin:"8px 0"}}/>
-                  <ModeCol label="TOURNEY" wins={tRec.wins} losses={tRec.losses} rate={tRate} total={tRec.total} trophies={totalTrophies}/>
+                  <ModeCol mode="tourney" label="TOURNEY" wins={tRec.wins} losses={tRec.losses} rate={tRate} total={tRec.total} trophies={totalTrophies}/>
                 </div>
 
-                <Div mb={20}/>
-
-                {/* DIFFICULTY BREAKDOWN — split by mode */}
-                <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted,marginBottom:10}}>BY DIFFICULTY</div>
-                {DIFFICULTIES.map(d => <DiffGroup key={d} diff={d}/>)}
+                {expandedMode && (
+                  <div className="rise" style={{
+                    marginTop:8,padding:"14px 4px 4px",
+                    borderTop:`1px solid ${C.divider}`,
+                  }}>
+                    <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted,marginBottom:6}}>
+                      {expandedMode==="battle"?"BATTLE":"TOURNEY"} BY DIFFICULTY
+                    </div>
+                    {DIFFICULTIES.map(d => {
+                      const isTourney = expandedMode==="tourney";
+                      const rec = recordByDiffAndMode(d, isTourney);
+                      const trophies = isTourney ? trophyCount(d) : 0;
+                      return <DrillRow key={d} diff={d} rec={rec} trophies={trophies} isTourney={isTourney}/>;
+                    })}
+                  </div>
+                )}
               </>
             );
           })()}
