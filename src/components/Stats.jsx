@@ -15,12 +15,33 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
   // Tournament history detail view
   const [tourneyDetail, setTourneyDetail] = useState(null); // { id, matches }
 
-  const initComp = selectedComp || COMPS_SORTED[0];
-  const initDiv = selectedDiv || initComp?.divisions[0];
+  // Last-viewed scope is persisted across sessions. An explicit
+  // selectedComp/selectedDiv prop (e.g., when arriving from a game flow)
+  // takes precedence; otherwise restore last viewed; otherwise first comp.
+  const STATS_SCOPE_KEY = "komp.statsScope";
+  const loadStoredScope = () => {
+    try {
+      const raw = typeof localStorage!=="undefined" && localStorage.getItem(STATS_SCOPE_KEY);
+      if (!raw) return null;
+      const { compKey, divKey } = JSON.parse(raw);
+      const c = COMPS_SORTED.find(x => x.key === compKey);
+      if (!c) return null;
+      const d = c.divisions.find(x => x.key === divKey) || c.divisions[0];
+      return { c, d };
+    } catch { return null; }
+  };
+  const stored = loadStoredScope();
+  const initComp = selectedComp || stored?.c || COMPS_SORTED[0];
+  const initDiv  = (selectedComp ? selectedDiv : stored?.d) || initComp?.divisions[0];
   const [statsComp, setStatsComp] = useState(initComp);
   const [statsDiv,  setStatsDiv]  = useState(initDiv);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerShowPast, setPickerShowPast] = useState(false);
+
+  useEffect(() => {
+    if (!statsComp || !statsDiv) return;
+    try { localStorage.setItem(STATS_SCOPE_KEY, JSON.stringify({compKey:statsComp.key, divKey:statsDiv.key})); } catch {}
+  }, [statsComp, statsDiv]);
   const statsDivKey = statsComp && statsDiv ? `${statsComp.key}:${statsDiv.key}` : "ekc_2026:am_open";
   const currentDivLabel = statsDiv?.name || "AM OPEN";
 
@@ -289,22 +310,19 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
       <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
         <div style={{padding:"calc(28px + env(safe-area-inset-top, 0px)) 24px 0"}}>
           <BackBtn onClick={onBack}/>
-          <div style={{marginBottom:20}}>
-            <div style={{fontFamily:BB,fontSize:34,letterSpacing:4,lineHeight:1,color:C.white}}>TRAINING STATS</div>
+          <div style={{marginBottom:18}}>
+            <div style={{fontFamily:BB,fontSize:34,letterSpacing:4,lineHeight:1,color:C.white,marginBottom:10}}>TRAINING STATS</div>
+            <button className="tap" onClick={()=>setPickerOpen(true)} style={{
+              background:"transparent",border:"none",padding:0,cursor:"pointer",
+              display:"inline-flex",alignItems:"center",gap:8,
+            }}>
+              <span style={{fontFamily:BB,fontSize:13,letterSpacing:3,color:C.sub}}>
+                {statsComp?.name||""} · {statsDiv?.name||""}
+              </span>
+              <span style={{fontFamily:BB,fontSize:10,color:C.muted}}>▾</span>
+            </button>
           </div>
 
-          <button className="tap" onClick={()=>setPickerOpen(true)} style={{
-            width:"100%",padding:"14px 0",background:"transparent",border:"none",
-            display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",
-          }}>
-            <div style={{display:"flex",alignItems:"baseline",gap:10,textAlign:"left"}}>
-              <span style={{fontFamily:BB,fontSize:20,letterSpacing:3,color:C.white}}>{statsComp?.name||""}</span>
-              <span style={{fontFamily:BC,fontSize:11,color:C.border}}>·</span>
-              <span style={{fontFamily:BB,fontSize:15,letterSpacing:3,color:C.sub}}>{statsDiv?.name||""}</span>
-            </div>
-            <span style={{fontFamily:BB,fontSize:12,color:C.muted,letterSpacing:2}}>▾</span>
-          </button>
-          <Div/>
           <div style={{display:"flex",gap:0}}>
             {[["record","RECORD"],["tricks","TRICKS"],["history","HISTORY"]].map(([k,l])=>(
               <button key={k} onClick={()=>switchTab(k)} style={{
