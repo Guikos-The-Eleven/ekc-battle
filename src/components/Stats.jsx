@@ -141,6 +141,40 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
   };
   const totalTourneyAttempts = () => DIFFICULTIES.reduce((a,d)=>a+tourneyStatsByDiff(d).attempts, 0);
 
+  // Full per-attempt list with round-by-round outcomes. Each entry knows
+  // its bracket size, what rounds were won/lost/unplayed, and its rank label.
+  const tourneyAttemptsByDiff = (d) => {
+    const tm = tourneyMatches().filter(m => m.difficulty===d);
+    const byId = {};
+    tm.forEach(m => {
+      const id = m.tournament_id || `t_${m.created_at}`;
+      if (!byId[id]) byId[id] = {hasChampion:false, deepestRound:0, bracketSize:0, lastDate:m.created_at};
+      if (m.tournament_result==="champion") byId[id].hasChampion = true;
+      if (m.tournament_round) byId[id].deepestRound = Math.max(byId[id].deepestRound, m.tournament_round);
+      if (m.bracket_size) byId[id].bracketSize = m.bracket_size;
+      if (m.created_at > byId[id].lastDate) byId[id].lastDate = m.created_at;
+    });
+    return Object.values(byId).map(t => {
+      const bs = t.bracketSize || 4;
+      const totalRounds = Math.max(1, Math.round(Math.log2(bs)));
+      const dr = t.deepestRound || 1;
+      const fromEnd = totalRounds - dr;
+      let rank, label;
+      if (t.hasChampion)        { rank = 100; label = "CHAMPION"; }
+      else if (fromEnd<=0)      { rank = 90;  label = "RUNNER-UP"; }
+      else if (fromEnd===1)     { rank = 70;  label = "SEMIFINAL"; }
+      else if (fromEnd===2)     { rank = 50;  label = "QUARTERFINAL"; }
+      else                      { rank = 30;  label = `R${dr}`; }
+      const rounds = [];
+      for (let r = 1; r <= totalRounds; r++) {
+        if (r < dr) rounds.push("W");
+        else if (r === dr) rounds.push(t.hasChampion ? "W" : "L");
+        else rounds.push("X");
+      }
+      return {rank, label, rounds, bracketSize: bs, hasChampion: t.hasChampion, date: t.lastDate};
+    }).sort((a,b) => b.rank - a.rank || (a.date > b.date ? -1 : 1));
+  };
+
   const tricksForDiv = () => {
     const stats = {};
     (attempts||[]).forEach(a=>{
@@ -458,39 +492,72 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
               );
             };
 
-            const TourneyDrillRow = ({diff}) => {
+            const RoundCell = ({state, color}) => {
+              // state: "W" won, "L" lost (eliminated here), "X" didn't play
+              const bg = state==="W" ? color : state==="L" ? `${C.red}40` : "transparent";
+              const border = state==="X" ? `1px solid ${C.divider}` : `1px solid transparent`;
+              return (
+                <div style={{
+                  width:14,height:14,borderRadius:1,
+                  background:bg,border,flexShrink:0,
+                }}/>
+              );
+            };
+
+            const AttemptRow = ({attempt, diffColor}) => {
+              const champ = attempt.hasChampion;
+              return (
+                <div className="fadeUp" style={{
+                  display:"flex",alignItems:"center",gap:12,padding:"7px 10px",
+                  borderLeft:`3px solid ${champ?C.yellow:"transparent"}`,
+                  background:champ?`${C.yellow}08`:"transparent",
+                  marginBottom:4,
+                }}>
+                  <div style={{display:"flex",gap:3,alignItems:"center",flexShrink:0}}>
+                    {attempt.rounds.map((r, ri) => (
+                      <RoundCell key={ri} state={r} color={diffColor}/>
+                    ))}
+                  </div>
+                  <div style={{flex:1,fontFamily:BB,fontSize:11,letterSpacing:2,
+                    color:champ?C.yellow:C.sub}}>
+                    {attempt.label}
+                  </div>
+                  <div style={{fontFamily:BC,fontSize:10,color:C.muted,fontWeight:600,flexShrink:0}}>
+                    {attempt.bracketSize}-BRACKET
+                  </div>
+                </div>
+              );
+            };
+
+            const TourneyDiffSection = ({diff}) => {
               const col = DIFF_COLORS[diff];
               const stats = tourneyStatsByDiff(diff);
+              const attempts = tourneyAttemptsByDiff(diff);
               const dim = stats.attempts===0;
-              const champion = stats.bestLabel==="CHAMPION";
               return (
-                <div style={{display:"flex",alignItems:"center",gap:14,padding:"12px 0",
-                  borderBottom:`1px solid ${C.divider}`,opacity:dim?0.45:1}}>
-                  <div style={{width:80,fontFamily:BB,fontSize:13,letterSpacing:3,color:dim?C.muted:col,flexShrink:0}}>
-                    {DIFF_LABELS[diff]}
-                  </div>
-                  <div style={{flex:1,display:"flex",alignItems:"baseline",gap:10,flexWrap:"wrap"}}>
-                    {dim ? (
-                      <span style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600}}>—</span>
-                    ) : (
-                      <>
-                        <Inline n={stats.attempts} label="PLAYED" color={C.muted}/>
+                <div style={{marginBottom:22,opacity:dim?0.45:1}}>
+                  <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",marginBottom:8}}>
+                    <div style={{fontFamily:BB,fontSize:14,letterSpacing:3,color:dim?C.muted:col}}>
+                      {DIFF_LABELS[diff]}
+                    </div>
+                    {!dim && (
+                      <div style={{display:"flex",alignItems:"baseline",gap:8}}>
                         {stats.won>0 && (
                           <>
+                            <Inline n={stats.won} label="WON" color={C.yellow}/>
                             <span style={{color:C.border}}>·</span>
-                            <Inline n={stats.won} label={stats.won===1?"TROPHY":"TROPHIES"} color={C.yellow}/>
                           </>
                         )}
-                      </>
+                        <Inline n={stats.attempts} label="PLAYED" color={C.muted}/>
+                      </div>
                     )}
                   </div>
-                  {!dim && stats.bestLabel && (
-                    <div style={{fontFamily:BB,fontSize:10,letterSpacing:2,
-                      color:champion?C.yellow:C.sub,flexShrink:0,
-                      border:champion?`1px solid ${C.yellow}40`:"none",
-                      borderRadius:R,padding:champion?"3px 6px":0}}>
-                      {stats.bestLabel}
+                  {dim ? (
+                    <div style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,padding:"2px 0"}}>
+                      No tournaments yet
                     </div>
+                  ) : (
+                    attempts.map((att, i) => <AttemptRow key={i} attempt={att} diffColor={col}/>)
                   )}
                 </div>
               );
@@ -553,14 +620,13 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                     marginTop:8,padding:"14px 4px 4px",
                     borderTop:`1px solid ${C.divider}`,
                   }}>
-                    <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted,marginBottom:6}}>
+                    <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted,marginBottom:10}}>
                       {expandedMode==="battle"?"BATTLE":"TOURNEY"} BY DIFFICULTY
                     </div>
-                    {DIFFICULTIES.map(d =>
-                      expandedMode==="tourney"
-                        ? <TourneyDrillRow key={d} diff={d}/>
-                        : <BattleDrillRow  key={d} diff={d}/>
-                    )}
+                    {expandedMode==="tourney"
+                      ? DIFFICULTIES.map(d => <TourneyDiffSection key={d} diff={d}/>)
+                      : DIFFICULTIES.map(d => <BattleDrillRow     key={d} diff={d}/>)
+                    }
                   </div>
                 )}
               </>
