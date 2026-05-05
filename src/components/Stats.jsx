@@ -141,10 +141,14 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
   };
   const totalTourneyAttempts = () => DIFFICULTIES.reduce((a,d)=>a+tourneyStatsByDiff(d).attempts, 0);
 
-  // Distribution of tournament outcomes per difficulty — answers
-  // "where am I getting stuck?". Buckets: champion / runner-up / semifinal /
-  // quarterfinal / R1 (early elimination, anything before QF).
-  const tourneyDistByDiff = (d) => {
+  // Conversion-rate funnel per difficulty. Tournaments are about
+  // progressing through a ladder, so meaningful stats are how often
+  // you reach each milestone, not how many you "won". Three milestones
+  // that work regardless of bracket size:
+  //   - WON 1+ MATCH  (you got past your first match)
+  //   - REACHED FINAL (you played the last match of the bracket)
+  //   - CHAMPION      (you won the last match)
+  const tourneyMilestonesByDiff = (d) => {
     const tm = tourneyMatches().filter(m => m.difficulty===d);
     const byId = {};
     tm.forEach(m => {
@@ -154,17 +158,25 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
       if (m.tournament_round) byId[id].deepestRound = Math.max(byId[id].deepestRound, m.tournament_round);
       if (m.bracket_size) byId[id].bracketSize = m.bracket_size;
     });
-    const dist = {champion:0, runnerUp:0, semifinal:0, quarterfinal:0, early:0};
+    let total=0, won1=0, finalists=0, champions=0;
     Object.values(byId).forEach(t => {
+      total++;
       const totalR = t.bracketSize ? Math.log2(t.bracketSize) : 0;
-      const fromEnd = totalR - (t.deepestRound||1);
-      if (t.hasChampion)        dist.champion++;
-      else if (fromEnd<=0)      dist.runnerUp++;
-      else if (fromEnd===1)     dist.semifinal++;
-      else if (fromEnd===2)     dist.quarterfinal++;
-      else                      dist.early++;
+      // matches won = deepestRound (won them all if champion) or deepestRound-1 (eliminated)
+      const matchesWon = t.hasChampion ? t.deepestRound : Math.max(0, t.deepestRound-1);
+      if (matchesWon >= 1) won1++;
+      if (totalR>0 && t.deepestRound >= totalR) finalists++;
+      if (t.hasChampion) champions++;
     });
-    return dist;
+    const pct = (n) => total>0 ? Math.round(n/total*100) : 0;
+    return {
+      total,
+      milestones: [
+        {key:"won1",     label:"WON 1+ MATCH",  count:won1,       pct:pct(won1)},
+        {key:"final",    label:"REACHED FINAL", count:finalists,  pct:pct(finalists)},
+        {key:"champion", label:"CHAMPION",      count:champions,  pct:pct(champions)},
+      ],
+    };
   };
 
   const tricksForDiv = () => {
@@ -487,21 +499,14 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
             const TourneyDrillRow = ({diff}) => {
               const col = DIFF_COLORS[diff];
               const stats = tourneyStatsByDiff(diff);
-              const dist = tourneyDistByDiff(diff);
-              const dim = stats.attempts===0;
-              // One palette across all difficulties: gold→silver→white→gray descent
-              // so segment color always means "how far you got", not which difficulty.
-              const tiers = [
-                {key:"champion",     label:"CHAMPION",     count:dist.champion,     color:C.yellow},
-                {key:"runnerUp",     label:"RUNNER-UP",    count:dist.runnerUp,     color:`${C.yellow}80`},
-                {key:"semifinal",    label:"SEMIFINAL",    count:dist.semifinal,    color:C.sub},
-                {key:"quarterfinal", label:"QUARTERFINAL", count:dist.quarterfinal, color:`${C.sub}66`},
-                {key:"early",        label:"R1",           count:dist.early,        color:C.muted},
-              ];
-              const visible = tiers.filter(t => t.count > 0);
+              const data = tourneyMilestonesByDiff(diff);
+              const dim = data.total===0;
+              // Color hierarchy: difficulty identity → gold achievement.
+              const milestoneColor = ["sub", "silver", "gold"];
+              const colorMap = {sub:col, silver:`${C.yellow}66`, gold:C.yellow};
               return (
                 <div style={{padding:"16px 0",borderBottom:`1px solid ${C.divider}`,opacity:dim?0.45:1}}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:dim?0:12}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:dim?0:14}}>
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
                       <span style={{fontFamily:BB,fontSize:14,letterSpacing:3,color:dim?C.muted:col}}>
                         {DIFF_LABELS[diff]}
@@ -515,29 +520,30 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                     </div>
                     {dim
                       ? <span style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600}}>—</span>
-                      : <Inline n={stats.attempts} label="PLAYED" color={C.muted}/>
+                      : <Inline n={data.total} label="PLAYED" color={C.muted}/>
                     }
                   </div>
 
-                  {!dim && visible.length>0 && (
-                    <>
-                      <div style={{display:"flex",height:6,borderRadius:1,overflow:"hidden",marginBottom:10,gap:2,background:C.divider}}>
-                        {visible.map(t => (
-                          <div key={t.key} style={{flex:t.count,background:t.color,transition:"flex 0.3s"}}/>
-                        ))}
+                  {!dim && data.milestones.map((m, i) => {
+                    const barColor = colorMap[milestoneColor[i]];
+                    return (
+                      <div key={m.key} style={{display:"flex",alignItems:"center",gap:10,padding:"5px 0"}}>
+                        <div style={{width:120,fontFamily:BB,fontSize:10,letterSpacing:2,color:C.muted,flexShrink:0}}>
+                          {m.label}
+                        </div>
+                        <div style={{flex:1,height:5,background:C.divider,borderRadius:1,overflow:"hidden"}}>
+                          <div style={{height:"100%",width:`${Math.max(m.pct,m.count>0?2:0)}%`,
+                            background:barColor,transition:"width 0.4s"}}/>
+                        </div>
+                        <div style={{minWidth:54,fontFamily:BC,fontSize:10,color:C.muted,fontWeight:600,textAlign:"right",flexShrink:0}}>
+                          {m.count} of {data.total}
+                        </div>
+                        <div style={{minWidth:38,fontFamily:BB,fontSize:13,color:C.text,textAlign:"right",flexShrink:0}}>
+                          {m.pct}%
+                        </div>
                       </div>
-
-                      <div style={{display:"flex",alignItems:"center",flexWrap:"wrap",rowGap:8,columnGap:14}}>
-                        {visible.map(t => (
-                          <span key={t.key} style={{display:"inline-flex",alignItems:"center",gap:6}}>
-                            <span style={{width:8,height:8,background:t.color,borderRadius:1,display:"inline-block"}}/>
-                            <span style={{fontFamily:BB,fontSize:13,color:C.text,lineHeight:1}}>{t.count}</span>
-                            <span style={{fontFamily:BB,fontSize:9,letterSpacing:2,color:C.muted,lineHeight:1}}>{t.label}</span>
-                          </span>
-                        ))}
-                      </div>
-                    </>
-                  )}
+                    );
+                  })}
                 </div>
               );
             };
