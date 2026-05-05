@@ -489,41 +489,54 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
               const stats = tourneyStatsByDiff(diff);
               const dist = tourneyDistByDiff(diff);
               const dim = stats.attempts===0;
+              // One palette across all difficulties: gold→silver→white→gray descent
+              // so segment color always means "how far you got", not which difficulty.
               const tiers = [
                 {key:"champion",     label:"CHAMPION",     count:dist.champion,     color:C.yellow},
-                {key:"runnerUp",     label:"RUNNER-UP",    count:dist.runnerUp,     color:C.sub},
+                {key:"runnerUp",     label:"RUNNER-UP",    count:dist.runnerUp,     color:`${C.yellow}80`},
                 {key:"semifinal",    label:"SEMIFINAL",    count:dist.semifinal,    color:C.sub},
-                {key:"quarterfinal", label:"QUARTERFINAL", count:dist.quarterfinal, color:C.muted},
+                {key:"quarterfinal", label:"QUARTERFINAL", count:dist.quarterfinal, color:`${C.sub}66`},
                 {key:"early",        label:"R1",           count:dist.early,        color:C.muted},
-              ].filter(t => t.count > 0);
+              ];
+              const visible = tiers.filter(t => t.count > 0);
               return (
-                <div style={{padding:"12px 0",borderBottom:`1px solid ${C.divider}`,opacity:dim?0.45:1}}>
-                  <div style={{display:"flex",alignItems:"baseline",gap:12}}>
-                    <div style={{width:74,fontFamily:BB,fontSize:12,letterSpacing:3,color:dim?C.muted:col,flexShrink:0}}>
-                      {DIFF_LABELS[diff]}
-                    </div>
-                    <div style={{flex:1,display:"flex",alignItems:"baseline",gap:10}}>
-                      {dim ? (
-                        <span style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600}}>—</span>
-                      ) : (
-                        <>
-                          <Inline n={stats.won} label={stats.won===1?"TROPHY":"TROPHIES"} color={C.yellow}/>
-                          <span style={{color:C.border}}>·</span>
-                          <Inline n={stats.attempts} label="PLAYED" color={C.muted}/>
-                        </>
+                <div style={{padding:"16px 0",borderBottom:`1px solid ${C.divider}`,opacity:dim?0.45:1}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:dim?0:12}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                      <span style={{fontFamily:BB,fontSize:14,letterSpacing:3,color:dim?C.muted:col}}>
+                        {DIFF_LABELS[diff]}
+                      </span>
+                      {stats.won>0 && (
+                        <span style={{fontFamily:BB,fontSize:10,letterSpacing:2,color:C.yellow,
+                          border:`1px solid ${C.yellow}40`,borderRadius:R,padding:"3px 7px"}}>
+                          {stats.won} {stats.won===1?"TROPHY":"TROPHIES"}
+                        </span>
                       )}
                     </div>
+                    {dim
+                      ? <span style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600}}>—</span>
+                      : <Inline n={stats.attempts} label="PLAYED" color={C.muted}/>
+                    }
                   </div>
-                  {!dim && tiers.length>0 && (
-                    <div style={{display:"flex",alignItems:"baseline",flexWrap:"wrap",gap:8,marginLeft:74+12,marginTop:6}}>
-                      {tiers.map((t, i) => (
-                        <span key={t.key} style={{display:"inline-flex",alignItems:"baseline",gap:4}}>
-                          {i>0 && <span style={{color:C.border,marginRight:4}}>·</span>}
-                          <span style={{fontFamily:BB,fontSize:13,color:C.text}}>{t.count}</span>
-                          <span style={{fontFamily:BB,fontSize:9,letterSpacing:2,color:t.color}}>{t.label}</span>
-                        </span>
-                      ))}
-                    </div>
+
+                  {!dim && visible.length>0 && (
+                    <>
+                      <div style={{display:"flex",height:6,borderRadius:1,overflow:"hidden",marginBottom:10,gap:2,background:C.divider}}>
+                        {visible.map(t => (
+                          <div key={t.key} style={{flex:t.count,background:t.color,transition:"flex 0.3s"}}/>
+                        ))}
+                      </div>
+
+                      <div style={{display:"flex",alignItems:"center",flexWrap:"wrap",rowGap:8,columnGap:14}}>
+                        {visible.map(t => (
+                          <span key={t.key} style={{display:"inline-flex",alignItems:"center",gap:6}}>
+                            <span style={{width:8,height:8,background:t.color,borderRadius:1,display:"inline-block"}}/>
+                            <span style={{fontFamily:BB,fontSize:13,color:C.text,lineHeight:1}}>{t.count}</span>
+                            <span style={{fontFamily:BB,fontSize:9,letterSpacing:2,color:C.muted,lineHeight:1}}>{t.label}</span>
+                          </span>
+                        ))}
+                      </div>
+                    </>
                   )}
                 </div>
               );
