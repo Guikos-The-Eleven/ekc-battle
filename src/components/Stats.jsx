@@ -484,7 +484,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                     </span>
                     {dim
                       ? <span style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600}}>—</span>
-                      : <Inline n={rec.total} label="PLAYED" color={C.muted}/>
+                      : <Inline n={rec.total} label={rec.total===1?"GAME":"GAMES"} color={C.muted}/>
                     }
                   </div>
 
