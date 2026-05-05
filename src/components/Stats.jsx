@@ -475,23 +475,39 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
               const col = DIFF_COLORS[diff];
               const rec = recordByDiffAndMode(diff, false);
               const dim = rec.total===0;
+              const lossRate = 100 - rec.rate;
               return (
-                <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",
-                  borderBottom:`1px solid ${C.divider}`,opacity:dim?0.45:1}}>
-                  <div style={{width:74,fontFamily:BB,fontSize:12,letterSpacing:3,color:dim?C.muted:col,flexShrink:0}}>
-                    {DIFF_LABELS[diff]}
+                <div style={{padding:"14px 0",borderBottom:`1px solid ${C.divider}`,opacity:dim?0.45:1}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:dim?0:10}}>
+                    <span style={{fontFamily:BB,fontSize:14,letterSpacing:3,color:dim?C.muted:col}}>
+                      {DIFF_LABELS[diff]}
+                    </span>
+                    {dim
+                      ? <span style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600}}>—</span>
+                      : <Inline n={rec.total} label="PLAYED" color={C.muted}/>
+                    }
                   </div>
-                  <div style={{flex:1,height:5,background:C.divider,borderRadius:1,overflow:"hidden"}}>
-                    {rec.total>0 && (
-                      <div style={{height:"100%",width:`${Math.max(rec.rate,2)}%`,background:col,transition:"width 0.4s"}}/>
-                    )}
-                  </div>
-                  <div style={{minWidth:48,fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,textAlign:"right",flexShrink:0}}>
-                    {rec.total>0?`${rec.wins}–${rec.losses}`:"—"}
-                  </div>
-                  <div style={{minWidth:40,fontFamily:BB,fontSize:13,color:dim?C.muted:C.text,textAlign:"right",flexShrink:0}}>
-                    {rec.total>0?`${rec.rate}%`:"—"}
-                  </div>
+
+                  {!dim && (
+                    <>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:6}}>
+                        <span style={{fontFamily:BB,fontSize:12,color:C.green,letterSpacing:1}}>+ {rec.rate}%</span>
+                        <span style={{fontFamily:BB,fontSize:12,color:C.red,letterSpacing:1}}>− {lossRate}%</span>
+                      </div>
+                      <div style={{display:"flex",height:6,borderRadius:1,overflow:"hidden",marginBottom:6,gap:1}}>
+                        <div style={{height:"100%",width:`${rec.rate}%`,background:C.green,transition:"width 0.4s"}}/>
+                        <div style={{height:"100%",width:`${lossRate}%`,background:C.red,transition:"width 0.4s"}}/>
+                      </div>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
+                        <span style={{fontFamily:BB,fontSize:11,letterSpacing:1,color:C.sub}}>
+                          {rec.wins}<span style={{fontSize:9,letterSpacing:2,color:C.muted,marginLeft:5}}>WON</span>
+                        </span>
+                        <span style={{fontFamily:BB,fontSize:11,letterSpacing:1,color:C.sub}}>
+                          <span style={{fontSize:9,letterSpacing:2,color:C.muted,marginRight:5}}>LOST</span>{rec.losses}
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
               );
             };
