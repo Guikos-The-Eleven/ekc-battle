@@ -141,6 +141,32 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
   };
   const totalTourneyAttempts = () => DIFFICULTIES.reduce((a,d)=>a+tourneyStatsByDiff(d).attempts, 0);
 
+  // Distribution of tournament outcomes per difficulty — answers
+  // "where am I getting stuck?". Buckets: champion / runner-up / semifinal /
+  // quarterfinal / R1 (early elimination, anything before QF).
+  const tourneyDistByDiff = (d) => {
+    const tm = tourneyMatches().filter(m => m.difficulty===d);
+    const byId = {};
+    tm.forEach(m => {
+      const id = m.tournament_id || `t_${m.created_at}`;
+      if (!byId[id]) byId[id] = {hasChampion:false, deepestRound:0, bracketSize:0};
+      if (m.tournament_result==="champion") byId[id].hasChampion = true;
+      if (m.tournament_round) byId[id].deepestRound = Math.max(byId[id].deepestRound, m.tournament_round);
+      if (m.bracket_size) byId[id].bracketSize = m.bracket_size;
+    });
+    const dist = {champion:0, runnerUp:0, semifinal:0, quarterfinal:0, early:0};
+    Object.values(byId).forEach(t => {
+      const totalR = t.bracketSize ? Math.log2(t.bracketSize) : 0;
+      const fromEnd = totalR - (t.deepestRound||1);
+      if (t.hasChampion)        dist.champion++;
+      else if (fromEnd<=0)      dist.runnerUp++;
+      else if (fromEnd===1)     dist.semifinal++;
+      else if (fromEnd===2)     dist.quarterfinal++;
+      else                      dist.early++;
+    });
+    return dist;
+  };
+
   const tricksForDiv = () => {
     const stats = {};
     (attempts||[]).forEach(a=>{
@@ -461,33 +487,44 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
             const TourneyDrillRow = ({diff}) => {
               const col = DIFF_COLORS[diff];
               const stats = tourneyStatsByDiff(diff);
+              const dist = tourneyDistByDiff(diff);
               const dim = stats.attempts===0;
-              const champion = stats.bestLabel==="CHAMPION";
+              const tiers = [
+                {key:"champion",     label:"CHAMPION",     count:dist.champion,     color:C.yellow},
+                {key:"runnerUp",     label:"RUNNER-UP",    count:dist.runnerUp,     color:C.sub},
+                {key:"semifinal",    label:"SEMIFINAL",    count:dist.semifinal,    color:C.sub},
+                {key:"quarterfinal", label:"QUARTERFINAL", count:dist.quarterfinal, color:C.muted},
+                {key:"early",        label:"R1",           count:dist.early,        color:C.muted},
+              ].filter(t => t.count > 0);
               return (
-                <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",
-                  borderBottom:`1px solid ${C.divider}`,opacity:dim?0.45:1}}>
-                  <div style={{width:74,fontFamily:BB,fontSize:12,letterSpacing:3,color:dim?C.muted:col,flexShrink:0}}>
-                    {DIFF_LABELS[diff]}
+                <div style={{padding:"12px 0",borderBottom:`1px solid ${C.divider}`,opacity:dim?0.45:1}}>
+                  <div style={{display:"flex",alignItems:"baseline",gap:12}}>
+                    <div style={{width:74,fontFamily:BB,fontSize:12,letterSpacing:3,color:dim?C.muted:col,flexShrink:0}}>
+                      {DIFF_LABELS[diff]}
+                    </div>
+                    <div style={{flex:1,display:"flex",alignItems:"baseline",gap:10}}>
+                      {dim ? (
+                        <span style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600}}>—</span>
+                      ) : (
+                        <>
+                          <Inline n={stats.won} label={stats.won===1?"TROPHY":"TROPHIES"} color={C.yellow}/>
+                          <span style={{color:C.border}}>·</span>
+                          <Inline n={stats.attempts} label="PLAYED" color={C.muted}/>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <div style={{flex:1,display:"flex",alignItems:"baseline",gap:10,flexWrap:"wrap"}}>
-                    {dim ? (
-                      <span style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600}}>—</span>
-                    ) : (
-                      <>
-                        <Inline n={stats.won} label={stats.won===1?"TROPHY":"TROPHIES"} color={C.yellow}/>
-                        <span style={{color:C.border}}>·</span>
-                        <Inline n={stats.attempts} label="PLAYED" color={C.muted}/>
-                        {!champion && stats.bestLabel && (
-                          <>
-                            <span style={{color:C.border}}>·</span>
-                            <span style={{fontFamily:BB,fontSize:10,letterSpacing:2,color:C.sub}}>
-                              BEST: {stats.bestLabel}
-                            </span>
-                          </>
-                        )}
-                      </>
-                    )}
-                  </div>
+                  {!dim && tiers.length>0 && (
+                    <div style={{display:"flex",alignItems:"baseline",flexWrap:"wrap",gap:8,marginLeft:74+12,marginTop:6}}>
+                      {tiers.map((t, i) => (
+                        <span key={t.key} style={{display:"inline-flex",alignItems:"baseline",gap:4}}>
+                          {i>0 && <span style={{color:C.border,marginRight:4}}>·</span>}
+                          <span style={{fontFamily:BB,fontSize:13,color:C.text}}>{t.count}</span>
+                          <span style={{fontFamily:BB,fontSize:9,letterSpacing:2,color:t.color}}>{t.label}</span>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             };
