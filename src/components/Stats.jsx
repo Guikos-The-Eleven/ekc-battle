@@ -11,6 +11,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
   const [expandedMatch, setExpandedMatch] = useState(null);
   const [confirmReset, setConfirmReset] = useState(false);
   const [selectedTier, setSelectedTier] = useState("weak"); // "weak" | "mid" | "strong" | null
+  const [historyFilter, setHistoryFilter] = useState("all"); // "all" | "battles" | "tourneys"
 
   // Tournament history detail view
   const [tourneyDetail, setTourneyDetail] = useState(null); // { id, matches }
@@ -267,7 +268,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
     </div>
   );
 
-  const switchTab = (k) => { setTab(k); setExpandedMatch(null); setConfirmReset(false); setShowAllTricks(false); setTourneyDetail(null); };
+  const switchTab = (k) => { setTab(k); setExpandedMatch(null); setConfirmReset(false); setTourneyDetail(null); };
 
   // ── Tournament Detail View (accordion, same as battle history) ──
   const renderTourneyDetail = () => {
@@ -276,6 +277,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
     const ROUND_NAMES = bracket_size>=8
       ? ["QUARTER","SEMI","FINAL"]
       : ["SEMI","FINAL"];
+    const MONTH_ABBR = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
 
     return (
       <div>
@@ -296,9 +298,8 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
           const ri = g.tournament_round ?? i;
           const roundLabel = ROUND_NAMES[ri] || `R${ri+1}`;
           const col = g.won?C.green:C.red;
-          const diffCol = DIFF_COLORS[g.difficulty]||C.sub;
           const date = new Date(g.created_at);
-          const dateStr = `${date.getDate()}/${date.getMonth()+1}`;
+          const dateStr = `${date.getDate()} ${MONTH_ABBR[date.getMonth()]}`;
           const log = parseLog(g);
           const hasLog = !!log;
           const isOpen = expandedMatch===`tg_${g.id||i}`;
@@ -322,10 +323,10 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                 </div>
                 <div style={{flex:1}}/>
                 <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-                  <div style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:diffCol,
-                    border:`1px solid ${diffCol}30`,padding:"4px 0",borderRadius:R,
+                  <div style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:C.sub,
+                    border:`1px solid ${C.border}`,padding:"4px 0",borderRadius:R,
                     minWidth:80,textAlign:"center"}}>{DIFF_LABELS[g.difficulty]||g.difficulty}</div>
-                  <div style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,minWidth:32,textAlign:"right"}}>{dateStr}</div>
+                  <div style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,minWidth:48,textAlign:"right"}}>{dateStr}</div>
                   {hasLog && (
                     <div style={{fontFamily:BB,fontSize:10,color:C.muted,transition:"transform 0.2s",
                       transform:isOpen?"rotate(180deg)":"rotate(0deg)"}}>▾</div>
@@ -727,16 +728,52 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                 No match history yet for {currentDivLabel}.<br/>Play to start tracking.
               </div>
             );
+
+            const tourneyItems = items.filter(i => i.type==="tournament");
+            const battleItems  = items.filter(i => i.type!=="tournament");
+            const filtered = historyFilter==="battles"  ? battleItems
+                           : historyFilter==="tourneys" ? tourneyItems
+                           : items;
+
+            const FilterChip = ({fkey, label, count}) => {
+              const active = historyFilter === fkey;
+              return (
+                <button
+                  className="tap"
+                  onClick={()=>setHistoryFilter(fkey)}
+                  style={{
+                    flex:1,padding:"12px 6px",
+                    background:active?`${C.white}0d`:`${C.white}03`,
+                    border:`1px solid ${active?`${C.white}30`:C.border}`,
+                    borderRadius:R,cursor:"pointer",transition:"all 0.15s",
+                    display:"flex",alignItems:"center",justifyContent:"center",gap:6,
+                  }}
+                >
+                  <span style={{fontFamily:BB,fontSize:13,color:active?C.text:C.sub,lineHeight:1}}>{count}</span>
+                  <span style={{fontFamily:BB,fontSize:9,letterSpacing:2,color:active?C.text:C.muted,lineHeight:1}}>{label}</span>
+                </button>
+              );
+            };
+
             return (
               <>
-                <Label style={{marginBottom:16,letterSpacing:4}}>Recent Matches</Label>
-                {items.map((item,i)=>{
+                <div style={{display:"flex",gap:6,marginBottom:18}}>
+                  <FilterChip fkey="all"      label="ALL"      count={items.length}/>
+                  <FilterChip fkey="battles"  label="BATTLES"  count={battleItems.length}/>
+                  <FilterChip fkey="tourneys" label="TOURNEYS" count={tourneyItems.length}/>
+                </div>
+                {filtered.length===0 && (
+                  <div style={{textAlign:"center",padding:"24px 0",fontFamily:BC,fontSize:13,color:C.muted,fontWeight:600}}>
+                    Nothing matches this filter yet
+                  </div>
+                )}
+                {filtered.map((item,i)=>{
+                  const MONTH_ABBR = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
                   if (item.type==="tournament") {
                     // Tournament card
                     const col = item.isChampion?C.yellow:C.red;
-                    const diffCol = DIFF_COLORS[item.difficulty]||C.sub;
                     const date = new Date(item.created_at);
-                    const dateStr = `${date.getDate()}/${date.getMonth()+1}`;
+                    const dateStr = `${date.getDate()} ${MONTH_ABBR[date.getMonth()]}`;
                     return (
                       <div key={item.id} className="fadeUp" style={{
                         borderLeft:`3px solid ${col}`,paddingLeft:14,marginBottom:8,
@@ -753,10 +790,10 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                           </div>
                           <div style={{flex:1}}/>
                           <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-                            <div style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:diffCol,
-                              border:`1px solid ${diffCol}30`,padding:"4px 0",borderRadius:R,
+                            <div style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:C.sub,
+                              border:`1px solid ${C.border}`,padding:"4px 0",borderRadius:R,
                               minWidth:80,textAlign:"center"}}>{DIFF_LABELS[item.difficulty]||item.difficulty}</div>
-                            <div style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,minWidth:32,textAlign:"right"}}>{dateStr}</div>
+                            <div style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,minWidth:48,textAlign:"right"}}>{dateStr}</div>
                             <div style={{fontFamily:BB,fontSize:10,color:C.muted}}>▸</div>
                           </div>
                         </div>
@@ -767,9 +804,8 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                   // Battle match card (same as before)
                   const m = item;
                   const col = m.won?C.green:C.red;
-                  const diffCol = DIFF_COLORS[m.difficulty]||C.sub;
                   const date = new Date(m.created_at);
-                  const dateStr = `${date.getDate()}/${date.getMonth()+1}`;
+                  const dateStr = `${date.getDate()} ${MONTH_ABBR[date.getMonth()]}`;
                   const isOpen = expandedMatch===(m.id||i);
                   const log = parseLog(m);
                   const canExpand = !!log;
@@ -796,11 +832,11 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                         <div style={{flex:1}}/>
                         <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
                           <div style={{
-                            fontFamily:BB,fontSize:10,letterSpacing:3,color:diffCol,
-                            border:`1px solid ${diffCol}30`,padding:"4px 0",borderRadius:R,
+                            fontFamily:BB,fontSize:10,letterSpacing:3,color:C.sub,
+                            border:`1px solid ${C.border}`,padding:"4px 0",borderRadius:R,
                             minWidth:80,textAlign:"center",
                           }}>{DIFF_LABELS[m.difficulty]||m.difficulty}</div>
-                          <div style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,minWidth:32,textAlign:"right"}}>{dateStr}</div>
+                          <div style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600,minWidth:48,textAlign:"right"}}>{dateStr}</div>
                           {canExpand && (
                             <div style={{fontFamily:BB,fontSize:10,color:C.muted,transition:"transform 0.2s",
                               transform:isOpen?"rotate(180deg)":"rotate(0deg)"}}>▾</div>
