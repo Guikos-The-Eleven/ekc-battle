@@ -10,7 +10,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
   const [tab,      setTab]      = useState("record");
   const [expandedMatch, setExpandedMatch] = useState(null);
   const [confirmReset, setConfirmReset] = useState(false);
-  const [showAllTricks, setShowAllTricks] = useState(false);
+  const [selectedTier, setSelectedTier] = useState(null); // "weak" | "mid" | "strong" | null
 
   // Tournament history detail view
   const [tourneyDetail, setTourneyDetail] = useState(null); // { id, matches }
@@ -630,10 +630,14 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
             const weak   = list.filter(t=>t.rate<40);
             const mid    = list.filter(t=>t.rate>=40&&t.rate<70);
             const strong = list.filter(t=>t.rate>=70).reverse();
-            const PREVIEW = 5;
             const totalAtt = list.reduce((a,t)=>a+t.att,0);
             const avgRate = Math.round(list.reduce((a,t)=>a+t.rate*t.att,0)/totalAtt);
-            const hasMore = !showAllTricks && (weak.length>PREVIEW||mid.length>PREVIEW||strong.length>PREVIEW);
+
+            const tiers = {
+              weak:   {label:"NEEDS WORK",    color:C.red,    items:weak},
+              mid:    {label:"GETTING THERE", color:C.yellow, items:mid},
+              strong: {label:"SOLID",         color:C.green,  items:strong},
+            };
 
             const TrickRow = ({trick,rate,att}) => {
               const col = rate>=70?C.green:rate>=40?C.yellow:C.red;
@@ -650,32 +654,26 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
               );
             };
 
-            const Section = ({label,color,items}) => {
-              const show = showAllTricks ? items : items.slice(0,PREVIEW);
-              if (items.length===0) return null;
+            const TierTab = ({tier}) => {
+              const data = tiers[tier];
+              const active = selectedTier === tier;
               return (
-                <div style={{marginBottom:20}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                    <Label style={{letterSpacing:4,color}}>{label}</Label>
-                    <span style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600}}>{items.length}</span>
-                  </div>
-                  {show.map(t=><TrickRow key={t.trick} {...t}/>)}
-                  {!showAllTricks && items.length>PREVIEW && (
-                    <div style={{fontFamily:BC,fontSize:11,color:C.muted,textAlign:"center",marginTop:6}}>
-                      +{items.length-PREVIEW} more
-                    </div>
-                  )}
-                </div>
+                <button
+                  className="tap"
+                  onClick={()=>setSelectedTier(active?null:tier)}
+                  style={{
+                    flex:1,padding:"10px 0",background:"transparent",border:"none",
+                    borderBottom:`2px solid ${active?C.white:"transparent"}`,
+                    cursor:"pointer",transition:"all 0.15s",
+                    display:"flex",alignItems:"center",justifyContent:"center",gap:6,
+                  }}
+                >
+                  <span style={{width:6,height:6,background:data.color,borderRadius:1,display:"inline-block"}}/>
+                  <span style={{fontFamily:BB,fontSize:13,color:active?C.text:C.sub,lineHeight:1}}>{data.items.length}</span>
+                  <span style={{fontFamily:BB,fontSize:9,letterSpacing:2,color:active?C.text:C.muted,lineHeight:1}}>{data.label}</span>
+                </button>
               );
             };
-
-            const TierLegend = ({n, label, color}) => (
-              <div style={{display:"inline-flex",alignItems:"center",gap:5}}>
-                <span style={{width:6,height:6,background:color,borderRadius:1,display:"inline-block"}}/>
-                <span style={{fontFamily:BB,fontSize:13,color:C.text,lineHeight:1}}>{n}</span>
-                <span style={{fontFamily:BB,fontSize:9,letterSpacing:2,color:C.muted,lineHeight:1}}>{label}</span>
-              </div>
-            );
 
             return (
               <>
@@ -691,27 +689,28 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                 </div>
 
                 {/* DISTRIBUTION — how your tricks split across tiers */}
-                <div style={{marginBottom:28}}>
-                  <div style={{display:"flex",height:6,borderRadius:1,overflow:"hidden",marginBottom:10,gap:2,background:C.divider}}>
+                <div style={{marginBottom:8}}>
+                  <div style={{display:"flex",height:6,borderRadius:1,overflow:"hidden",marginBottom:8,gap:2,background:C.divider}}>
                     {weak.length>0   && <div style={{flex:weak.length,  background:C.red,   transition:"flex 0.3s"}}/>}
                     {mid.length>0    && <div style={{flex:mid.length,   background:C.yellow,transition:"flex 0.3s"}}/>}
                     {strong.length>0 && <div style={{flex:strong.length,background:C.green, transition:"flex 0.3s"}}/>}
                   </div>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",rowGap:8,columnGap:10}}>
-                    <TierLegend n={weak.length}   label="NEEDS WORK"     color={C.red}/>
-                    <TierLegend n={mid.length}    label="GETTING THERE"  color={C.yellow}/>
-                    <TierLegend n={strong.length} label="SOLID"          color={C.green}/>
+                  <div style={{display:"flex",gap:0}}>
+                    <TierTab tier="weak"/>
+                    <TierTab tier="mid"/>
+                    <TierTab tier="strong"/>
                   </div>
                 </div>
 
-                <Section label="Needs Work"    color={C.red}    items={weak}/>
-                <Section label="Getting There" color={C.yellow} items={mid}/>
-                <Section label="Solid"         color={C.green}  items={strong}/>
-                {hasMore && (
-                  <button className="tap" onClick={()=>setShowAllTricks(true)} style={{
-                    width:"100%",padding:"14px 0",marginTop:4,background:"transparent",border:`1px solid ${C.border}`,
-                    borderRadius:R,fontFamily:BB,fontSize:12,letterSpacing:4,color:C.sub,cursor:"pointer",
-                  }}>SHOW ALL {list.length} TRICKS</button>
+                {selectedTier && tiers[selectedTier].items.length > 0 && (
+                  <div className="rise" style={{marginTop:14}}>
+                    {tiers[selectedTier].items.map(t => <TrickRow key={t.trick} {...t}/>)}
+                  </div>
+                )}
+                {selectedTier && tiers[selectedTier].items.length === 0 && (
+                  <div className="rise" style={{textAlign:"center",padding:"24px 0",fontFamily:BC,fontSize:13,color:C.muted,fontWeight:600}}>
+                    No tricks in this tier yet
+                  </div>
                 )}
               </>
             );
