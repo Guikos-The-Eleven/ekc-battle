@@ -735,7 +735,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                            : historyFilter==="tourneys" ? tourneyItems
                            : items;
 
-            const FilterChip = ({fkey, label, count}) => {
+            const FilterChip = ({fkey, label}) => {
               const active = historyFilter === fkey;
               return (
                 <button
@@ -746,11 +746,10 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                     background:active?`${C.white}0d`:`${C.white}03`,
                     border:`1px solid ${active?`${C.white}30`:C.border}`,
                     borderRadius:R,cursor:"pointer",transition:"all 0.15s",
-                    display:"flex",alignItems:"center",justifyContent:"center",gap:6,
+                    display:"flex",alignItems:"center",justifyContent:"center",
                   }}
                 >
-                  <span style={{fontFamily:BB,fontSize:13,color:active?C.text:C.sub,lineHeight:1}}>{count}</span>
-                  <span style={{fontFamily:BB,fontSize:9,letterSpacing:2,color:active?C.text:C.muted,lineHeight:1}}>{label}</span>
+                  <span style={{fontFamily:BB,fontSize:11,letterSpacing:3,color:active?C.text:C.muted,lineHeight:1}}>{label}</span>
                 </button>
               );
             };
@@ -758,9 +757,9 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
             return (
               <>
                 <div style={{display:"flex",gap:6,marginBottom:18}}>
-                  <FilterChip fkey="all"      label="ALL"      count={items.length}/>
-                  <FilterChip fkey="battles"  label="BATTLES"  count={battleItems.length}/>
-                  <FilterChip fkey="tourneys" label="TOURNEYS" count={tourneyItems.length}/>
+                  <FilterChip fkey="all"      label="ALL"/>
+                  <FilterChip fkey="battles"  label="BATTLES"/>
+                  <FilterChip fkey="tourneys" label="TOURNEYS"/>
                 </div>
                 {filtered.length===0 && (
                   <div style={{textAlign:"center",padding:"24px 0",fontFamily:BC,fontSize:13,color:C.muted,fontWeight:600}}>
