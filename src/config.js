@@ -153,6 +153,11 @@ const CPU_NAMES = [
 // ─── MODE COLORS (Option B: matches home-screen identity) ──────────────────
 // Competitive modes → brand red. Casual/practice modes → green.
 const MODE_COLORS = { cpu:C.logored, drill:C.green, tournament:C.logored, "2p":C.green };
+// ─── COMP STATUS HELPERS ────────────────────────────────────────────────────
+// A comp is "past" once its start date is before today (YYYY-MM-DD compare).
+const _todayISO = () => new Date().toISOString().slice(0,10);
+const isCompPast = (comp) => !!(comp && comp.date && comp.date < _todayISO());
+
 // ─── TRICK HELPERS ──────────────────────────────────────────────────────────
 const getTricksForDiv = (div, listKey) => {
   if (!div) return AM_TRICKS;
@@ -217,4 +222,4 @@ if (typeof document !== "undefined") {
   }
 }
 
-export { LOGOS, LOGO, C, BB, BC, R, AM_TRICKS, OPEN_REGULAR, OPEN_TOP16, BKO_OPEN, COMPS, COMPS_SORTED, CPU_CFG, haptic, CPU_NAMES, getTricksForDiv, MODE_COLORS, TRICK_INFO };
+export { LOGOS, LOGO, C, BB, BC, R, AM_TRICKS, OPEN_REGULAR, OPEN_TOP16, BKO_OPEN, COMPS, COMPS_SORTED, CPU_CFG, haptic, CPU_NAMES, getTricksForDiv, isCompPast, MODE_COLORS, TRICK_INFO };
