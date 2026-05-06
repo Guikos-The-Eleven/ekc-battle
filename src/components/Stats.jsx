@@ -173,9 +173,9 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
     return {
       total,
       milestones: [
-        {key:"won1",     label:"WON 1+ MATCH",  count:won1,       pct:pct(won1)},
-        {key:"final",    label:"REACHED FINAL", count:finalists,  pct:pct(finalists)},
-        {key:"champion", label:"CHAMPION",      count:champions,  pct:pct(champions)},
+        {key:"won1",     label:"ADVANCED", count:won1,      pct:pct(won1)},
+        {key:"final",    label:"FINALIST", count:finalists, pct:pct(finalists)},
+        {key:"champion", label:"CHAMPION", count:champions, pct:pct(champions)},
       ],
     };
   };
@@ -482,7 +482,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
               const lossRate = 100 - rec.rate;
               return (
                 <div style={{padding:"4px 0"}}>
-                  <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:8,marginBottom:18}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:18}}>
                     <span style={{fontFamily:BB,fontSize:40,lineHeight:0.9,color:C.text}}>{rec.total}</span>
                     <span style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted}}>
                       {rec.total===1?"GAME":"GAMES"}
@@ -512,9 +512,11 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
               return (
                 <div style={{padding:"4px 0"}}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,marginBottom:18,flexWrap:"wrap"}}>
-                    <div style={{display:"flex",alignItems:"baseline",gap:8}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
                       <span style={{fontFamily:BB,fontSize:40,lineHeight:0.9,color:C.text}}>{data.total}</span>
-                      <span style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted}}>PLAYED</span>
+                      <span style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted}}>
+                        {data.total===1?"RUN":"RUNS"}
+                      </span>
                     </div>
                     {stats.won>0 && (
                       <span style={{fontFamily:BB,fontSize:11,letterSpacing:2,color:C.yellow,
