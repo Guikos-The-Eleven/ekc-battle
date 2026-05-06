@@ -631,6 +631,9 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
             const mid    = list.filter(t=>t.rate>=40&&t.rate<70);
             const strong = list.filter(t=>t.rate>=70).reverse();
             const PREVIEW = 5;
+            const totalAtt = list.reduce((a,t)=>a+t.att,0);
+            const avgRate = Math.round(list.reduce((a,t)=>a+t.rate*t.att,0)/totalAtt);
+            const hasMore = !showAllTricks && (weak.length>PREVIEW||mid.length>PREVIEW||strong.length>PREVIEW);
 
             const TrickRow = ({trick,rate,att}) => {
               const col = rate>=70?C.green:rate>=40?C.yellow:C.red;
@@ -641,7 +644,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                   <div style={{fontFamily:BC,fontSize:14,color:C.sub,fontWeight:600,flex:1,lineHeight:1.3,
                     overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{trick}</div>
                   <span style={{fontFamily:BC,fontSize:11,color:C.muted,flexShrink:0}}>{att}×</span>
-                  <span style={{fontFamily:BB,fontSize:16,letterSpacing:1,color:col,flexShrink:0,
+                  <span style={{fontFamily:BB,fontSize:16,letterSpacing:1,color:C.text,flexShrink:0,
                     minWidth:38,textAlign:"right"}}>{rate}%</span>
                 </div>
               );
@@ -666,19 +669,44 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
               );
             };
 
-            const totalAtt = list.reduce((a,t)=>a+t.att,0);
-            const avgRate = Math.round(list.reduce((a,t)=>a+t.rate*t.att,0)/totalAtt);
-            const hasMore = !showAllTricks && (weak.length>PREVIEW||mid.length>PREVIEW||strong.length>PREVIEW);
+            const TierLegend = ({n, label, color}) => (
+              <div style={{display:"inline-flex",alignItems:"center",gap:5}}>
+                <span style={{width:6,height:6,background:color,borderRadius:1,display:"inline-block"}}/>
+                <span style={{fontFamily:BB,fontSize:13,color:C.text,lineHeight:1}}>{n}</span>
+                <span style={{fontFamily:BB,fontSize:9,letterSpacing:2,color:C.muted,lineHeight:1}}>{label}</span>
+              </div>
+            );
 
             return (
               <>
-                <div style={{marginBottom:28,textAlign:"center"}}>
-                  <div style={{fontFamily:BB,fontSize:52,lineHeight:0.9,color:avgRate>=70?C.green:avgRate>=40?C.yellow:C.red}}>{avgRate}%</div>
-                  <div style={{fontFamily:BB,fontSize:10,letterSpacing:5,color:C.muted,marginTop:8}}>AVG LAND RATE · {list.length} TRICKS · {totalAtt} ATTEMPTS</div>
+                {/* HERO — overall trick mastery at a glance */}
+                <div style={{marginBottom:24,textAlign:"center"}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                    <span style={{fontFamily:BB,fontSize:52,lineHeight:0.9,color:C.text}}>{avgRate}%</span>
+                    <span style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted}}>AVG LAND RATE</span>
+                  </div>
+                  <div style={{fontFamily:BB,fontSize:10,letterSpacing:3,color:C.muted,marginTop:8}}>
+                    {list.length} TRICKS · {totalAtt} ATTEMPTS
+                  </div>
                 </div>
-                <Section label="Needs Work" color={C.red} items={weak}/>
+
+                {/* DISTRIBUTION — how your tricks split across tiers */}
+                <div style={{marginBottom:28}}>
+                  <div style={{display:"flex",height:6,borderRadius:1,overflow:"hidden",marginBottom:10,gap:2,background:C.divider}}>
+                    {weak.length>0   && <div style={{flex:weak.length,  background:C.red,   transition:"flex 0.3s"}}/>}
+                    {mid.length>0    && <div style={{flex:mid.length,   background:C.yellow,transition:"flex 0.3s"}}/>}
+                    {strong.length>0 && <div style={{flex:strong.length,background:C.green, transition:"flex 0.3s"}}/>}
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",rowGap:8,columnGap:10}}>
+                    <TierLegend n={weak.length}   label="NEEDS WORK"     color={C.red}/>
+                    <TierLegend n={mid.length}    label="GETTING THERE"  color={C.yellow}/>
+                    <TierLegend n={strong.length} label="SOLID"          color={C.green}/>
+                  </div>
+                </div>
+
+                <Section label="Needs Work"    color={C.red}    items={weak}/>
                 <Section label="Getting There" color={C.yellow} items={mid}/>
-                <Section label="Solid" color={C.green} items={strong}/>
+                <Section label="Solid"         color={C.green}  items={strong}/>
                 {hasMore && (
                   <button className="tap" onClick={()=>setShowAllTricks(true)} style={{
                     width:"100%",padding:"14px 0",marginTop:4,background:"transparent",border:`1px solid ${C.border}`,
