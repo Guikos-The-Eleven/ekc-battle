@@ -38,6 +38,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerShowPast, setPickerShowPast] = useState(false);
   const [expandedMode, setExpandedMode] = useState(null);
+  const [drillDiff, setDrillDiff] = useState("easy");
 
   useEffect(() => {
     if (!statsComp || !statsDiv) return;
@@ -471,95 +472,71 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
               );
             };
 
-            const BattleDrillRow = ({diff}) => {
-              const col = DIFF_COLORS[diff];
+            const BattleDrill = ({diff}) => {
               const rec = recordByDiffAndMode(diff, false);
-              const dim = rec.total===0;
+              if (rec.total===0) return (
+                <div style={{textAlign:"center",padding:"32px 0",fontFamily:BC,fontSize:13,color:C.muted,fontWeight:600}}>
+                  No matches at this difficulty
+                </div>
+              );
               const lossRate = 100 - rec.rate;
               return (
-                <div style={{padding:"14px 0",borderBottom:`1px solid ${C.divider}`,opacity:dim?0.45:1}}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:dim?0:10}}>
-                    <span style={{fontFamily:BB,fontSize:14,letterSpacing:3,color:dim?C.muted:col}}>
-                      {DIFF_LABELS[diff]}
+                <div style={{padding:"4px 0"}}>
+                  <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:8,marginBottom:18}}>
+                    <span style={{fontFamily:BB,fontSize:40,lineHeight:0.9,color:C.text}}>{rec.total}</span>
+                    <span style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted}}>
+                      {rec.total===1?"GAME":"GAMES"}
                     </span>
-                    {dim
-                      ? <span style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600}}>—</span>
-                      : <Inline n={rec.total} label={rec.total===1?"GAME":"GAMES"} color={C.muted}/>
-                    }
                   </div>
-
-                  {!dim && (
-                    <>
-                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:6}}>
-                        <span style={{fontFamily:BB,fontSize:12,color:C.green,letterSpacing:1}}>+ {rec.rate}%</span>
-                        <span style={{fontFamily:BB,fontSize:12,color:C.red,letterSpacing:1}}>− {lossRate}%</span>
-                      </div>
-                      <div style={{display:"flex",height:6,borderRadius:1,overflow:"hidden",marginBottom:6,gap:1}}>
-                        <div style={{height:"100%",width:`${rec.rate}%`,background:C.green,transition:"width 0.4s"}}/>
-                        <div style={{height:"100%",width:`${lossRate}%`,background:C.red,transition:"width 0.4s"}}/>
-                      </div>
-                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
-                        <span style={{fontFamily:BB,fontSize:11,letterSpacing:1,color:C.sub}}>
-                          {rec.wins}<span style={{fontSize:9,letterSpacing:2,color:C.muted,marginLeft:5}}>WON</span>
-                        </span>
-                        <span style={{fontFamily:BB,fontSize:11,letterSpacing:1,color:C.sub}}>
-                          <span style={{fontSize:9,letterSpacing:2,color:C.muted,marginRight:5}}>LOST</span>{rec.losses}
-                        </span>
-                      </div>
-                    </>
-                  )}
+                  <div style={{display:"flex",height:8,borderRadius:1,overflow:"hidden",marginBottom:10,gap:2}}>
+                    <div style={{height:"100%",width:`${rec.rate}%`,background:C.green,transition:"width 0.4s"}}/>
+                    <div style={{height:"100%",width:`${lossRate}%`,background:C.red,transition:"width 0.4s"}}/>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
+                    <span style={{fontFamily:BB,fontSize:14,color:C.green,letterSpacing:1}}>{rec.wins} W</span>
+                    <span style={{fontFamily:BB,fontSize:14,color:C.red,letterSpacing:1}}>{rec.losses} L</span>
+                  </div>
                 </div>
               );
             };
 
-            const TourneyDrillRow = ({diff}) => {
-              const col = DIFF_COLORS[diff];
+            const TourneyDrill = ({diff}) => {
               const stats = tourneyStatsByDiff(diff);
               const data = tourneyMilestonesByDiff(diff);
-              const dim = data.total===0;
-              // Color hierarchy: difficulty identity → gold achievement.
-              const milestoneColor = ["sub", "silver", "gold"];
-              const colorMap = {sub:col, silver:`${C.yellow}66`, gold:C.yellow};
+              if (data.total===0) return (
+                <div style={{textAlign:"center",padding:"32px 0",fontFamily:BC,fontSize:13,color:C.muted,fontWeight:600}}>
+                  No tournaments at this difficulty
+                </div>
+              );
+              const colorMap = [C.sub, `${C.yellow}66`, C.yellow];
               return (
-                <div style={{padding:"16px 0",borderBottom:`1px solid ${C.divider}`,opacity:dim?0.45:1}}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:dim?0:14}}>
-                    <div style={{display:"flex",alignItems:"center",gap:10}}>
-                      <span style={{fontFamily:BB,fontSize:14,letterSpacing:3,color:dim?C.muted:col}}>
-                        {DIFF_LABELS[diff]}
-                      </span>
-                      {stats.won>0 && (
-                        <span style={{fontFamily:BB,fontSize:10,letterSpacing:2,color:C.yellow,
-                          border:`1px solid ${C.yellow}40`,borderRadius:R,padding:"3px 7px"}}>
-                          {stats.won} {stats.won===1?"TROPHY":"TROPHIES"}
-                        </span>
-                      )}
+                <div style={{padding:"4px 0"}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,marginBottom:18,flexWrap:"wrap"}}>
+                    <div style={{display:"flex",alignItems:"baseline",gap:8}}>
+                      <span style={{fontFamily:BB,fontSize:40,lineHeight:0.9,color:C.text}}>{data.total}</span>
+                      <span style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted}}>PLAYED</span>
                     </div>
-                    {dim
-                      ? <span style={{fontFamily:BC,fontSize:11,color:C.muted,fontWeight:600}}>—</span>
-                      : <Inline n={data.total} label="PLAYED" color={C.muted}/>
-                    }
+                    {stats.won>0 && (
+                      <span style={{fontFamily:BB,fontSize:11,letterSpacing:2,color:C.yellow,
+                        border:`1px solid ${C.yellow}40`,borderRadius:R,padding:"4px 8px"}}>
+                        {stats.won} {stats.won===1?"TROPHY":"TROPHIES"}
+                      </span>
+                    )}
                   </div>
-
-                  {!dim && data.milestones.map((m, i) => {
-                    const barColor = colorMap[milestoneColor[i]];
-                    return (
-                      <div key={m.key} style={{display:"flex",alignItems:"center",gap:10,padding:"5px 0"}}>
-                        <div style={{width:120,fontFamily:BB,fontSize:10,letterSpacing:2,color:C.muted,flexShrink:0}}>
-                          {m.label}
-                        </div>
-                        <div style={{flex:1,height:5,background:C.divider,borderRadius:1,overflow:"hidden"}}>
-                          <div style={{height:"100%",width:`${Math.max(m.pct,m.count>0?2:0)}%`,
-                            background:barColor,transition:"width 0.4s"}}/>
-                        </div>
-                        <div style={{minWidth:54,fontFamily:BC,fontSize:10,color:C.muted,fontWeight:600,textAlign:"right",flexShrink:0}}>
-                          {m.count} of {data.total}
-                        </div>
-                        <div style={{minWidth:38,fontFamily:BB,fontSize:13,color:C.text,textAlign:"right",flexShrink:0}}>
-                          {m.pct}%
-                        </div>
+                  {data.milestones.map((m, i) => (
+                    <div key={m.key} style={{display:"flex",alignItems:"center",gap:10,padding:"5px 0"}}>
+                      <div style={{width:120,fontFamily:BB,fontSize:10,letterSpacing:2,color:C.muted,flexShrink:0}}>
+                        {m.label}
                       </div>
-                    );
-                  })}
+                      <div style={{flex:1,height:5,background:C.divider,borderRadius:1,overflow:"hidden"}}>
+                        <div style={{height:"100%",width:`${Math.max(m.pct,m.count>0?2:0)}%`,
+                          background:colorMap[i],transition:"width 0.4s"}}/>
+                      </div>
+                      <div style={{minWidth:38,fontFamily:BB,fontSize:13,color:C.text,textAlign:"right",flexShrink:0}}>
+                        {m.pct}%
+                      </div>
+                    </div>
+                  ))}
                 </div>
               );
             };
@@ -621,12 +598,19 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                     marginTop:8,padding:"14px 4px 4px",
                     borderTop:`1px solid ${C.divider}`,
                   }}>
-                    <div style={{fontFamily:BB,fontSize:11,letterSpacing:4,color:C.muted,marginBottom:10}}>
-                      {expandedMode==="battle"?"BATTLE":"TOURNEY"} BY DIFFICULTY
+                    <div style={{display:"flex",gap:0,marginBottom:18}}>
+                      {DIFFICULTIES.map(d => (
+                        <button key={d} onClick={()=>setDrillDiff(d)} style={{
+                          flex:1,padding:"8px 0",background:"transparent",border:"none",
+                          borderBottom:`2px solid ${drillDiff===d?C.white:"transparent"}`,
+                          color:drillDiff===d?C.white:C.muted,
+                          fontFamily:BB,fontSize:11,letterSpacing:3,cursor:"pointer",transition:"all 0.15s",
+                        }}>{DIFF_LABELS[d]}</button>
+                      ))}
                     </div>
                     {expandedMode==="tourney"
-                      ? DIFFICULTIES.map(d => <TourneyDrillRow key={d} diff={d}/>)
-                      : DIFFICULTIES.map(d => <BattleDrillRow  key={d} diff={d}/>)
+                      ? <TourneyDrill diff={drillDiff}/>
+                      : <BattleDrill  diff={drillDiff}/>
                     }
                   </div>
                 )}
