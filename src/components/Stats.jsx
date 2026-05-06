@@ -10,7 +10,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
   const [tab,      setTab]      = useState("record");
   const [expandedMatch, setExpandedMatch] = useState(null);
   const [confirmReset, setConfirmReset] = useState(false);
-  const [selectedTier, setSelectedTier] = useState(null); // "weak" | "mid" | "strong" | null
+  const [selectedTier, setSelectedTier] = useState("weak"); // "weak" | "mid" | "strong" | null
 
   // Tournament history detail view
   const [tourneyDetail, setTourneyDetail] = useState(null); // { id, matches }
@@ -662,9 +662,10 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                   className="tap"
                   onClick={()=>setSelectedTier(active?null:tier)}
                   style={{
-                    flex:1,padding:"10px 0",background:"transparent",border:"none",
-                    borderBottom:`2px solid ${active?C.white:"transparent"}`,
-                    cursor:"pointer",transition:"all 0.15s",
+                    flex:1,padding:"12px 6px",
+                    background:active?`${C.white}0d`:`${C.white}03`,
+                    border:`1px solid ${active?`${C.white}30`:C.border}`,
+                    borderRadius:R,cursor:"pointer",transition:"all 0.15s",
                     display:"flex",alignItems:"center",justifyContent:"center",gap:6,
                   }}
                 >
@@ -695,7 +696,7 @@ function StatsScreen({ user, username, isGuest, onBack, onAuth, compDbKey, selec
                     {mid.length>0    && <div style={{flex:mid.length,   background:C.yellow,transition:"flex 0.3s"}}/>}
                     {strong.length>0 && <div style={{flex:strong.length,background:C.green, transition:"flex 0.3s"}}/>}
                   </div>
-                  <div style={{display:"flex",gap:0}}>
+                  <div style={{display:"flex",gap:6}}>
                     <TierTab tier="weak"/>
                     <TierTab tier="mid"/>
                     <TierTab tier="strong"/>
